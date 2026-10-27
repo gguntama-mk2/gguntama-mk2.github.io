@@ -14160,6 +14160,14 @@ input[type="checkbox"] { border-radius: 8px; }
   .frow.grow { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
   @media (max-width: 600px) { .frow.grow { grid-template-columns: minmax(0, 1fr); } }
   .pal .pg { border-radius: 16px; }      /* ポップなデザイン：枠の角を丸く */
+
+  /* サイトに公開（管理者用） */
+  .fld input[type="password"] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 999px; padding: 8px 10px; font: inherit; font-size: 16px; }
+  .iodlg .pubbox summary { cursor: pointer; font-size: .8125rem; font-weight: 800; color: var(--text); padding: 2px 0; }
+  .iodlg .pubbox details > p, .iodlg .pubbox details > .row, .iodlg .pubbox details > .msg { margin-top: 8px; }
+  .iodlg .pubset { margin-top: 14px; }
+  .iodlg .pubset summary { font-weight: 700; color: var(--sub); }
+  .iodlg .pubset .fld { margin-top: 8px; }
 `;
   const GRIP_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5.5" r="1.7"/><circle cx="15" cy="5.5" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18.5" r="1.7"/><circle cx="15" cy="18.5" r="1.7"/></svg>';
   const PENCIL_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -14254,6 +14262,24 @@ input[type="checkbox"] { border-radius: 8px; }
     <h3 id="cb-asTitle" style="margin-top:14px">自動保存</h3>
     <p id="cb-asInfo" role="status"></p>
     <div class="row"><button type="button" class="primary" id="cb-asOn">自動保存を設定</button><button type="button" class="primary" id="cb-asResume" hidden>自動保存を再開</button><button type="button" id="cb-asOff" hidden>自動保存をやめる</button></div>
+  </section>
+  <section class="stbox pubbox" id="cb-pubBox" aria-labelledby="cb-pubTitle">
+    <details id="cb-pubDet">
+      <summary id="cb-pubTitle">管理者用：サイトにコンボを公開</summary>
+      <p id="cb-pubInfo" role="status"></p>
+      <p>「サイトに公開する」を押すと、いまこの画面に出ているコンボ（収録・書き換え・自作・削除・並び順・分類の並び）が、サイトの <b>combos-live.json</b> に書き込まれ、サイトを開いた全員のコンボ集がこの内容になります（反映まで1〜2分）。メモ・表示の設定は公開されません。</p>
+      <div class="row"><button type="button" class="primary" id="cb-pubGo">サイトに公開する</button></div>
+      <div class="msg" id="cb-pubMsg" role="status"></div>
+      <details class="pubset" id="cb-pubSet">
+        <summary>公開の設定（最初の1回だけ）</summary>
+        <p>GitHub で「アクセストークン」を作って貼り付けます（Settings → Developer settings → Fine-grained tokens）。対象は公開先のリポジトリ1つだけ、権限は Contents の「Read and write」だけにして、有効期限も決めてください。トークンはこのブラウザの中にだけ保存され、保存ファイル・書き出しコードには入りません。</p>
+        <div class="fld"><label for="cb-pubRepo">リポジトリ（所有者/名前）</label><input type="text" id="cb-pubRepo" autocomplete="off" spellcheck="false"></div>
+        <div class="fld"><label for="cb-pubBranch">ブランチ</label><input type="text" id="cb-pubBranch" autocomplete="off" spellcheck="false"></div>
+        <div class="fld"><label for="cb-pubTok">アクセストークン</label><input type="password" id="cb-pubTok" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
+        <div class="row"><button type="button" id="cb-pubSave">設定を保存</button><button type="button" class="danger" id="cb-pubClear">設定を消す</button></div>
+        <div class="msg" id="cb-pubSetMsg" role="status"></div>
+      </details>
+    </details>
   </section>
   <section class="stbox" id="cb-uiBox" aria-labelledby="cb-uiTitle">
     <h3 id="cb-uiTitle">表示と更新の設定</h3>
@@ -14387,10 +14413,99 @@ input[type="checkbox"] { border-radius: 8px; }
   const PREV_KEY = "tekken-combo-prevbuild-v1";   // （以前の版）新しいビルドで捨てる前の控え { from, to, at, layers: { 保存キー: 保存内容 } }。1件だけ。いまは BAK_KEY の一覧へ移して消す
   const BAK_KEY = "tekken-combo-backups-v1";      // 控え（新しい順の一覧。最大 BAK_MAX 世代）[ { id, kind: "build"（新しいビルドで捨てた内容）| "restore"（控えから戻す前の内容）, from, to, at, layers: { 保存キー: 保存内容 } } ]
   const OKGREN_KEY = "tekken-combo-grenameok-v1"; // 「変更を確定」で確定した分類の名前の変更 { "キャラid": "対応(JSON)" }（これと同じ間は「分類の名前の変更を元に戻す」を出さない）
-  const BUILD_ID = "668848";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
+  const BUILD_ID = "1fa7a5";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
   // 「保存ファイル」から付属データへ組み込んだ自作コンボの対応 { キャラid: { 自作のid: 付属のk } }（combos_data.js の COMBOS_BAKED。無ければ空）。ブラウザに残っている同じ自作コンボは、開いたときに外す（メモは付属のkへ移す）
-  const BAKED = (typeof COMBOS_BAKED !== "undefined" && COMBOS_BAKED && typeof COMBOS_BAKED === "object") ? COMBOS_BAKED : {};
+  const BAKED0 = (typeof COMBOS_BAKED !== "undefined" && COMBOS_BAKED && typeof COMBOS_BAKED === "object") ? COMBOS_BAKED : {};
+  const BAKED = {};      // 付属データの COMBOS_BAKED ＋ 公開データの baked（公開データを読み込むたびに作り直す）
+  function bakedReset(extra) { Object.keys(BAKED).forEach(c => delete BAKED[c]); [BAKED0, extra].forEach(m => { if (m) Object.keys(m).forEach(cid => { BAKED[cid] = Object.assign(BAKED[cid] || {}, m[cid]); }); }); }
+  bakedReset();
   const bakedK = (cid, uid) => (BAKED[cid] && Object.prototype.hasOwnProperty.call(BAKED[cid], uid)) ? String(BAKED[cid][uid]) : null;
+
+  /* ---------- サイトの最新コンボ（combos-live.json） ----------
+     サイト（https）で開いたとき、同じ場所の combos-live.json を取りに行き、ファイルに入っている付属データ（COMBOS）の代わりに使う。管理者が「サイトに公開する」で作る。
+     ・形式：{ format: "tekken-combo-live", v: 1, rev: 公開の通し番号, at, build, next: { キャラid: 次に付ける k }, baked: { キャラid: { 自作のid: k } }, combos: { キャラid: [ { k, g, n, c, d, lv, t, note, av } … 表示どおりの並び ] } }
+     ・COMBOS_REV（combos_data.js）＝そのファイルに組み込み済みの公開の通し番号。公開データの rev がそれより大きいときだけ使う（同じか小さいときは、ファイルの付属データのほうが新しい／同じ）。
+     ・取れた公開データは LIVE_KEY に残し、次に開いたときは、取りに行く前からそれを使う（オフラインでも最新）。
+     ・この端末の書き換え・削除・並び順・自作コンボ・分類の名前の変更は、これまでどおり公開データの上に重なる。
+     ・保存のキーを「tekken-combo-」で始めないのは、保存ファイル・自動保存にトークンや公開データを入れないため。 */
+  const LIVE_KEY = "tekken-livepack-v1";        // 最後に取れた公開データ（文字列のまま）
+  const PUB_KEY = "tekken-publish-v1";          // 公開の設定 { repo, branch, token }（この端末だけ）
+  const LIVE_URL = "combos-live.json";
+  const LIVE_FORMAT = "tekken-combo-live";
+  const EMB = {}; Object.keys(COMBOS).forEach(c => { EMB[c] = COMBOS[c]; });      // ファイルに入っている付属データ（公開データで差し替える前の配列）
+  const EMB_REV = (typeof COMBOS_REV === "number" && COMBOS_REV >= 0) ? COMBOS_REV : 0;
+  const EMB_NEXT = (typeof COMBOS_NEXT !== "undefined" && COMBOS_NEXT && typeof COMBOS_NEXT === "object") ? COMBOS_NEXT : {};
+  let liveRev = 0, liveAt = "", liveNext = {}, liveBaked = {}, liveFetchAt = 0, liveBusy = false;
+  const liveStr = (v, n) => (typeof v === "string" ? v.slice(0, n) : "");
+  function liveRow(x) {
+    if (!x || typeof x !== "object" || !Number.isInteger(x.k) || x.k < 1) return null;
+    const n = liveStr(x.n, 200), c = liveStr(x.c, 2000); if (!n && !c) return null;
+    const o = { k: x.k }, g = liveStr(x.g, 60);
+    if (g) o.g = g; if (n) o.n = n; if (c) o.c = c;
+    if (typeof x.d === "number" && isFinite(x.d)) o.d = x.d; else if (typeof x.d === "string" && x.d) o.d = x.d.slice(0, 12);
+    if (Number.isInteger(x.lv) && x.lv >= 1 && x.lv <= 5) o.lv = x.lv;
+    if (Array.isArray(x.t)) { const t = x.t.filter(v => typeof v === "string" && v && v.length <= 20).slice(0, 12); if (t.length) o.t = t; }
+    const note = liveStr(x.note, 600); if (note) o.note = note;
+    if (typeof x.av === "string" && VER_RE.test(x.av)) o.av = x.av;
+    return o;
+  }
+  // 公開データを検査して整える（形が違うものは null）
+  function liveClean(o) {
+    if (!o || typeof o !== "object" || o.format !== LIVE_FORMAT || !Number.isInteger(o.rev) || o.rev < 1 || !o.combos || typeof o.combos !== "object") return null;
+    const combos = {}, next = {}, baked = {};
+    Object.keys(o.combos).forEach(cid => {
+      if (!hasChar(cid) || !Array.isArray(o.combos[cid])) return;
+      const seen = new Set(), rows = [];
+      o.combos[cid].forEach(x => { const r = liveRow(x); if (r && !seen.has(r.k)) { seen.add(r.k); rows.push(r); } });
+      combos[cid] = rows;
+      const nx = o.next && Number.isInteger(o.next[cid]) ? o.next[cid] : 0;
+      next[cid] = Math.max(nx, rows.reduce((m, r) => Math.max(m, r.k), 0) + 1);
+    });
+    if (!Object.keys(combos).length) return null;
+    if (o.baked && typeof o.baked === "object") Object.keys(o.baked).forEach(cid => {
+      const m = o.baked[cid]; if (!hasChar(cid) || !m || typeof m !== "object") return;
+      Object.keys(m).forEach(uid => { if (/^u[a-z0-9]{3,40}$/.test(uid) && Number.isInteger(m[uid]) && m[uid] >= 1) (baked[cid] = baked[cid] || {})[uid] = m[uid]; });
+    });
+    return { format: LIVE_FORMAT, v: 1, rev: o.rev, at: liveStr(o.at, 40), build: liveStr(o.build, 40), combos, next, baked };
+  }
+  // 公開データを、付属データの代わりに使う（ファイルに入っている付属データ EMB を土台に、公開データのキャラだけ差し替える）
+  function liveApply(p) {
+    Object.keys(COMBOS).forEach(c => { if (c in EMB) COMBOS[c] = EMB[c]; else delete COMBOS[c]; });
+    Object.keys(p.combos).forEach(c => { COMBOS[c] = p.combos[c]; });
+    bakedReset(p.baked); liveRev = p.rev; liveAt = p.at; liveNext = p.next; liveBaked = p.baked;
+  }
+  // 開いたとき（load の前）：前に取れた公開データがあれば、すぐ使う。ファイルの付属データのほうが新しい／同じなら、その控えは捨てる
+  function liveInit() {
+    let t = ""; try { t = localStorage.getItem(LIVE_KEY) || ""; } catch (_) { return; }
+    if (!t) return;
+    let p = null; try { p = liveClean(JSON.parse(t)); } catch (_) {}
+    if (p && p.rev > EMB_REV) liveApply(p);
+    else { try { localStorage.removeItem(LIVE_KEY); } catch (_) {} }
+  }
+  // 新しい公開データなら使う（控えにも残す）。使ったら true
+  function liveAdopt(p, text) {
+    if (!p || p.rev <= Math.max(EMB_REV, liveRev)) return false;
+    liveApply(p); put(LIVE_KEY, text);
+    migrateBaked();                                  // 公開データに取り込まれた自作コンボは、この端末の自作から外す（メモは付属の k へ）
+    return true;
+  }
+  // 公開データが入れ替わったので、画面を描き直す（コンボの編集中などのダイアログを開いている・ドラッグ中は、次の描き直しまで待つ。書き出しのダイアログは待たない）
+  function liveRefresh() {
+    dirty = true;
+    if (shown && !drag && !root.querySelector("dialog[open]:not(#cb-ioDlg)")) renderAll();
+  }
+  async function liveFetch() {
+    if (liveBusy || !/^https?:$/.test(location.protocol) || typeof fetch !== "function") return;
+    liveBusy = true;
+    try {
+      const ac = typeof AbortController === "function" ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), 10000) : 0;
+      let r; try { r = await fetch(LIVE_URL + "?r=" + Math.floor(Date.now() / 60000), { cache: "no-cache", signal: ac ? ac.signal : undefined }); } finally { clearTimeout(tm); }
+      if (!r.ok) return;
+      const text = await r.text(); let p = null; try { p = liveClean(JSON.parse(text)); } catch (_) {}
+      if (liveAdopt(p, text)) liveRefresh();
+    } catch (_) {} finally { liveBusy = false; liveFetchAt = Date.now(); }
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - liveFetchAt > 300000) liveFetch(); });
 
   /* ---------- アーカイブ（過去のコンボ） ----------
      アップデートで出せなくなったコンボは、av ＝「出せた最後のバージョン」（例 "2.05.00"）を付けて「過去のコンボ」にする。av が無いコンボが「現在のコンボ」。
@@ -16569,7 +16684,168 @@ input[type="checkbox"] { border-radius: 8px; }
   $("asOff").onclick = () => asStop();
   window.addEventListener("pagehide", () => { asWrite(); });
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") asWrite(); });
-  $("ioBtn").onclick = () => { ioMsg.className = "msg"; ioMsg.textContent = ""; ioText.value = ""; $("svMsg").textContent = ""; refreshStore(); uiSync(); asSync(); openDlg(ioDlg); };
+
+  /* ---------- サイトに公開（管理者用） ----------
+     いま画面に出ているコンボ（付属＋書き換え＋自作−削除、並び順・分類の並び・分類の名前の変更を反映）を、公開データ（combos-live.json）にして GitHub へ書き込む。
+     ① サイトの公開データを読む（他の端末で新しく公開されていれば、先にそれを土台にする）② 変わったところを数えて確認 ③ 書き込む（読んだときの版の指定つき。その間に他で更新されたら、失敗して何も壊さない）
+     ④ 書き込めたら、この端末の書き換え・削除・並び順・自作コンボ・分類の名前の変更は公開データに取り込まれたので、重ねを外す（自作のメモは付属の k へ移る）。メモ・表示の設定・分類プルダウンの変更は公開しない。 */
+  const PUB_DEF = { repo: "gguntama-mk2/gguntama-mk2.github.io", branch: "main" };
+  const PUB_REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, PUB_BRANCH_RE = /^[A-Za-z0-9_./-]{1,100}$/, PUB_TOKEN_RE = /^[A-Za-z0-9_-]{20,300}$/;
+  function pubCfg() { const o = readJSON(PUB_KEY, {}); return { repo: strv(o.repo, 100), branch: strv(o.branch, 100), token: strv(o.token, 300) }; }
+  function pubSync() {
+    const c = pubCfg();
+    $("pubRepo").value = c.repo || PUB_DEF.repo; $("pubBranch").value = c.branch || PUB_DEF.branch; $("pubTok").value = "";
+    $("pubTok").placeholder = c.token ? "（保存済み。変えるときだけ入力）" : "github_pat_…";
+    $("pubSet").open = !c.token;
+    const pend = storeInfo().filter(x => !/^(メモ|分類のリストの変更)/.test(x));
+    $("pubInfo").textContent = (liveRev ? "公開済みのデータ：第" + liveRev + "版" + (liveAt && Date.parse(liveAt) ? "（" + fmtAt(Date.parse(liveAt)) + "）" : "") + "。" : "まだ公開していません（ファイルに入っている収録データのままです）。")
+      + (pend.length ? "公開していないこの端末の変更：" + pend.join("・") + "。" : "公開していないこの端末の変更はありません。");
+  }
+  $("pubSave").onclick = () => {
+    const m = $("pubSetMsg"), old = pubCfg(), repo = $("pubRepo").value.trim(), branch = $("pubBranch").value.trim(), tok = $("pubTok").value.trim() || old.token;
+    const bad = t => { m.className = "msg err"; m.textContent = t; };
+    if (!PUB_REPO_RE.test(repo)) return bad("リポジトリは「所有者/名前」の形で入力してください。");
+    if (!PUB_BRANCH_RE.test(branch)) return bad("ブランチの名前が正しくありません。");
+    if (!tok) return bad("アクセストークンを入力してください。");
+    if (!PUB_TOKEN_RE.test(tok)) return bad("アクセストークンの形が正しくありません（コピーしたときに、前後の文字が入っていないか確認してください）。");
+    put(PUB_KEY, { repo, branch, token: tok });
+    $("pubTok").value = ""; $("pubTok").placeholder = "（保存済み。変えるときだけ入力）";
+    m.className = "msg"; m.textContent = "保存しました（トークンはこのブラウザの中にだけ残ります）。"; pubSync(); m.textContent = "保存しました（トークンはこのブラウザの中にだけ残ります）。";
+  };
+  $("pubClear").onclick = async () => {
+    if (!pubCfg().token && !localStorage.getItem(PUB_KEY)) return;
+    if (!(await askConfirm("公開の設定（リポジトリ・ブランチ・アクセストークン）を、このブラウザから消します。\nGitHub 側のトークンは、GitHub の設定画面で削除してください。", "消す"))) return;
+    try { localStorage.removeItem(PUB_KEY); } catch (_) {}
+    pubSync(); const m = $("pubSetMsg"); m.className = "msg"; m.textContent = "消しました。";
+  };
+  const b64dec = t => { const bin = atob(String(t).replace(/\s/g, "")), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder("utf-8").decode(u); };
+  const b64enc = t => { const u = new TextEncoder().encode(t); let bin = ""; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(bin); };
+  async function ghReq(cfg, method, sub, body, accept) {
+    try {
+      // 余計なヘッダ（Cache-Control・X-GitHub-Api-Version など）を付けない（付けるとブラウザの事前確認で止まることがある）。古い結果を避けるため、読むときは URL に時刻を付ける
+      const url = "https://api.github.com/repos/" + cfg.repo + sub + (method === "GET" ? (sub.indexOf("?") < 0 ? "?" : "&") + "_=" + Date.now() : "");
+      return await fetch(url, { method, headers: Object.assign({ "Authorization": "Bearer " + cfg.token, "Accept": accept || "application/vnd.github+json" }, body ? { "Content-Type": "application/json" } : {}), body: body ? JSON.stringify(body) : undefined });
+    } catch (_) { throw new Error("GitHub につながりません。ネットワークを確認してから、もう一度お試しください。"); }
+  }
+  const ghErr = s => s === 401 ? "アクセストークンが正しくないか、期限が切れています。新しいトークンを作って、「公開の設定」に保存し直してください。"
+    : s === 403 ? "このトークンでは書き込めません（対象のリポジトリと、Contents の「Read and write」の権限を確認してください）。短い間に何度も試したときの回数制限のこともあります。"
+    : s === 404 ? "リポジトリが見つかりません。名前・ブランチと、トークンの対象リポジトリを確認してください。"
+    : (s === 409 || s === 422) ? "公開しようとしている間に、サイトのデータが他で更新されました。もう一度「サイトに公開する」を押してください（最新の内容を読み込み直します）。"
+    : "GitHub からエラーが返りました（" + s + "）。しばらくしてからもう一度お試しください。";
+  // サイトの公開データを読む。{ sha, text }（ファイルがまだ無いときは { sha: "", text: "" }）
+  async function ghGetFile(cfg) {
+    const sub = "/contents/" + LIVE_URL + "?ref=" + encodeURIComponent(cfg.branch);
+    const r = await ghReq(cfg, "GET", sub);
+    if (r.status === 404) {
+      const rr = await ghReq(cfg, "GET", "");                     // ファイルが無いだけか、リポジトリに届いていないのかを分ける
+      if (!rr.ok) throw new Error(ghErr(rr.status));
+      return { sha: "", text: "" };
+    }
+    if (!r.ok) throw new Error(ghErr(r.status));
+    const j = await r.json(); let text = "";
+    if (j && j.encoding === "base64" && typeof j.content === "string" && j.content) text = b64dec(j.content);
+    else { const r2 = await ghReq(cfg, "GET", sub, null, "application/vnd.github.raw+json"); if (!r2.ok) throw new Error(ghErr(r2.status)); text = await r2.text(); }
+    return { sha: String((j && j.sha) || ""), text };
+  }
+  const nextK = cid => Math.max(liveNext[cid] || 0, EMB_NEXT[cid] || 0, (COMBOS[cid] || []).reduce((m, r) => Math.max(m, r.k), 0) + 1, 1);
+  function packRow(c, k) {
+    const o = { k };
+    if (c.g) o.g = String(c.g); if (c.n) o.n = String(c.n); if (c.c) o.c = String(c.c);
+    if (c.d !== undefined && c.d !== null && String(c.d) !== "") o.d = c.d;
+    if (c.lv >= 1 && c.lv <= 5) o.lv = +c.lv;
+    if (Array.isArray(c.t) && c.t.length) o.t = c.t.map(String);
+    if (c.note) o.note = String(c.note);
+    if (typeof c.av === "string" && VER_RE.test(c.av)) o.av = c.av;
+    return o;
+  }
+  // 画面どおりの並び（分類の見出しの順 → その中は、コンボの並び順）
+  function packOrder(cid) {
+    const pos = new Map(groupOrder(cid).map((x, i) => [x, i])), rank = c => (pos.has(c.g || "その他") ? pos.get(c.g || "その他") : 1e9);
+    return combosOf(cid).map((c, i) => [c, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
+  }
+  function buildPack(rev) {
+    const combos = {}, next = {}, baked = {};
+    Object.keys(liveBaked).forEach(cid => { baked[cid] = Object.assign({}, liveBaked[cid]); });
+    allCids().forEach(cid => {
+      let nk = nextK(cid);
+      combos[cid] = packOrder(cid).map(c => {
+        if (!c.user) return packRow(c, +c.id);
+        const k = nk++; (baked[cid] = baked[cid] || {})[c.id] = k; return packRow(c, k);
+      });
+      next[cid] = nk;
+    });
+    return { format: LIVE_FORMAT, v: 1, rev, at: new Date().toISOString(), build: BUILD_ID, combos, next, baked };
+  }
+  // 1行1コンボで書く（GitHub の履歴で、どのコンボが変わったか見やすい）
+  function packText(p) {
+    const rows = Object.keys(p.combos).map(cid => "    " + JSON.stringify(cid) + ": [" + (p.combos[cid].length ? "\n" + p.combos[cid].map(r => "      " + JSON.stringify(r)).join(",\n") + "\n    " : "") + "]").join(",\n");
+    return "{\n  \"format\": " + JSON.stringify(p.format) + ",\n  \"v\": 1,\n  \"rev\": " + p.rev + ",\n  \"at\": " + JSON.stringify(p.at) + ",\n  \"build\": " + JSON.stringify(p.build) + ",\n  \"next\": " + JSON.stringify(p.next) + ",\n  \"baked\": " + JSON.stringify(p.baked) + ",\n  \"combos\": {\n" + rows + "\n  }\n}\n";
+  }
+  // いまの土台（付属データ or 公開データ）と比べた、追加・書き換え・削除の件数と、並びが変わるキャラ
+  function packDiff(next) {
+    const d = { add: 0, chg: 0, del: 0, ord: [] };
+    Object.keys(next).forEach(cid => {
+      const old = (COMBOS[cid] || []).map(r => packRow(r, r.k)), om = new Map(old.map(r => [r.k, r])), nm = new Map(next[cid].map(r => [r.k, r]));
+      next[cid].forEach(r => { const o = om.get(r.k); if (!o) d.add++; else if (JSON.stringify(o) !== JSON.stringify(r)) d.chg++; });
+      old.forEach(o => { if (!nm.has(o.k)) d.del++; });
+      const first = []; old.forEach(r => { const g = r.g || ""; if (!first.includes(g)) first.push(g); });
+      const grouped = old.map((r, i) => [r, i]).sort((a, b) => first.indexOf(a[0].g || "") - first.indexOf(b[0].g || "") || a[1] - b[1]).map(x => x[0].k);
+      const common = k => om.has(k) && nm.has(k);
+      if (JSON.stringify(grouped.filter(common)) !== JSON.stringify(next[cid].map(r => r.k).filter(common))) d.ord.push(cid);
+    });
+    return d;
+  }
+  // 公開できたあと：公開データを新しい土台にして、この端末の重ねを外す
+  function pubFold(p, text) {
+    liveApply(p); put(LIVE_KEY, text);
+    edits = {}; hiddenIds = {}; goneIds = {}; okOrders = {}; orders = {}; gorders = {}; okGorders = {}; grename = {}; okGren = {};
+    migrateBaked();                                  // 自作コンボを外し、そのメモを付属の k へ移す
+    saveAllStores(); sel.clear();
+  }
+  let pubBusy = false;
+  async function pubRun() {
+    if (pubBusy) return;
+    const pm = $("pubMsg"), msg = (t, err) => { pm.className = err ? "msg err" : "msg"; pm.textContent = t; };
+    const cfg = pubCfg();
+    if (!cfg.token) { msg("先に「公開の設定」でアクセストークンを保存してください。", true); $("pubSet").open = true; return; }
+    if (!PUB_REPO_RE.test(cfg.repo) || !PUB_BRANCH_RE.test(cfg.branch)) { msg("「公開の設定」のリポジトリ・ブランチを確認してください。", true); $("pubSet").open = true; return; }
+    pubBusy = true; $("pubGo").disabled = true;
+    try {
+      msg("サイトの公開データを確認しています…");
+      const cur = await ghGetFile(cfg);
+      let remote = null; if (cur.text) { try { remote = liveClean(JSON.parse(cur.text)); } catch (_) {} }
+      if (cur.text && !remote) throw new Error("サイトの " + LIVE_URL + " が読めない形です。中身を確認してください（上書きはしていません）。");
+      const adopted = remote ? liveAdopt(remote, cur.text) : false;          // 他の端末で新しく公開されていれば、先にそれを土台にする
+      const rev = Math.max(EMB_REV, liveRev, remote ? remote.rev : 0) + 1;
+      const built = buildPack(rev), df = packDiff(built.combos);
+      if (!(df.add + df.chg + df.del + df.ord.length)) {
+        if (adopted) { sel.clear(); liveRefresh(); refreshStore(); }
+        msg((adopted ? "他の端末で公開された最新の内容（第" + liveRev + "版）を読み込みました。" : "") + "公開するものはありません（サイトの公開データと同じ内容です）。", false); pubSync(); return;
+      }
+      const parts = [];
+      if (df.add) parts.push("追加 " + df.add + "件"); if (df.chg) parts.push("書き換え " + df.chg + "件"); if (df.del) parts.push("削除 " + df.del + "件");
+      if (df.ord.length) parts.push("並び順・分類の並びが変わるキャラ " + df.ord.length + "人（" + df.ord.map(c => (charOf(c) ? charOf(c).name : c)).join("・") + "）");
+      const ask = ["サイトに公開します（第" + rev + "版）。", parts.join("・"),
+        "公開すると、サイトを開いた全員のコンボ集が、1〜2分ほどでこの内容になります。",
+        "この端末の書き換え・削除・並び順・自作コンボは、公開データに取り込まれます（メモ・表示の設定はそのまま）。削除したコンボは公開データから消えます（GitHub の履歴からは元に戻せます）。"];
+      if (adopted) ask.splice(1, 0, "（他の端末で公開された第" + liveRev + "版を土台にしています）");
+      msg("");
+      if (!(await askConfirm(ask.join("\n"), "公開する"))) { msg("公開をやめました。"); return; }
+      msg("公開しています…");
+      const text = packText(built);
+      const body = { message: "コンボ集を更新（第" + rev + "版：" + parts.map(x => x.replace(/ /g, "")).join("・").replace(/並び順・分類の並びが変わるキャラ(\d+)人（[^）]*）/, "並び$1人") + "）", content: b64enc(text), branch: cfg.branch };
+      if (cur.sha) body.sha = cur.sha;
+      const r = await ghReq(cfg, "PUT", "/contents/" + LIVE_URL, body);
+      if (!r.ok) throw new Error(ghErr(r.status));
+      pubFold(liveClean(JSON.parse(text)), text);
+      dirty = true; if (shown) renderAll();
+      refreshStore(); uiSync(); pubSync();
+      msg("第" + rev + "版を公開しました。サイトに反映されるまで、1〜2分ほどかかります。");
+    } catch (e) { msg((e && e.message) || "公開できませんでした。", true); }
+    finally { pubBusy = false; $("pubGo").disabled = false; }
+  }
+  $("pubGo").onclick = pubRun;
+  $("ioBtn").onclick = () => { ioMsg.className = "msg"; ioMsg.textContent = ""; ioText.value = ""; $("svMsg").textContent = ""; $("pubMsg").textContent = ""; $("pubSetMsg").textContent = ""; refreshStore(); uiSync(); asSync(); pubSync(); openDlg(ioDlg); };
   $("ioClose").onclick = () => closeDlg(ioDlg);
   $("ioExport").onclick = () => {
     const code = ioExportCode();
@@ -16586,10 +16862,12 @@ input[type="checkbox"] { border-radius: 8px; }
 
   /* ---------- 外（技チェックシート側）とのやりとり ---------- */
   const gs = document.createElement("style"); gs.textContent = "html[data-cbdrag] { overflow-anchor: none; }"; document.head.appendChild(gs);
+  liveInit();                                // 前に取れた公開データがあれば、先にそれを土台にする
   load();
   buildPalette();
   applyIconBtns();
   asInit();
+  liveFetch();                               // サイトの最新の公開データを取りに行く（取れたら入れ替えて描き直す）
   // バージョンの一覧（アップデートのデータ UPDATES）は、この部品より後ろで宣言されるため、ページの読み込みが終わってから一覧を作り直す
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { verCache = null; verSig = ""; if (shown) renderAll(); else dirty = true; });
   window.CB = {
@@ -16614,6 +16892,8 @@ input[type="checkbox"] { border-radius: 8px; }
       dirty = true; if (shown) renderAll();
       return true;
     },
+    // いま使っている公開データ（デバッグ・テスト用）
+    live() { return { rev: liveRev, emb: EMB_REV, at: liveAt, next: liveNext }; },
     // キャラが変わったとき
     onChar() { if (current === lastCid) return; if (drag) dragFinish(false); view.g = ""; view.mv = null; view.past = false; view.ver = ""; collapsed.clear(); $("q").value = ""; hideToast(); if (selMode) setSelMode(false); dirty = true; if (shown) renderAll(); }
   };
@@ -18924,7 +19204,7 @@ html[data-theme="navy"] .ga-lb.land .ga-lb-rot { color: #1a1330; }
   const tab = document.getElementById("mnTab"), mn = document.getElementById("mn");
   if (!tab || !mn) return;
   const panel = document.getElementById("mnPanel");
-  const BUILD = "2026.10.27 14:20 (668848)";
+  const BUILD = "2026.10.27 22:57 (1fa7a5)";
   window.TEKKEN_BUILD = BUILD;
   if (BUILD) {
     document.documentElement.setAttribute("data-build", BUILD);
