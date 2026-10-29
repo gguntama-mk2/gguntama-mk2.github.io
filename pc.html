@@ -14669,7 +14669,7 @@ input[type="checkbox"] { border-radius: 8px; }
   const BASEFP_KEY = "tekken-combo-basefp-v1";    // 付属コンボ（いまの土台）1件ごとの中身の指紋 { キャラid: { k: 指紋 } }。新しいビルド・公開データで付属データ側が更新されたコンボを見つけるために、前に開いたときの内容を覚えておく
   const BAK_KEY = "tekken-combo-backups-v1";      // 控え（新しい順の一覧。最大 BAK_MAX 世代）[ { id, kind: "build"（付属データ側が更新されたため外した書き換え）| "restore"（控えから戻す前の内容）, from, to, at, layers: { 保存キー: 保存内容 } } ]
   const OKGREN_KEY = "tekken-combo-grenameok-v1"; // 「変更を確定」で確定した分類の名前の変更 { "キャラid": "対応(JSON)" }（これと同じ間は「分類の名前の変更を元に戻す」を出さない）
-  const BUILD_ID = "1b98c2";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
+  const BUILD_ID = "aa6fa8";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
   // 付属データへ組み込んだ自作コンボの対応 { キャラid: { 自作のid: 付属のk } }（combos_data.js の COMBOS_BAKED。無ければ空）。ブラウザに残っている同じ自作コンボは、開いたときに外す（メモは付属のkへ移す）
   const BAKED0 = (typeof COMBOS_BAKED !== "undefined" && COMBOS_BAKED && typeof COMBOS_BAKED === "object") ? COMBOS_BAKED : {};
   const BAKED = {};      // 付属データの COMBOS_BAKED ＋ 公開データの baked（公開データを読み込むたびに作り直す）
@@ -19621,7 +19621,7 @@ html[data-theme="navy"] .ga-lb.land .ga-lb-rot { color: #1a1330; }
   const tab = document.getElementById("mnTab"), mn = document.getElementById("mn");
   if (!tab || !mn) return;
   const panel = document.getElementById("mnPanel");
-  const BUILD = "2026.10.30 06:08 (1b98c2)";
+  const BUILD = "2026.10.30 06:23 (aa6fa8)";
   window.TEKKEN_BUILD = BUILD;
   if (BUILD) {
     document.documentElement.setAttribute("data-build", BUILD);
@@ -20039,9 +20039,13 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     ids=ids.filter(Boolean);if(!ids.length)return;
     const msg=ids.length===1?'この対戦履歴を削除しますか？':'選択した '+ids.length+' 件の対戦履歴を削除しますか？';
     if(!confirm(msg+'\n\nPROJECT T に残っている記録だけを消します。YouTube の動画は消えません。'))return;
-    const base=apiBase();const me=window.__PROJECT_T_ME||{};
+    const base=apiBase();
     try{
-      const res=await fetch(base+'/api/v1/matches/delete',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':me.csrf_token||''},body:JSON.stringify({ids})});
+      // 削除には、なりすまし防止の合言葉（CSRF）が要る。ログインページを開いていなくても、ここで受け取る
+      const csrf=async fresh=>{const me=window.__PROJECT_T_ME;if(!fresh&&me&&me.csrf_token)return me.csrf_token;const r=await fetch(base+'/api/v1/me',{credentials:'include',headers:{'Accept':'application/json'}});if(!r.ok)throw new Error(r.status===401?'ログインしていません':'HTTP '+r.status);const j=await r.json();window.__PROJECT_T_ME=j;return j.csrf_token||''};
+      const send=async tok=>fetch(base+'/api/v1/matches/delete',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':tok},body:JSON.stringify({ids})});
+      let res=await send(await csrf(false));
+      if(res.status===403) res=await send(await csrf(true));  // 合言葉の期限切れ（2時間）なら、取り直してもう一度
       if(!res.ok)throw new Error('HTTP '+res.status);
       const gone=new Set(ids);ids.forEach(id=>checked.delete(id));
       if(selected&&gone.has(selected.id))select(null);
