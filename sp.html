@@ -14511,7 +14511,7 @@ input[type="checkbox"] { border-radius: 8px; }
   const BASEFP_KEY = "tekken-combo-basefp-v1";    // 付属コンボ（いまの土台）1件ごとの中身の指紋 { キャラid: { k: 指紋 } }。新しいビルド・公開データで付属データ側が更新されたコンボを見つけるために、前に開いたときの内容を覚えておく
   const BAK_KEY = "tekken-combo-backups-v1";      // 控え（新しい順の一覧。最大 BAK_MAX 世代）[ { id, kind: "build"（付属データ側が更新されたため外した書き換え）| "restore"（控えから戻す前の内容）, from, to, at, layers: { 保存キー: 保存内容 } } ]
   const OKGREN_KEY = "tekken-combo-grenameok-v1"; // 「変更を確定」で確定した分類の名前の変更 { "キャラid": "対応(JSON)" }（これと同じ間は「分類の名前の変更を元に戻す」を出さない）
-  const BUILD_ID = "cd36c6";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
+  const BUILD_ID = "32366a";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
   // 付属データへ組み込んだ自作コンボの対応 { キャラid: { 自作のid: 付属のk } }（combos_data.js の COMBOS_BAKED。無ければ空）。ブラウザに残っている同じ自作コンボは、開いたときに外す（メモは付属のkへ移す）
   const BAKED0 = (typeof COMBOS_BAKED !== "undefined" && COMBOS_BAKED && typeof COMBOS_BAKED === "object") ? COMBOS_BAKED : {};
   const BAKED = {};      // 付属データの COMBOS_BAKED ＋ 公開データの baked（公開データを読み込むたびに作り直す）
@@ -19468,7 +19468,7 @@ html[data-theme="navy"] .ga-lb.land .ga-lb-rot { color: #1a1330; }
   const tab = document.getElementById("mnTab"), mn = document.getElementById("mn");
   if (!tab || !mn) return;
   const panel = document.getElementById("mnPanel");
-  const BUILD = "2026.10.29 17:01 (cd36c6)";
+  const BUILD = "2026.10.30 03:03 (32366a)";
   window.TEKKEN_BUILD = BUILD;
   if (BUILD) {
     document.documentElement.setAttribute("data-build", BUILD);
@@ -19629,6 +19629,8 @@ header.top .top-row { padding-right: calc(var(--mn-tab) - 4px); }
   const $ = id => root.getElementById(id);
   root.querySelectorAll("img[data-ic]").forEach(i=>{i.src=ICON[i.dataset.ic]});root.getElementById("lg-ptmark").src=ICON.pt;
   const siteLoginUrl = location.href.split('#')[0] + '#login';
+  // ログイン状態が分かったら、VS ページなどに知らせる（自分の対戦履歴を読み込み直すため）
+  function authChanged(){try{window.dispatchEvent(new Event('projectt:auth-changed'))}catch(_){}}
   function apiBase(){
     const explicit = typeof window.PROJECT_T_AUTH_API_BASE === 'string' ? window.PROJECT_T_AUTH_API_BASE.trim() : '';
     if (explicit) return explicit.replace(/\/$/,'');
@@ -19681,13 +19683,13 @@ header.top .top-row { padding-right: calc(var(--mn-tab) - 4px); }
     try{
       setError(''); const res=await fetch(base+'/api/v1/me',{credentials:'include',headers:{'Accept':'application/json'}});
       if(res.status===401){
-        window.__PROJECT_T_ME=null; $('lg-status').classList.remove('ok'); $('lg-status').querySelector('span').textContent='未ログイン'; $('lg-title').textContent='PROJECT Tへログイン'; $('lg-login-actions').hidden=false; $('lg-session-actions').hidden=true; $('lg-user-facts').hidden=true; $('lg-del-box').hidden=true;
+        window.__PROJECT_T_ME=null; authChanged(); $('lg-status').classList.remove('ok'); $('lg-status').querySelector('span').textContent='未ログイン'; $('lg-title').textContent='PROJECT Tへログイン'; $('lg-login-actions').hidden=false; $('lg-session-actions').hidden=true; $('lg-user-facts').hidden=true; $('lg-del-box').hidden=true;
         if(linkErr) setError(linkErr);
         linkState('discord',null,false);linkState('google',null,false);$('youtube-connect').hidden=true;$('youtube-disconnect').hidden=true;$('youtube-info').textContent='PROJECT Tログイン後に連携できます';$('link-count').querySelector('span').textContent='0 connected';return;
       }
       if(!res.ok) throw new Error('認証API: HTTP '+res.status);
       if(linkErr) setError(linkErr);
-      const me=await res.json(); window.__PROJECT_T_ME=me; const links=me.links||{};
+      const me=await res.json(); window.__PROJECT_T_ME=me; authChanged(); const links=me.links||{};
       $('lg-status').classList.add('ok'); $('lg-status').querySelector('span').textContent='ログイン中'; $('lg-title').textContent=(me.display_name||'PROJECT T User')+' としてログイン中'; $('lg-login-actions').hidden=true; $('lg-session-actions').hidden=false; $('lg-user-facts').hidden=false;
       $('lg-project-id').textContent=me.project_t_id||'—'; $('lg-display-name').textContent=me.display_name||'—'; $('lg-session').textContent='Active'; $('lg-email').textContent=me.primary_email||'未設定'; $('lg-devices').textContent=String(me.device_count||0)+' device(s)';
       linkState('discord',links.discord,true); linkState('google',links.google,true);
@@ -19852,7 +19854,7 @@ tbody tr:hover td { background:color-mix(in srgb,var(--accent) 6%,var(--panel));
   const enableControls=on=>controlIds.forEach(id=>{const e=$(id);if(e)e.disabled=!on});
   function stats(){const n=matches.length,w=matches.filter(m=>String(m.result).toLowerCase()==='win').length,l=matches.filter(m=>String(m.result).toLowerCase()==='loss').length;$('matches').textContent=n;$('wins').textContent=w;$('losses').textContent=l;$('rate').textContent=n?Math.round(w/n*100)+'%':'—'}
   function apply(){const q=$('q').value.trim().toLowerCase();filtered=matches.filter(m=>(!q||String(m.opponentName||'').toLowerCase().includes(q))&&(!resultFilter||String(m.result||'').toLowerCase()===resultFilter)&&(!videoFilter||(videoFilter==='yes'?!!m.youtubeVideoId:!m.youtubeVideoId)));render()}
-  function render(){ $('count').textContent=filtered.length+' matches'; $('stat').innerHTML='<b>'+filtered.length+'</b>試合を表示'+(filtered.length===matches.length?'':'（全'+matches.length+'試合）'); const body=$('body'); if(!filtered.length){body.innerHTML='<tr><td colspan="8"><div class="empty"><b>対戦履歴はまだありません</b><br>録画・解析された試合がここに表示されます。</div></td></tr>';return;} body.innerHTML=filtered.map((m,i)=>{const r=String(m.result||'').toLowerCase();return '<tr><td>'+esc(date(m.startedAt||m.date))+'</td><td><span class="result '+esc(r)+'">'+(r==='win'?'WIN':r==='loss'?'LOSE':'—')+'</span></td><td>'+esc((m.playerCharacter||'—')+' vs '+(m.opponentCharacter||'—'))+'</td><td>'+esc((m.playerRoundsWon??'—')+' - '+(m.opponentRoundsWon??'—'))+'</td><td>'+esc(m.opponentName||'—')+'</td><td>'+esc(num(m.opponentTekkenPower))+'</td><td>'+esc(modeName(m.mode))+'</td><td><button class="btn" data-open="'+i+'">'+(m.youtubeVideoId?'再生':'詳細')+'</button></td></tr>'}).join('') }
+  function render(){ $('count').textContent=filtered.length+' matches'; $('stat').innerHTML='<b>'+filtered.length+'</b>試合を表示'+(filtered.length===matches.length?'':'（全'+matches.length+'試合）'); const body=$('body'); if(!filtered.length){body.innerHTML='<tr><td colspan="8"><div class="empty">'+(emptyMsg==='login'?'<b>ログインすると、自分の対戦と動画が表示されます</b><br><a href="#login" style="color:inherit">ログインページへ</a>':emptyMsg==='error'?'<b>対戦履歴を読み込めませんでした</b><br>時間をおいて、もう一度開いてください。':'<b>対戦履歴はまだありません</b><br>PROJECT T Recorder で録画して YouTube に投稿した試合が、ここに表示されます。')+'</div></td></tr>';return;} body.innerHTML=filtered.map((m,i)=>{const r=String(m.result||'').toLowerCase();return '<tr><td>'+esc(date(m.startedAt||m.date))+'</td><td><span class="result '+esc(r)+'">'+(r==='win'?'WIN':r==='loss'?'LOSE':'—')+'</span></td><td>'+esc((m.playerCharacter||'—')+' vs '+(m.opponentCharacter||'—'))+'</td><td>'+esc((m.playerRoundsWon??'—')+' - '+(m.opponentRoundsWon??'—'))+'</td><td>'+esc(m.opponentName||'—')+'</td><td>'+esc(num(m.opponentTekkenPower))+'</td><td>'+esc(modeName(m.mode))+'</td><td><button class="btn" data-open="'+i+'">'+(m.youtubeVideoId?'再生':'詳細')+'</button></td></tr>'}).join('') }
   function setMeta(m){const set=(k,v)=>{const e=root.querySelector('[data-meta="'+k+'"]');if(e)e.textContent=v};set('opponent',m?.opponentName||'—');const r=String(m?.result||'').toLowerCase();set('result',r==='win'?'WIN':r==='loss'?'LOSE':'—');set('chars',m?((m.playerCharacter||'—')+' vs '+(m.opponentCharacter||'—')):'—');set('rounds',m?((m.playerRoundsWon??'—')+' - '+(m.opponentRoundsWon??'—')):'—');set('ppower',num(m?.playerTekkenPower));set('opower',num(m?.opponentTekkenPower));set('mode',modeName(m?.mode));set('date',date(m?.startedAt||m?.date));set('title',m?.videoTitle||m?.title||'—');set('duration',duration(m?.durationMs??m?.durationSeconds));$('content').textContent=m?.videoSummary||m?.notes||'動画内容・メモはありません。'}
   function rounds(m){const rs=Array.isArray(m?.rounds)?m.rounds:[];$('rounds').innerHTML='<span class="lbl">ラウンド</span>'+(rs.length?rs.map((r,i)=>{const sec=Number(r.startSeconds??((r.startedVideoMs??0)/1000));return '<button type="button" class="btn" data-seek="'+sec+'">R'+esc(r.roundNumber||i+1)+' '+esc(time(sec))+'</button>'}).join(''):'<span class="stat">ラウンドマーカーはありません。</span>')}
   function loadYT(id){if(!id){$('video-state').textContent='NO VIDEO';$('ph').hidden=false;enableControls(false);return}$('video-state').textContent='YOUTUBE';$('ph').hidden=true;const create=()=>{if(player&&player.loadVideoById){player.loadVideoById(id);enableControls(true);return;}player=new YT.Player(root.getElementById('vs-player'),{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1},events:{onReady:()=>{enableControls(true);startClock()},onStateChange:e=>{$('play').textContent=e.data===YT.PlayerState.PLAYING?'一時停止':'再生'}}})};if(window.YT&&YT.Player){create();return}window.__ptVSYTReady=(window.__ptVSYTReady||[]);window.__ptVSYTReady.push(create);if(!window.__ptVSYTInstalled){window.__ptVSYTInstalled=true;const old=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=function(){if(typeof old==='function')try{old()}catch(_e){}const q=window.__ptVSYTReady||[];window.__ptVSYTReady=[];q.forEach(fn=>{try{fn()}catch(_e){}})};const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';sc.async=true;document.head.appendChild(sc)}}
@@ -19864,7 +19866,33 @@ tbody tr:hover td { background:color-mix(in srgb,var(--accent) 6%,var(--panel));
   root.addEventListener('click',e=>{const r=e.target.closest('[data-result]');if(r){resultFilter=r.dataset.result;root.querySelectorAll('[data-result]').forEach(b=>b.setAttribute('aria-pressed',String(b===r)));apply();return}const v=e.target.closest('[data-video]');if(v){videoFilter=v.dataset.video;root.querySelectorAll('[data-video]').forEach(b=>b.setAttribute('aria-pressed',String(b===v)));apply();return}const o=e.target.closest('[data-open]');if(o){select(filtered[+o.dataset.open]);return}const j=e.target.closest('[data-seek]');if(j&&player?.seekTo)player.seekTo(+j.dataset.seek||0,true)});
   $('b5').addEventListener('click',()=>seek(-5)); $('b1').addEventListener('click',()=>seek(-1)); $('f1').addEventListener('click',()=>seek(1)); $('f5').addEventListener('click',()=>seek(5)); $('bf').addEventListener('click',()=>seek(-1/+$('fps').value)); $('ff').addEventListener('click',()=>seek(1/+$('fps').value)); $('play').addEventListener('click',play);
   function setMatches(data){matches=Array.isArray(data)?data.slice():[];stats();apply();if(!matches.length)select(null)}
-  window.VS={show(){apply()},hide(){},setMatches,loadMatch:select,getMatches:()=>matches.slice()};
+  // ログイン中の人の対戦履歴を、PROJECT T のサーバーから読み込む（Recorder で録画・投稿した試合）
+  let emptyMsg='', loadedAt=0, loading=false;
+  function apiBase(){
+    const explicit=typeof window.PROJECT_T_AUTH_API_BASE==='string'?window.PROJECT_T_AUTH_API_BASE.trim():'';
+    if(explicit) return explicit.replace(/\/$/,'');
+    try{const saved=localStorage.getItem('project-t-auth-api-base');if(saved)return saved.replace(/\/$/,'')}catch(_){}
+    if(location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.protocol==='file:') return 'http://localhost:8000';
+    return '';
+  }
+  const fromApi=m=>({id:m.id,opponentName:m.opponent_name,result:m.result,playerCharacter:m.player_character,opponentCharacter:m.opponent_character,playerRoundsWon:m.player_rounds_won,opponentRoundsWon:m.opponent_rounds_won,playerTekkenPower:m.player_tekken_power,opponentTekkenPower:m.opponent_tekken_power,mode:m.mode,startedAt:m.started_at,youtubeVideoId:m.youtube_video_id,youtubeUrl:m.youtube_url,videoTitle:m.video_title});
+  async function loadMine(force){
+    const base=apiBase(); if(!base||loading) return;
+    if(!force&&Date.now()-loadedAt<30000) return;
+    loading=true;
+    try{
+      const res=await fetch(base+'/api/v1/me/matches?limit=100',{credentials:'include',headers:{'Accept':'application/json'}});
+      if(res.status===401){emptyMsg='login';setMatches([]);return}
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data=await res.json(); emptyMsg='';
+      loadedAt=Date.now();
+      setMatches((data.matches||[]).map(fromApi));
+      if(matches.length&&!selected) select(matches.find(m=>m.youtubeVideoId)||matches[0]);
+    }catch(e){emptyMsg='error';setMatches([])}
+    finally{loading=false}
+  }
+  window.addEventListener('projectt:auth-changed',()=>{loadedAt=0;if(document.documentElement.getAttribute('data-page')==='vs')loadMine(true)});
+  window.VS={show(){apply();loadMine(false)},hide(){},reload(){return loadMine(true)},setMatches,loadMatch:select,getMatches:()=>matches.slice()};
   window.ProjectTVS=window.VS;
   setMatches([]);
 })();
