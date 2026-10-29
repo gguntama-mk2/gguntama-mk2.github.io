@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
-<script>window.PROJECT_T_AUTH_API_BASE = "";  /* ← 認証API（Discord/Google/YouTubeログイン）を公開したら、そのHTTPSのURLをここに入れる */</script>
+<script>window.PROJECT_T_AUTH_API_BASE = "https://api.project-t-god.com";  /* ← 認証API（Discord/Google/YouTubeログイン）を公開したら、そのHTTPSのURLをここに入れる */</script>
 <script>(function(){var t="gold";try{var s=localStorage.getItem("tekken-checksheet-theme");if(/^(navy|heat|gold|steel|jade|dojo)$/.test(s))t=s}catch(e){}document.documentElement.setAttribute("data-theme",t);var h=location.hash;if(/^#(login|combo|glossary|punish|update|stage|gallery|vs|privacy|home)$/.test(h))document.documentElement.setAttribute("data-page",h.slice(1));else if(h!=="#sheet")document.documentElement.setAttribute("data-page","home")})()</script>
 <meta name="theme-color" content="#0d0d10">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14507,7 +14507,7 @@ input[type="checkbox"] { border-radius: 8px; }
   const BASEFP_KEY = "tekken-combo-basefp-v1";    // 付属コンボ（いまの土台）1件ごとの中身の指紋 { キャラid: { k: 指紋 } }。新しいビルド・公開データで付属データ側が更新されたコンボを見つけるために、前に開いたときの内容を覚えておく
   const BAK_KEY = "tekken-combo-backups-v1";      // 控え（新しい順の一覧。最大 BAK_MAX 世代）[ { id, kind: "build"（付属データ側が更新されたため外した書き換え）| "restore"（控えから戻す前の内容）, from, to, at, layers: { 保存キー: 保存内容 } } ]
   const OKGREN_KEY = "tekken-combo-grenameok-v1"; // 「変更を確定」で確定した分類の名前の変更 { "キャラid": "対応(JSON)" }（これと同じ間は「分類の名前の変更を元に戻す」を出さない）
-  const BUILD_ID = "2412cf";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
+  const BUILD_ID = "6086cd";            // このビルドの記号（6文字。組み立てるとき cbparts.py が入れる。空のときは、新しいビルドでの更新をしない）
   // 付属データへ組み込んだ自作コンボの対応 { キャラid: { 自作のid: 付属のk } }（combos_data.js の COMBOS_BAKED。無ければ空）。ブラウザに残っている同じ自作コンボは、開いたときに外す（メモは付属のkへ移す）
   const BAKED0 = (typeof COMBOS_BAKED !== "undefined" && COMBOS_BAKED && typeof COMBOS_BAKED === "object") ? COMBOS_BAKED : {};
   const BAKED = {};      // 付属データの COMBOS_BAKED ＋ 公開データの baked（公開データを読み込むたびに作り直す）
@@ -19464,7 +19464,7 @@ html[data-theme="navy"] .ga-lb.land .ga-lb-rot { color: #1a1330; }
   const tab = document.getElementById("mnTab"), mn = document.getElementById("mn");
   if (!tab || !mn) return;
   const panel = document.getElementById("mnPanel");
-  const BUILD = "2026.10.29 06:08 (2412cf)";
+  const BUILD = "2026.10.29 11:18 (6086cd)";
   window.TEKKEN_BUILD = BUILD;
   if (BUILD) {
     document.documentElement.setAttribute("data-build", BUILD);
