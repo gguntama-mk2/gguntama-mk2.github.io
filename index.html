@@ -35,14 +35,14 @@
   <small>読み込みに時間がかかる場合があります（初回のみ、約50MB）。チェックやメモはこの端末のブラウザに保存されます。</small>
 </main>
 <script>
-  // スマホは自動でスマホ版へ。「?choose」を付けると、振り分けずにこの画面を表示する
+  // スマホは自動でスマホ版へ、パソコンはパソコン版へ。「?choose」を付けると、振り分けずにこの画面を表示する
   (function () {
     try {
       if (/(^|[?&])choose(=|&|$)/.test(location.search)) return;
       var ua = navigator.userAgent || "";
       var phone = /iPhone|iPod|Android.+Mobile/.test(ua) ||
         (window.matchMedia && matchMedia("(pointer:coarse)").matches && Math.min(screen.width, screen.height) <= 600);
-      location.replace(phone ? "sp.html" : "pc.html");
+      location.replace((phone ? "sp.html" : "pc.html") + location.hash);   // 「#vs」などのページの指定は、振り分けたあとも引き継ぐ
     } catch (e) { /* 振り分けできなければ、この画面のまま */ }
   })();
 </script>
