@@ -20383,6 +20383,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     wavu: m.wavu && typeof m.wavu === 'object' ? m.wavu : null
   });
   const isVerified = m => !!(m.wavu && m.wavu.status === 'matched');
+  const isOnly = m => !!(m.wavu && m.wavu.only === true);   // 動画のない、VSデータだけの履歴（id は wv-<番号>）
   const wv = (m, k) => m.wavu && m.wavu[k] != null ? m.wavu[k] : null;
   // サーバーが古くて「お気に入り・メモ」を持っていないときの予備：このブラウザの中だけに残す
   const LS_KEY = 'project-t-vs-state';
@@ -20401,7 +20402,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     return [m.opponentName, m.playerCharacter, m.opponentCharacter, charName(m.playerCharacter), charName(m.opponentCharacter), m.playerRank, m.opponentRank, rankNum(m.playerRank), rankNum(m.opponentRank),
       m.playerTekkenPower, m.opponentTekkenPower, num(m.playerTekkenPower), num(m.opponentTekkenPower), m.mode, modeName(m.mode), r, resultLabel(m), r === 'win' ? '勝ち 勝利' : r === 'loss' ? 'LOSE 負け 敗北' : r === 'draw' ? '引き分け' : '',
       (m.playerRoundsWon ?? '') + '-' + (m.opponentRoundsWon ?? ''), date(m.startedAt || m.date), m.videoTitle, wv(m, 'stage_name'), wv(m, 'game_version'), wv(m, 'rating_before'), wv(m, 'battle_id'), m.memo,
-      isVerified(m) ? 'VSデータ確認済み' : 'Recorder記録'].filter(v => v != null && v !== '').join(' ').toLowerCase();
+      isOnly(m) ? 'VSデータのみ VSデータ確認済み' : isVerified(m) ? 'VSデータ確認済み' : 'Recorder記録'].filter(v => v != null && v !== '').join(' ').toLowerCase();
   }
   const ratingAfter = m => { const b = wv(m, 'rating_before'), c = wv(m, 'rating_change'); return b == null ? null : b + (c || 0) };
   function compute() {
@@ -20499,7 +20500,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
           '<td class="c-kv" data-l="ラウンド">' + esc(roundsText(m)) + '</td><td class="c-kv" data-l="対戦相手">' + esc(m.opponentName || '—') + '</td>' +
           '<td class="c-kv" data-l="TEKKEN POWER（自分 / 相手）"><b>' + esc(num(m.playerTekkenPower)) + '</b> / ' + esc(num(m.opponentTekkenPower)) + '</td>' +
           '<td class="c-kv" data-l="モード">' + esc(modeName(m.mode)) + '</td><td class="c-kv" data-l="動画時間">' + esc(durText(m)) + '</td>' +
-          '<td class="c-play"><button type="button" class="btn" data-open="' + id + '">' + (m.youtubeVideoId ? '再生' : '詳細') + '</button><div>' + (isVerified(m) ? '<span class="sourceTag verified">VSデータ確認済み</span>' : '<span class="sourceTag">Recorder記録</span>') + '</div></td>' +
+          '<td class="c-play"><button type="button" class="btn" data-open="' + id + '">' + (m.youtubeVideoId ? '再生' : '詳細') + '</button><div>' + (isOnly(m) ? '<span class="sourceTag verified">VSデータのみ</span>' : isVerified(m) ? '<span class="sourceTag verified">VSデータ確認済み</span>' : '<span class="sourceTag">Recorder記録</span>') + '</div></td>' +
           '<td class="c-fav"><button type="button" class="favbtn' + (fav ? ' on' : '') + '" data-fav="' + id + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'お気に入りを解除' : 'お気に入りに追加') + '" title="' + (fav ? 'お気に入りを解除' : 'お気に入りに追加') + '">' + (fav ? '♥' : '♡') + '</button></td>' +
           '<td class="c-del"><button type="button" class="btn danger" data-del="' + id + '" aria-label="この履歴を削除">削除</button></td></tr>';
       }).join('');
@@ -20642,7 +20643,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
   async function removeMatches(ids) {
     ids = ids.filter(Boolean); if (!ids.length) return;
     const msg = ids.length === 1 ? 'この対戦履歴を削除しますか？' : '選択した ' + ids.length + ' 件の対戦履歴を削除しますか？';
-    if (!confirm(msg + '\n\nPROJECT T に残っている記録だけを消します。YouTube の動画は消えません。')) return;
+    if (!confirm(msg + '\n\nPROJECT T に残っている記録だけを消します。YouTube の動画は消えません。\n公開対戦データ（VSデータ）にある対戦も、削除すると再表示されません。')) return;
     try {
       await apiPost('/api/v1/matches/delete', { ids });
       const gone = new Set(ids); ids.forEach(id => checked.delete(id));
@@ -20744,9 +20745,9 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
       let list = (data.matches || []).map(apiMatch); totalOnServer = Number(data.total) || list.length;
       setMatches(applyLocalState(list));
       let guard = 0;
-      while (list.length < totalOnServer && list.length < 5000 && guard++ < 20) {
+      while (list.length < totalOnServer && list.length < 20000 && guard++ < 50) {
         res = await get(list.length); if (!res.ok) break; data = await res.json(); const next = (data.matches || []).map(apiMatch); if (!next.length) break;
-        list = list.concat(next); setMatches(applyLocalState(list));
+        const seen = new Set(list.map(m => m.id)); list = list.concat(next.filter(m => !seen.has(m.id))); setMatches(applyLocalState(list));
       }
       totalOnServer = 0; render();
     } catch (e) { emptyMsg = 'error'; totalOnServer = 0; setMatches([]) }
