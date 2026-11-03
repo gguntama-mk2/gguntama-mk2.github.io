@@ -20215,9 +20215,9 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
 .history-pagination .page-info { margin-left:5px; color:var(--sub); font-size:.68rem; white-space:nowrap; }
 
 /* --- 右から出る「対戦内容」（動画・詳細・メモ）。時計と MENU（画面の上に固定）の下から画面いっぱいに出す --- */
-#vs-side { position:fixed; z-index:30; top:calc(var(--pt-top-h,78px) + 6px); right:12px; bottom:12px; left:12px; display:grid; grid-template-columns:minmax(0,2fr) minmax(340px,1fr); grid-template-rows:auto minmax(0,1fr); gap:10px; overflow:hidden; padding:0; transform:translateX(calc(100% + 28px)); opacity:0; visibility:hidden; pointer-events:none; transition:transform .28s cubic-bezier(.22,.72,.28,1),opacity .2s ease,visibility .28s; filter:drop-shadow(-16px 18px 28px rgba(0,0,0,.52)); }
+#vs-side { position:fixed; z-index:30; top:calc(var(--pt-top-h,78px) + 6px); right:12px; bottom:12px; left:12px; display:grid; grid-template-columns:minmax(0,2fr) minmax(340px,1fr); grid-template-rows:auto minmax(0,1fr); gap:10px; overflow:hidden; padding:0; transform:translateX(calc(100% + 28px)); opacity:0; visibility:hidden; pointer-events:none; transition:transform .28s cubic-bezier(.22,.72,.28,1),opacity .2s ease,visibility .28s; background:rgba(0,0,0,.45); box-shadow:-16px 18px 56px rgba(0,0,0,.52); }
 #vs-side.vs-side-open { transform:none; opacity:1; visibility:visible; pointer-events:auto; }
-#vs-side.lbopen { z-index:2000; filter:none; overflow:visible; }
+#vs-side.lbopen { z-index:2000; background:none; box-shadow:none; overflow:visible; }
 .vs-side-head { grid-column:1/-1; grid-row:1; position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; min-height:64px; margin:0; padding:6px 10px 6px 12px; border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line)); border-radius:12px; background:color-mix(in srgb,var(--panel) 94%,black); box-shadow:0 6px 18px rgba(0,0,0,.28); }
 .vs-side-head-left { display:flex; align-items:center; gap:9px; min-width:0; }
 .vs-side-mark { flex:none; width:8px; height:24px; border-radius:99px; background:var(--accent); box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent); }
@@ -20323,7 +20323,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
   .charpop { width:calc(100vw - 28px); }
   .chargrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .charopt .chartxt { font-size:.76rem; }
-  #vs-side { top:72px; right:0; bottom:0; left:0; padding:0 7px 8px; }
+  #vs-side { top:72px; right:0; bottom:0; left:0; padding:0 7px 8px; background-clip:content-box; box-shadow:inset 7px 0 0 rgba(0,0,0,.33), inset -7px 0 0 rgba(0,0,0,.13), inset 0 -8px 0 rgba(0,0,0,.40); }
   .vs-side-close { width:52px; height:52px; flex-basis:52px; font-size:30px; }
   .history-pagination { gap:4px; padding:6px 2px; }
   .history-pagination .page-btn { min-width:31px; height:31px; padding:0 8px; font-size:.72rem; }
