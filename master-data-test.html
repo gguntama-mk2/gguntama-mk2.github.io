@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>PROJECT T Master Data Test</title>
+<style>
+  :root{color-scheme:dark} body{margin:0;background:#0d0f12;color:#eef1f5;font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:1180px;margin:auto;padding:28px}.card{background:#15191f;border:1px solid #2b323c;border-radius:12px;padding:18px;margin:0 0 18px}
+  h1,h2{margin:0 0 12px} code{background:#0b0d10;padding:2px 6px;border-radius:5px}.ok{color:#88e0a4}.warn{color:#ffd37a}.bad{color:#ff8b8b}
+  button,input,select{font:inherit;background:#20262e;color:#fff;border:1px solid #46515e;border-radius:7px;padding:8px 10px}button{cursor:pointer}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .item{border:1px solid #303946;border-radius:8px;padding:10px;background:#101319}.muted{color:#9ca7b4}pre{overflow:auto;background:#090b0e;padding:12px;border-radius:8px}
+  table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #303946;padding:8px;text-align:left}th{position:sticky;top:0;background:#15191f}
+</style>
+</head>
+<body><main>
+  <div class="card">
+    <h1>PROJECT T — Master Data Phase ①〜⑥ テスト</h1>
+    <p>本番 <code>3ae037c</code> / Server <code>d018805</code> を基準にした隔離テストです。本番へは反映しません。</p>
+    <div class="row"><label>Test API <input id="api" size="42"></label><button id="connect">接続</button><span id="status" class="muted">未接続</span></div>
+  </div>
+
+  <div class="card"><h2>実装範囲</h2><div class="grid" id="phases"></div></div>
+
+  <div class="card">
+    <h2>Master Data</h2>
+    <div id="counts" class="muted">—</div>
+    <div class="row" style="margin-top:10px"><select id="character"></select><button id="moves">技データ構造を表示</button></div>
+    <div id="moveBox"></div>
+  </div>
+
+  <div class="card">
+    <h2>VS ID参照テスト</h2>
+    <p class="muted">従来の表示文字列は保持し、stable IDを追加します。</p>
+    <div class="row">
+      <select id="pchar"></select><select id="ochar"></select><select id="prank"></select><select id="orank"></select>
+      <button id="resolve">ID変換</button>
+    </div>
+    <pre id="vsout">—</pre>
+  </div>
+</main>
+<script src="project-t-master-adapter.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $=function(s){return document.querySelector(s)};
+  var phases=[
+    ["① IDベース化","stable character/rank/stage ID。既存表示文字列は残す。"],
+    ["② マスターテーブル","characters / ranks / stages / moves / localization_strings。"],
+    ["③ Base/Patch Resolver","Base → *_0_P の後勝ちマージを決定的に実装。"],
+    ["④ Localization Resolver","GTB_Movelist → GTB_Upd_* の順序付き上書きに対応。"],
+    ["⑤ VS ID参照","文字列互換を残したまま stable ID を併記。"],
+    ["⑥ 技ページ自動生成対応","解析済みmove APIから表を描画。未抽出値は空欄のまま。"]
+  ];
+  phases.forEach(function(p){var d=document.createElement("div");d.className="item";var b=document.createElement("b");b.textContent=p[0];var x=document.createElement("div");x.className="muted";x.textContent=p[1];d.append(b,x);$("#phases").appendChild(d)});
+  $("#api").value=PTMaster.state.api;
+  function option(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;return o}
+  function fillSelect(sel,rows,label){sel.replaceChildren();rows.forEach(function(r){sel.appendChild(option(r.id,label(r)))})}
+  async function connect(){
+    PTMaster.setApi($("#api").value);$("#status").textContent="接続中…";$("#status").className="muted";
+    try{
+      await PTMaster.load();
+      var meta=await fetch(PTMaster.state.api+"/api/v1/master/meta").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()});
+      $("#status").textContent="接続済み / "+meta.snapshot_key;$("#status").className="ok";
+      $("#counts").textContent="Characters: "+PTMaster.state.characters.length+" / Ranks: "+PTMaster.state.ranks.length+" / Stages known: "+PTMaster.state.stages.length+" / TEKKEN build: "+meta.tekken_data_build;
+      fillSelect($("#character"),PTMaster.state.characters,function(r){return r.display_name+" ["+r.id+"]"});
+      fillSelect($("#pchar"),PTMaster.state.characters,function(r){return r.display_name});
+      fillSelect($("#ochar"),PTMaster.state.characters,function(r){return r.display_name});
+      fillSelect($("#prank"),PTMaster.state.ranks,function(r){return r.name_ja});
+      fillSelect($("#orank"),PTMaster.state.ranks,function(r){return r.name_ja});
+    }catch(e){$("#status").textContent="接続失敗: "+e.message;$("#status").className="bad"}
+  }
+  $("#connect").onclick=connect;
+  $("#moves").onclick=function(){PTMaster.renderMoves($("#character").value,$("#moveBox"),"ja").catch(function(e){$("#moveBox").textContent=e.message})};
+  $("#resolve").onclick=function(){
+    var pc=PTMaster.state.characters.find(function(x){return x.id===$("#pchar").value});
+    var oc=PTMaster.state.characters.find(function(x){return x.id===$("#ochar").value});
+    var pr=PTMaster.state.ranks.find(function(x){return x.id===$("#prank").value});
+    var orr=PTMaster.state.ranks.find(function(x){return x.id===$("#orank").value});
+    var raw={player_character:pc&&pc.display_name,opponent_character:oc&&oc.display_name,player_rank:pr&&pr.name_ja,opponent_rank:orr&&orr.name_ja,wavu:{stage_id:99,stage_name:null}};
+    $("#vsout").textContent=JSON.stringify(PTMaster.resolveVsRow(raw),null,2);
+  };
+})();
+</script></body></html>
