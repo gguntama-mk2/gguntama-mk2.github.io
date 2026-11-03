@@ -19996,6 +19996,11 @@ tbody tr:hover td { background:color-mix(in srgb,var(--accent) 6%,var(--panel));
 .btn:hover:not(:disabled) { border-color:var(--accent); color:var(--text); background:var(--accent-soft); }
 .btn.primary { color:var(--on); border-color:var(--accent); background:var(--accent); }
 .btn:disabled { opacity:.42; cursor:not-allowed; }
+/* 再生ボタン：「再生」と「一時停止」で幅が変わらないように、見えない「一時停止」を下に重ねて、幅をいつも「一時停止」に合わせる（スマホ幅は、もともと列の幅で固定） */
+#vs-play::after { content:'一時停止'; display:block; height:0; overflow:hidden; visibility:hidden; }
+@media(max-width:819px){ #vs-play::after { display:none; } }
+/* 細いスマホ幅：「一時停止」の文字がボタンからはみ出していたので、再生ボタンの列だけ少し広くする（ほかのボタンは同じ並び） */
+@media(max-width:440px){ #vs-side .controls { grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.5fr) repeat(3,minmax(0,1fr)); } }
 .empty { margin:18px 0; padding:22px 16px; text-align:center; border:1px dashed var(--line); border-radius:12px; color:var(--sub); }
 .empty b { color:var(--text); }
 .detail { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(17rem,.7fr); gap:12px; }
@@ -20023,6 +20028,20 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
 .controls select { min-height:31px; padding:4px 8px; border:1px solid var(--line); border-radius:99px; background:var(--panel); color:var(--text); font-size:.75rem; }
 .rounds { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; }
 .rounds .lbl { margin-right:3px; }
+.rounds .stat { margin:0; }
+.rounds .rbox { display:inline-flex; align-items:stretch; max-width:100%; border:2px solid var(--pop-edge,var(--line)); border-radius:14px; background:var(--panel); overflow:hidden; box-shadow:0 3px 0 var(--pop-shadow,rgba(0,0,0,.5)); }
+.rounds .rbox.set { border-color:color-mix(in srgb,var(--accent) 65%,var(--line)); background:color-mix(in srgb,var(--accent) 11%,var(--panel)); }
+.rounds .rbox button { margin:0; padding:5px 7px; border:0; border-radius:0; background:transparent; color:var(--text); font:inherit; font-size:.76rem; line-height:1.2; cursor:pointer; box-shadow:none; transform:none; min-height:0; }
+.rounds .rjump { display:inline-flex; align-items:baseline; gap:5px; }
+.rounds .rjump b { font-size:.84rem; font-weight:900; letter-spacing:.02em; }
+.rounds .rjump span { color:var(--sub); font-variant-numeric:tabular-nums; }
+.rounds .rbox.set .rjump span { color:var(--text); font-weight:700; }
+.rounds .rbox .rset, .rounds .rbox .rclr { border-left:1px solid var(--line); color:var(--sub); font-size:.7rem; }
+.rounds .rbox .rclr { padding:5px 6px; font-size:.85rem; }
+.rounds .rbox button:not(:disabled):hover { background:var(--accent); color:var(--on); }
+.rounds .rbox button:not(:disabled):hover b, .rounds .rbox button:not(:disabled):hover span { color:inherit; }
+.rounds .rbox button:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
+.rounds .rbox button:disabled { opacity:.45; cursor:not-allowed; }
 .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr)); gap:8px; }
 .fact { padding:7px 10px; border:1px solid var(--line); border-radius:10px; background:var(--panel2,var(--bg)); min-width:0; }
 .fact .k { display:block; color:var(--sub); font-size:.6875rem; font-weight:700; }
@@ -20433,7 +20452,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
       '<div class="box vbox" id="vs-vbox"><div class="boxhd"><h2>対戦動画</h2><span class="vhd"><span class="sub" id="vs-video-state">NO VIDEO</span><button type="button" class="btn" id="vs-zoom" aria-pressed="false" title="動画を大きく表示（Esc で戻る）">拡大</button></span></div><div class="boxbody">' +
         '<div class="player"><div id="vs-player"></div><div class="ph" id="vs-ph"><b>試合を選択してください</b><small>録画動画がある対戦を選ぶと、ここで再生できます。</small></div></div>' +
         '<div class="controls"><button class="btn" id="vs-b5" disabled>−5秒</button><button class="btn" id="vs-b1" disabled>−1秒</button><button class="btn" id="vs-bf" disabled>−1F</button><button class="btn primary" id="vs-play" disabled>再生</button><button class="btn" id="vs-ff" disabled>+1F</button><button class="btn" id="vs-f1" disabled>+1秒</button><button class="btn" id="vs-f5" disabled>+5秒</button><select id="vs-fps" aria-label="FPS"><option value="60">60 FPS</option><option value="59.94">59.94 FPS</option><option value="30">30 FPS</option></select><span class="time" id="vs-time">00:00.000</span></div>' +
-        '<div class="rounds" id="vs-rounds"><span class="lbl">ラウンド</span><span class="stat">試合を選択すると表示されます。</span></div>' +
+        '<div class="rounds" id="vs-rounds" role="group" aria-label="ラウンド別ジャンプ"><span class="lbl">ラウンド</span><span class="stat">試合を選択すると表示されます。</span></div>' +
       '</div></div>' +
       '<div class="box vs-detail-info"><div class="boxhd"><h2>対戦・動画内容</h2><span class="sub">MATCH DETAIL</span></div>' +
         '<button type="button" class="vs-cycle-btn prev" id="vs-prev" aria-label="前の対戦履歴へ" title="前の対戦履歴へ"><span aria-hidden="true">◀</span></button>' +
@@ -20488,11 +20507,14 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     playerRoundsWon: m.player_rounds_won, opponentRoundsWon: m.opponent_rounds_won, playerTekkenPower: m.player_tekken_power, opponentTekkenPower: m.opponent_tekken_power,
     playerRank: m.player_rank, opponentRank: m.opponent_rank, mode: m.mode, startedAt: m.started_at, youtubeVideoId: m.youtube_video_id, youtubeUrl: m.youtube_url, videoTitle: clean(m.video_title, 200),
     favorite: !!m.favorite, memo: clean(m.memo, MEMO_MAX), onServer: Object.prototype.hasOwnProperty.call(m, 'favorite'),
-    wavu: m.wavu && typeof m.wavu === 'object' ? m.wavu : null
+    wavu: m.wavu && typeof m.wavu === 'object' ? m.wavu : null,
+    roundMarks: srvMarks(m.round_marks)   // ラウンドの開始位置（サーバーが対応していれば {auto, user}）
   });
   const isVerified = m => !!(m.wavu && m.wavu.status === 'matched');
   const isOnly = m => !!(m.wavu && m.wavu.only === true);   // 動画のない、VSデータだけの履歴（id は wv-<番号>）
   const wv = (m, k) => m.wavu && m.wavu[k] != null ? m.wavu[k] : null;
+  // ゲームバージョン：Wavu の数字（例 30202）を「Ver.3.02.02」に。1桁目＝メジャー、次の2桁＝マイナー、最後の2桁＝パッチ。読み取れない値は、そのまま見せる
+  const verText = v => { if (v == null || v === '') return '—'; const s = String(v).trim(); if (/^\d{5,6}$/.test(s)) { const n = Number(s); return 'Ver.' + Math.floor(n / 10000) + '.' + String(Math.floor(n / 100) % 100).padStart(2, '0') + '.' + String(n % 100).padStart(2, '0') } if (/^\d+(\.\d+){1,2}$/.test(s)) return 'Ver.' + s; return s };
   // サーバーが古くて「お気に入り・メモ」を持っていないときの予備：このブラウザの中だけに残す
   const LS_KEY = 'project-t-vs-state';
   const lsRead = () => { try { const v = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); return v && typeof v === 'object' ? v : {} } catch (_) { return {} } };
@@ -20509,7 +20531,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     const r = resultKey(m);
     return [m.opponentName, m.playerCharacter, m.opponentCharacter, charName(m.playerCharacter), charName(m.opponentCharacter), m.playerRank, m.opponentRank, rankNum(m.playerRank), rankNum(m.opponentRank),
       m.playerTekkenPower, m.opponentTekkenPower, num(m.playerTekkenPower), num(m.opponentTekkenPower), m.mode, modeName(m.mode), r, resultLabel(m), r === 'win' ? '勝ち 勝利' : r === 'loss' ? 'LOSE 負け 敗北' : r === 'draw' ? '引き分け' : '',
-      (m.playerRoundsWon ?? '') + '-' + (m.opponentRoundsWon ?? ''), date(m.startedAt || m.date), m.videoTitle, wv(m, 'stage_name'), wv(m, 'game_version'), wv(m, 'rating_before'), wv(m, 'battle_id'), m.memo,
+      (m.playerRoundsWon ?? '') + '-' + (m.opponentRoundsWon ?? ''), date(m.startedAt || m.date), m.videoTitle, wv(m, 'stage_name'), wv(m, 'game_version'), verText(wv(m, 'game_version')), wv(m, 'rating_before'), wv(m, 'battle_id'), m.memo,
       isOnly(m) ? 'VSデータのみ VSデータ確認済み' : isVerified(m) ? 'VSデータ確認済み' : 'Recorder記録'].filter(v => v != null && v !== '').join(' ').toLowerCase();
   }
   const ratingAfter = m => { const b = wv(m, 'rating_before'), c = wv(m, 'rating_change'); return b == null ? null : b + (c || 0) };
@@ -20694,9 +20716,78 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
   }
 
   // ---- 詳細（右から出る画面） ----
+  // ラウンド別ジャンプ位置（R1〜R5）。ラウンド数＝取得ラウンドの合計（最低3・最高5。3-0 なら R1〜R3、3-2 なら R1〜R5）。
+  // 位置は、動画を再生して「設定」を押した瞬間の再生位置。サーバーが対応していれば、サーバーに保存する（どの端末でも同じ）。
+  // Recorder が自動で記録した位置（サーバーの round_marks.auto）は初期値。自分で設定した位置（user）が優先で、消すと自動の位置に戻る。
+  // サーバーが対応していない（round_marks が無い）ときは、今までどおり、この端末のブラウザに保存する。
+  const RM_KEY = 'project-t-vs-round-marks';
+  const rmRead = () => { try { const v = JSON.parse(localStorage.getItem(RM_KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {} } catch (_) { return {} } };
+  const rmWrite = o => { try { const ks = Object.keys(o); if (ks.length > 2000) ks.slice(0, ks.length - 2000).forEach(k => { delete o[k] }); localStorage.setItem(RM_KEY, JSON.stringify(o)) } catch (_) {} };
+  const cleanMarks = o => { const out = {}; if (o && typeof o === 'object' && !Array.isArray(o)) Object.keys(o).forEach(k => { const sec = o[k]; if (/^[1-5]$/.test(k) && typeof sec === 'number' && Number.isFinite(sec) && sec >= 0) out[Number(k)] = sec }); return out };
+  const srvMarks = o => o && typeof o === 'object' && !Array.isArray(o) ? { auto: cleanMarks(o.auto), user: cleanMarks(o.user) } : null;   // サーバーが返した round_marks（対応していない古いサーバーなら null）
+  const rmOwn = m => { if (m && m.roundMarks) return m.roundMarks.user; const v = rmRead()['m:' + m.id]; return v && typeof v === 'object' ? v : {} };
+  const mmss = s => { s = Math.max(0, Math.floor(Number(s) || 0)); const h = Math.floor(s / 3600), mi = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' : '') + String(mi).padStart(2, '0') + ':' + String(x).padStart(2, '0') };
+  function roundMarks(m) {
+    const out = {};
+    (Array.isArray(m && m.rounds) ? m.rounds : []).forEach((r, i) => { const n = Number((r && r.roundNumber) || i + 1), sec = Number(r && (r.startSeconds ?? ((r.startedVideoMs ?? 0) / 1000))); if (n >= 1 && n <= 5 && Number.isFinite(sec) && sec >= 0) out[n] = sec });
+    if (m && m.roundMarks) Object.keys(m.roundMarks.auto).forEach(k => { out[Number(k)] = m.roundMarks.auto[k] });   // Recorder が自動で記録した位置
+    const own = rmOwn(m); Object.keys(own).forEach(k => { const n = Number(k), sec = Number(own[k]); if (n >= 1 && n <= 5 && Number.isFinite(sec) && sec >= 0) out[n] = sec });
+    return out;
+  }
+  function roundCount(m, marks) {
+    const pw = m.playerRoundsWon, ow = m.opponentRoundsWon; let n = 3;
+    if (pw != null && ow != null && pw !== '' && ow !== '' && Number.isFinite(+pw) && Number.isFinite(+ow)) n = Math.round(+pw + +ow);
+    const hi = Math.max(0, ...Object.keys(marks).map(Number));
+    return Math.min(5, Math.max(3, n, hi));
+  }
   function rounds(m) {
-    const rs = Array.isArray(m && m.rounds) ? m.rounds : [];
-    $('rounds').innerHTML = '<span class="lbl">ラウンド</span>' + (rs.length ? rs.map((r, i) => { const sec = Number(r.startSeconds ?? ((r.startedVideoMs ?? 0) / 1000)); return '<button type="button" class="btn" data-seek="' + sec + '">R' + esc(r.roundNumber || i + 1) + ' ' + esc(time(sec)) + '</button>' }).join('') : '<span class="stat">ラウンドマーカーはありません。</span>');
+    const el = $('rounds');
+    if (!m) { el.innerHTML = '<span class="lbl">ラウンド</span><span class="stat">試合を選択すると表示されます。</span>'; return }
+    const hasVideo = !!m.youtubeVideoId, marks = roundMarks(m), own = rmOwn(m), n = roundCount(m, marks);
+    let h = '<span class="lbl">ラウンド</span>', any = false;
+    for (let i = 1; i <= n; i++) {
+      const has = marks[i] != null, t = has ? mmss(marks[i]) : ''; if (has) any = true;
+      const auto = has && own[i] == null && !!(m.roundMarks && m.roundMarks.auto[i] != null);
+      h += '<span class="rbox' + (has ? ' set' : '') + '">' +
+        '<button type="button" class="rjump"' + (auto ? ' title="Recorder が自動で記録した位置です。「更新」で自分の位置に変えられます"' : '') + (has && hasVideo ? ' data-seek="' + marks[i] + '"' : ' disabled') + ' aria-label="ラウンド' + i + (has ? 'の位置（' + t + '）へジャンプ' : 'のジャンプ位置は未設定') + '"><b>R' + i + '</b><span>' + (has ? t : '未設定') + '</span></button>' +
+        '<button type="button" class="rset" data-rset="' + i + '"' + (hasVideo ? '' : ' disabled') + ' title="いまの再生位置を、ラウンド' + i + 'のジャンプ位置にします" aria-label="いまの再生位置をラウンド' + i + 'のジャンプ位置に設定">' + (has ? '更新' : '設定') + '</button>' +
+        (own[i] != null ? '<button type="button" class="rclr" data-rclr="' + i + '" title="ラウンド' + i + 'のジャンプ位置を消す" aria-label="ラウンド' + i + 'のジャンプ位置を消す">×</button>' : '') + '</span>';
+    }
+    h += !hasVideo ? '<span class="stat">動画のある対戦で、ジャンプ位置を設定できます。</span>' : any ? '' : '<span class="stat">ラウンドの始まりで「設定」を押すと、そこへジャンプできます。</span>';
+    el.innerHTML = h;
+  }
+  function refocusSet(n) { const b = root.querySelector('[data-rset="' + n + '"]'); if (b && !b.disabled) b.focus() }
+  // サーバーの返事で行を描き直すとき、キーボードの位置（設定・更新・×のどれか）を同じボタンに戻す
+  function rerounds(m) {
+    const a = root.activeElement, at = a && a.getAttribute ? (a.hasAttribute('data-rset') ? 'data-rset' : a.hasAttribute('data-rclr') ? 'data-rclr' : '') : '';
+    const sel = at ? '[' + at + '="' + a.getAttribute(at) + '"]' : '';
+    rounds(m); if (sel) { const b = root.querySelector(sel); if (b && !b.disabled) b.focus() }
+  }
+  // サーバーに保存する（先に画面を変え、保存に失敗したらその 1 つだけ元に戻す。続けて押したときは、最後の返事だけを反映する）
+  function setServerMark(m, n, sec) {
+    const before = m.roundMarks, prev = before.user[n], user = Object.assign({}, before.user);
+    if (sec == null) delete user[n]; else user[n] = sec;
+    m.roundMarks = { auto: before.auto, user }; m.roundBusy = (m.roundBusy || 0) + 1;
+    rounds(m); refocusSet(n);
+    apiPost('/api/v1/matches/' + encodeURIComponent(m.id) + '/user-state', { round_marks: { [n]: sec } }).then(r => {
+      m.roundBusy--; const got = srvMarks(r && r.round_marks);
+      if (got && !m.roundBusy) m.roundMarks = got;
+      if (byId(selectedId) === m) rerounds(m);
+    }).catch(e => {
+      m.roundBusy--; const u = Object.assign({}, m.roundMarks.user); if (prev == null) delete u[n]; else u[n] = prev;
+      m.roundMarks = { auto: m.roundMarks.auto, user: u };
+      if (byId(selectedId) === m) { rerounds(m); flash('ジャンプ位置を保存できませんでした：' + esc(e && e.message ? e.message : '通信エラー')) }
+    });
+  }
+  function setRoundMark(n, clear) {
+    const m = byId(selectedId); if (!m || !(n >= 1 && n <= 5)) return;
+    let sec = null;
+    if (!clear) { if (!m.youtubeVideoId || !player || !player.getCurrentTime) return; const t = Number(player.getCurrentTime()); if (!Number.isFinite(t) || t < 0) return; sec = Math.round(t * 100) / 100 }
+    if (m.roundMarks) { setServerMark(m, n, sec); return }
+    const all = rmRead(), key = 'm:' + m.id, cur = all[key] && typeof all[key] === 'object' ? all[key] : {};
+    if (clear) delete cur[n]; else cur[n] = sec;
+    delete all[key]; if (Object.keys(cur).length) all[key] = cur;      // いったん消して入れ直す＝新しい順に並ぶ（古いものから捨てる）
+    rmWrite(all); rounds(m); refocusSet(n);
   }
   function renderFacts(m) {
     const rt = ratingAfter(m), ch = wv(m, 'rating_change');
@@ -20709,7 +20800,7 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
       ['取得ラウンド', 'rounds', esc(roundsText(m)), ''], ['対戦モード', 'mode', esc(modeName(m.mode)), ''],
       ['対戦日時', 'date', esc(date(m.startedAt || m.date)), ''], ['動画タイトル', 'title', esc(m.videoTitle || '—'), ''],
       ['動画時間', 'duration', esc(durText(m)), ''], ['ステージ', 'stage', esc(clean(wv(m, 'stage_name') || '—', 64)), ''],
-      ['ゲームバージョン', 'version', esc(clean(wv(m, 'game_version') || '—', 32)), ''], ['レーティング', 'rating', esc(rating), '']
+      ['ゲームバージョン', 'version', esc(clean(verText(wv(m, 'game_version')), 32)), ''], ['レーティング', 'rating', esc(rating), '']
     ];
     $('facts').innerHTML = f.map(([k, key, v, c]) => '<div class="fact ' + c + '"><span class="k">' + esc(k) + '</span><span class="v" data-meta="' + key + '">' + v + '</span></div>').join('');
   }
@@ -20792,6 +20883,8 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
     const fv = t.closest('[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); return }
     const dl = t.closest('[data-del]'); if (dl) { removeMatches([dl.dataset.del]); return }
     const op = t.closest('[data-open]'); if (op) { openSide(byId(op.dataset.open), true); return }
+    const rs = t.closest('[data-rset]'); if (rs) { setRoundMark(Number(rs.dataset.rset)); return }
+    const rc = t.closest('[data-rclr]'); if (rc) { setRoundMark(Number(rc.dataset.rclr), true); return }
     const sk = t.closest('[data-seek]'); if (sk) { if (player && player.seekTo) player.seekTo(+sk.dataset.seek || 0, true); return }
     const row = t.closest('tr.mrow'); if (row && !t.closest('button,input,label,a')) { openSide(byId(row.dataset.id), true); return }
   });
