@@ -1,0 +1,23 @@
+name: master-data-phase1-6-test
+
+on:
+  push:
+    branches:
+      - test/master-data-phase1-6-20261103
+  workflow_dispatch:
+
+jobs:
+  frontend-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify production pages remain unchanged
+        run: |
+          git fetch origin main
+          test -z "$(git diff origin/main...HEAD -- pc.html sp.html admin.html admin.js checksheet-base.json)"
+      - name: Check adapter JavaScript syntax
+        run: node --check project-t-master-adapter.js
+      - name: Verify test harness references adapter
+        run: grep -q 'project-t-master-adapter.js' master-data-test.html
