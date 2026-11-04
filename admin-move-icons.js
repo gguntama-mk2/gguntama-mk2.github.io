@@ -51,7 +51,7 @@
       shown++;
       var e = effective(c.id, mv, k), tr = make("tr");
       tr.appendChild(make("td", String(k))); tr.appendChild(make("td", mv.name)); tr.appendChild(make("td", cmd));
-      var td = make("td"); td.className = "pt-mi-cell"; e.icons.forEach(function (id) { td.appendChild(iconImg(id, 22)); }); if (!e.icons.length) td.textContent = "なし";
+      var td = make("td"), box = make("div", undefined, "pt-mi-cell"); e.icons.forEach(function (id) { box.appendChild(iconImg(id, 22)); }); if (!e.icons.length) box.textContent = "なし"; td.appendChild(box);
       tr.appendChild(td); tr.appendChild(make("td", e.custom ? "管理者の設定" : "自動"));
       var b = make("button", "選ぶ"); b.type = "button"; b.className = "btn"; b.addEventListener("click", function () { choose(c, mv, k); });
       var bt = make("td"); bt.appendChild(b); tr.appendChild(bt);
