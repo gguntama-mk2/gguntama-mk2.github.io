@@ -70,6 +70,9 @@
     ".pt-lb-ctl{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px;justify-content:center}",
     ".pt-lb-btn{font:inherit;font-size:.8125rem;color:var(--text,#eee);background:transparent;border:1px solid var(--line,#555);border-radius:999px;padding:5px 12px;cursor:pointer}",
     ".pt-lb-btn:hover{border-color:var(--accent,#f0c040)}",
+    ".pt-thumb,.pt-thumb *,.pt-lb,.pt-lb *,td.pt-mv,.pt-mvs{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}",
+    ".pt-thumb img,.pt-lb video{-webkit-user-drag:none}",
+    ".pt-thumb img{pointer-events:none}",
     ".pt-lb-err{margin:0;padding:8px 12px;color:#ff8a80;font-size:.8125rem;text-align:center}"
   ].join("\n");
   function ensureStyle() {
@@ -81,12 +84,22 @@
   function noImage() { var s = el("span", "pt-no-image", "NO IMAGE"); s.setAttribute("aria-label", "動画は未登録です"); return s; }
   function thumbButton(char, k, name, m) {
     var b = el("button", "pt-thumb"); b.type = "button"; b.setAttribute("aria-label", name + " の動画を見る");
-    var img = document.createElement("img"); img.src = m.thumb; img.alt = ""; img.width = 160; img.height = 90; img.decoding = "async"; img.draggable = false;
+    var img = document.createElement("img"); img.src = m.thumb; img.alt = ""; img.width = 160; img.height = 90; img.decoding = "async"; img.draggable = false; img.setAttribute("oncontextmenu", "return false");
     img.addEventListener("error", function () { var p = b.parentNode; if (p) { p.replaceChildren(noImage()); } }, { once: true });
     b.append(img, el("span", "pt-play", "▶ 再生"));
     b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openBox(name, m, b); });
     return b;
   }
+
+  /* ---------- 保存・コピーを防ぐ（ふつうの操作での保存を止める。画面録画などは防げない） ---------- */
+  var GUARD = ".pt-thumb, .pt-lb, td.pt-mv, .pt-mvs";
+  function guarded(e) { var t = e.target; return !!(t && t.closest && t.closest(GUARD)); }
+  ["contextmenu", "dragstart", "copy", "cut", "selectstart"].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { if (guarded(e)) e.preventDefault(); }, true);
+  });
+  document.addEventListener("keydown", function (e) {                          // 拡大再生中の Ctrl/Cmd+S（保存）・P（印刷）・C（コピー）
+    if (box && (e.ctrlKey || e.metaKey) && /^[spcu]$/i.test(e.key)) e.preventDefault();
+  }, true);
 
   /* ---------- 拡大再生 ---------- */
   var box = null, prevFocus = null;
@@ -118,6 +131,7 @@
     video.controls = true; video.playsInline = true; video.loop = true; video.preload = "metadata";
     video.defaultMuted = false; video.muted = false; video.volume = 0.5;      // 初めから音あり・音量 50%
     video.setAttribute("aria-label", name);
+    video.setAttribute("controlsList", "nodownload noremoteplayback"); video.disablePictureInPicture = true; video.disableRemotePlayback = true; video.draggable = false;
     var err = el("p", "pt-lb-err"); err.setAttribute("role", "alert"); err.hidden = true;
     video.addEventListener("error", function () { err.textContent = "動画を読み込めませんでした。時間をおいて、もう一度お試しください。"; err.hidden = false; });
     var step = 1 / m.fps, ctl = el("div", "pt-lb-ctl");
