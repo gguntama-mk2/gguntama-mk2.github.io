@@ -133,7 +133,7 @@
     var p = video.play(); if (p && p.catch) p.catch(function () {});             // 音つき自動再生がブラウザに止められたときは、再生ボタンで
   }
 
-  /* ---------- PC：技表に MOVIE 列を足す（そのキャラに、公開済みの動画が1つ以上あるときだけ） ---------- */
+  /* ---------- PC：技表に MOVIE 列を足す（動画がなくても常に出す。無い技は NO IMAGE） ---------- */
   function clearPc() {
     document.querySelectorAll("th.pt-mv, td.pt-mv, col.c-mv").forEach(function (n) { n.remove(); });
     var t = document.querySelector("#body"); t = t && t.closest("table"); if (t) t.classList.remove("pt-has-mv");
@@ -144,7 +144,6 @@
     clearPc();
     if (!apiBase()) return;
     if (!manifest) { load().then(function () { if (lastChar === char) pcSheet(char); }); return; }
-    if (!hasAny(char)) return;
     ensureStyle();
     var table = body.closest("table"), cg = table && table.querySelector("colgroup");
     if (cg) { var c = document.createElement("col"); c.className = "c-mv"; cg.insertBefore(c, cg.firstChild); }
