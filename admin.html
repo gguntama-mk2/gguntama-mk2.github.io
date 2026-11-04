@@ -64,6 +64,10 @@
   dl.who-dl dt { color:var(--sub); font-size:12px; } dl.who-dl dd { margin:0; word-break:break-all; }
   .dsec { margin:10px 0 4px; font-weight:700; color:var(--accent); font-size:13px; } .drow { padding:3px 0; border-bottom:1px dashed var(--line); } .drow .k { color:var(--sub); font-size:11px; }
   #diffBox details { margin:4px 0; border-bottom:1px dashed var(--line); } #diffBox summary { cursor:pointer; padding:3px 0; }
+  #secMedia .pt-mm-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; align-items:end; }
+  #secMedia .pt-mm-form label { display:flex; flex-direction:column; gap:5px; }
+  #secMedia .pt-mm-form button { justify-self:start; }
+  #secMedia [data-state="error"] { color:var(--ng); } #secMedia [data-state="ok"] { color:var(--ok); }
   .hist li { margin:3px 0; } code { background:#10111a; padding:0 5px; border-radius:4px; font-size:12px; }
   @media (max-width:860px) { .editor { grid-template-columns:1fr; } #mlist { max-height:30vh; } .grid { grid-template-columns:100px 1fr; } .grid .off { grid-column:2; } #pvSP { width:100%; } }
 </style>
@@ -74,11 +78,13 @@
   <nav class="tabs" id="tabs" hidden>
     <button type="button" data-tab="sheet" aria-pressed="true">技チェックシート編集</button>
     <button type="button" data-tab="users" aria-pressed="false">管理者</button>
+    <button type="button" data-tab="media" aria-pressed="false">技動画登録</button>
     <button type="button" data-tab="audit" aria-pressed="false">操作の記録</button>
   </nav>
   <span class="who" id="who"></span>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
 <script src="admin.js" defer></script>
+<script src="admin-move-media.js" defer></script>
 </body>
 </html>
