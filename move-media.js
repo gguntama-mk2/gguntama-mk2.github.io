@@ -6,6 +6,7 @@
 (function () {
   "use strict";
   if (window.PTMoveMedia) return;
+  if (/[?&]ptpreview=1(&|$)/.test(location.search)) return;   // 管理画面の編集プレビュー（iframe）では動かさない
   var ASSET_RE = /^\/api\/v1\/move-media\/asset\/([a-z0-9][a-z0-9-]{0,47})\/(\d{1,7})\/(thumb\.jpg|poster\.jpg|video\.mp4)\?v=(\d{1,6})$/;
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var manifest = null, loading = null, loadedAt = 0, lastChar = window.__ptMvChar || "";
