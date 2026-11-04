@@ -19,6 +19,7 @@
     ["floorgimmick", "フロアギミック発動", "floorgimmick.webp"],
     ["wallbreak", "ウォールブレイク", "wallbreak.webp"],
     ["hardwallbreak", "ハードウォールブレイク", "hardwallbreak.webp"],
+    ["wallblast", "ウォールブラスト", "wallblast.webp"],
     ["wallbound", "ウォールバウンド", "wallbound.webp"],
     ["balconybreak", "バルコニーブレイク", "balconybreak.webp"],
     ["floorbreak", "フロアブレイク", "floorbreak.webp"],

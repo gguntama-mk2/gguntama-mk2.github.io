@@ -17601,7 +17601,7 @@ input[type="checkbox"] { border-radius: 8px; }
   if (!host.attachShadow) { host.textContent = "このブラウザでは用語集を表示できません。新しいバージョンのブラウザでお試しください。"; return; }
   const root = host.attachShadow({ mode: "open" });
   /* 用語集のギミック・システムのアイコン（icons/）。用語名が完全に同じ項目だけ */
-  const TERM_ICON = { "トルネード": "tornado", "パワークラッシュ": "powercrush", "ヒート発動技": "heatengage", "ヒートバースト": "heatengage", "ヒートダッシュ": "heatengage", "回復可能体力": "recoverable", "ホーミング": "homing", "ウォールブレイク": "wallbreak", "ハードウォールブレイク": "hardwallbreak", "フロアブレイク": "floorbreak", "ハードフロアブレイク": "hardfloorbreak", "フロアブラスト": "floorblast" };
+  const TERM_ICON = { "トルネード": "tornado", "パワークラッシュ": "powercrush", "ヒート発動技": "heatengage", "ヒートバースト": "heatengage", "ヒートダッシュ": "heatengage", "回復可能体力": "recoverable", "ホーミング": "homing", "ウォールブレイク": "wallbreak", "ウォールブラスト": "wallblast", "ハードウォールブレイク": "hardwallbreak", "フロアブレイク": "floorbreak", "ハードフロアブレイク": "hardfloorbreak", "フロアブラスト": "floorblast" };
   const termIcon = t => TERM_ICON[t] ? '<img class="ti" src="icons/' + TERM_ICON[t] + '.webp" alt="" width="28" height="28" draggable="false">' : "";
   const CATS = GL_DATA.cats, SRCS = GL_DATA.src;
   const T = GL_DATA.terms.map((r, i) => ({ i, c: r[0], s: r[1], t: r[2], y: r[3], a: r[4], r: r[5], u: r[6], d: r[7] }));
@@ -18580,8 +18580,8 @@ input[type="checkbox"] { border-radius: 8px; }
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const nrm = s => String(s).normalize("NFKC").toLowerCase().replace(/[ァ-ヶ]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60)).replace(/[\s・･\-_]/g, "");
-  /* ギミックのアイコン（icons/）。ウォールブラストだけは、アイコン画像がまだ無いので、文字だけ */
-  const GI = { wb: "wallbreak", hwb: "hardwallbreak", wbo: "wallbound", bal: "balconybreak", fb: "floorbreak", hfb: "hardfloorbreak", fbl: "floorblast" };
+  /* ギミックのアイコン（icons/） */
+  const GI = { wb: "wallbreak", hwb: "hardwallbreak", wbl: "wallblast", wbo: "wallbound", bal: "balconybreak", fb: "floorbreak", hfb: "hardfloorbreak", fbl: "floorblast" };
   const gi = id => GI[id] ? '<img class="gi" src="icons/' + GI[id] + '.webp" alt="" width="20" height="20" draggable="false">' : "";
   for (const s of STAGES) {
     const im = SGIMG[s.id]; if (im) { s.th = im[0]; s.img = im[1]; }   // th：一覧用の切り抜き／img：詳細用の画像
