@@ -7,7 +7,9 @@
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
-  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {};
+  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = {};
+  var ckey = function (c, k) { return c + "/" + k; };
+  var nChecked = function () { return Object.keys(checked).length; };
 
   async function request(path, init) {
     init = init || {};
@@ -39,14 +41,70 @@
   }
   function closeEditor() {
     sel = null; delete ui.editor.dataset.open; ui.editor.replaceChildren();
-    ui.editor.appendChild(make("p", "左の一覧で技の「選ぶ」を押すと、ここにアイコン一覧が出ます。", "pt-mi-hint"));
+    if (nChecked()) { renderBulk(); delete ui.editor.dataset.open; return; }
+    ui.editor.appendChild(make("p", "左の一覧で技の「選ぶ」を押すと、ここにアイコン一覧が出ます。右はしのチェックを入れると、複数の技にまとめて設定できます。", "pt-mi-hint"));
+  }
+  function updateBulkBar() {
+    var n = nChecked();
+    if (ui.bulkBtn) { ui.bulkBtn.hidden = !n; ui.bulkBtn.textContent = "選択中 " + n + "件にアイコンを設定する"; }
+  }
+  function onCheckChange() { updateBulkBar(); if (!sel) { renderBulk(); if (!nChecked()) closeEditor(); } }
+  function renderBulk() {
+    var keys = Object.keys(checked), n = keys.length;
+    ui.editor.replaceChildren(); ui.editor.dataset.open = "1";
+    var closeBtn = make("button", "× 閉じる", "btn pt-mi-close"); closeBtn.type = "button"; closeBtn.addEventListener("click", function () { delete ui.editor.dataset.open; });
+    ui.editor.appendChild(closeBtn);
+    ui.editor.appendChild(make("h3", "まとめて設定：" + n + "件を選択中"));
+    var save = make("button", n + "件に保存"); save.type = "button"; save.className = "btn primary";
+    var reset = make("button", "自動に戻す"); reset.type = "button"; reset.className = "btn";
+    var clear = make("button", "選択をすべて外す"); clear.type = "button"; clear.className = "btn";
+    save.addEventListener("click", function () { bulkAct("set"); });
+    reset.addEventListener("click", function () { bulkAct("reset"); });
+    clear.addEventListener("click", function () { checked = {}; bulkPick = {}; updateBulkBar(); closeEditor(); renderList(); });
+    var row = make("div", undefined, "pt-mi-actions"); row.append(save, reset, clear); ui.editor.appendChild(row);
+    ui.editor.appendChild(make("p", "選んだアイコンが、チェックした技すべてに設定されます（いまの設定は置き換わります）。保存を押すまで、チェックもアイコンの選択も残ります。", "pt-mi-hint"));
+    var grid = make("div", undefined, "pt-mi-grid"); ui.boxes = {};
+    catalog.forEach(function (it) {
+      var lab = make("label", undefined, "pt-mi-opt"), cb = make("input"); cb.type = "checkbox"; cb.checked = !!bulkPick[it.id]; ui.boxes[it.id] = cb;
+      cb.addEventListener("change", function () { if (cb.checked) bulkPick[it.id] = 1; else delete bulkPick[it.id]; });
+      lab.append(cb, iconImg(it.id, 32), make("span", it.label)); grid.appendChild(lab);
+    });
+    ui.editor.appendChild(grid);
+    var names = keys.slice(0, 8).map(function (k) { var c = checked[k]; return c.cname + " " + c.k + " " + c.name; });
+    ui.editor.appendChild(make("p", "対象：" + names.join("、") + (n > 8 ? " ほか" + (n - 8) + "件" : ""), "pt-mi-hint"));
+  }
+  async function bulkAct(which) {
+    var keys = Object.keys(checked), picked = catalog.filter(function (it) { return bulkPick[it.id]; }).map(function (it) { return it.id; });
+    if (!keys.length) return;
+    if (which === "set" && picked.length > 6) { say("アイコンは6つまでです。", "error"); return; }
+    if (which === "reset" && !confirm(keys.length + "件の技のアイコン設定を消して、自動の判定に戻しますか？")) return;
+    if (which === "set" && !picked.length && !confirm("アイコンが1つも選ばれていません。" + keys.length + "件を「アイコンなし」にしますか？")) return;
+    var btns = ui.editor.querySelectorAll("button"); btns.forEach(function (b) { b.disabled = true; });
+    var done = 0, failed = [], i = 0;
+    async function worker() {
+      while (i < keys.length) {
+        var key = keys[i++], c = checked[key];
+        try {
+          await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: c.char, site_k: c.k, move_name: c.name, icons: picked } : { character_id: c.char, site_k: c.k }) });
+          delete checked[key]; done++;
+        } catch (e) { failed.push(c.name + "（" + e.message + "）"); }
+        say("保存中… " + (done + failed.length) + " / " + keys.length, "neutral");
+      }
+    }
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    try { await loadOverrides(); } catch (e) {}
+    if (!failed.length) bulkPick = {};
+    updateBulkBar(); renderList(); closeEditor();
+    say(done + "件を" + (which === "set" ? "保存しました。公開サイトには、1分ほどで反映されます。" : "自動の判定に戻しました。") + (failed.length ? "　保存できなかった技が" + failed.length + "件あります（チェックは残してあります）：" + failed.slice(0, 3).join("、") : ""), failed.length ? "error" : "ok");
   }
   function currentChar() { return characters.find(function (c) { return c.id === ui.char.value; }); }
   function renderList() {
     var c = currentChar(); ui.list.replaceChildren(); if (!c) return;
     var q = ui.q.value.normalize("NFKC").toLowerCase().trim(), shown = 0;
     var table = make("table"), head = make("tr");
-    ["k", "技名", "コマンド", "いまの表示", "設定", ""].forEach(function (t) { head.appendChild(make("th", t)); });
+    ["k", "技名", "コマンド", "いまの表示", "設定", "", ""].forEach(function (t) { head.appendChild(make("th", t)); });
+    var allTh = head.lastChild, allCb = make("input"); allCb.type = "checkbox"; allCb.title = "表示中の技をすべてチェック／解除"; allCb.setAttribute("aria-label", "表示中の技をすべてチェック"); allTh.appendChild(allCb);
+    var visible = [];
     table.appendChild(head);
     c.moves.forEach(function (mv, i) {
       if (shown >= 250) return;
@@ -60,8 +118,16 @@
       tr.appendChild(td); tr.appendChild(make("td", e.custom ? "管理者の設定" : "自動"));
       var b = make("button", "選ぶ"); b.type = "button"; b.className = "btn"; b.addEventListener("click", function () { choose(c, mv, k); });
       var bt = make("td"); bt.appendChild(b); tr.appendChild(bt);
+      var ck = make("td", undefined, "pt-mi-ck"), cb = make("input"), key = ckey(c.id, k); cb.type = "checkbox"; cb.checked = !!checked[key]; cb.setAttribute("aria-label", mv.name + "を一括設定の対象にする");
+      var entry = { char: c.id, cname: c.name, k: k, name: mv.name };
+      cb.addEventListener("change", function () { if (cb.checked) checked[key] = entry; else delete checked[key]; syncAll(); onCheckChange(); });
+      visible.push({ cb: cb, key: key, entry: entry });
+      ck.appendChild(cb); tr.appendChild(ck);
       table.appendChild(tr);
     });
+    function syncAll() { var n = visible.filter(function (v) { return checked[v.key]; }).length; allCb.checked = visible.length > 0 && n === visible.length; allCb.indeterminate = n > 0 && n < visible.length; }
+    allCb.addEventListener("change", function () { visible.forEach(function (v) { v.cb.checked = allCb.checked; if (allCb.checked) checked[v.key] = v.entry; else delete checked[v.key]; }); syncAll(); onCheckChange(); });
+    syncAll(); updateBulkBar();
     ui.list.appendChild(table);
     ui.count.textContent = shown >= 250 ? "最初の250件を表示しています。検索で絞り込んでください。" : shown + "件";
   }
@@ -116,10 +182,10 @@
     ui.char = make("select"); ui.char.addEventListener("change", function () { closeEditor(); renderList(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索"; ui.q.addEventListener("input", renderList);
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
-    ui.count = make("p", ""); ui.list = make("div", undefined, "tw"); ui.editor = make("aside", undefined, "pt-mi-editor"); ui.editor.setAttribute("aria-label", "アイコンの設定"); closeEditor();
+    ui.count = make("p", ""); ui.bulkBtn = make("button", "", "btn primary pt-mi-bulkbtn"); ui.bulkBtn.type = "button"; ui.bulkBtn.hidden = true; ui.bulkBtn.addEventListener("click", function () { if (!sel) renderBulk(); }); ui.list = make("div", undefined, "tw"); ui.editor = make("aside", undefined, "pt-mi-editor"); ui.editor.setAttribute("aria-label", "アイコンの設定"); closeEditor();
     var wrap = make("div", undefined, "pt-mi-wrap"); wrap.append(ui.list, ui.editor);
     ui.note = make("p", "技を選んでください。"); ui.note.setAttribute("role", "status"); ui.note.setAttribute("aria-live", "polite");
-    panel.append(bar, ui.count, wrap, ui.note); host.appendChild(panel);
+    panel.append(bar, ui.count, ui.bulkBtn, wrap, ui.note); host.appendChild(panel);
     var w = ctx.win && ctx.win(); var ic = w && w.PTIcons; catalog = ic ? ic.catalog : [];
     loadOverrides().then(function () { setCharacters(ctx.characters()); }).catch(function (e) { say("設定の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
   }
