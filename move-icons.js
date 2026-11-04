@@ -13,7 +13,7 @@
     ["tornado", "トルネード", "tornado.webp"],
     ["powercrush", "パワークラッシュ", "powercrush.webp"],
     ["heatengage", "ヒートエンゲージ（ヒートダッシュ・ヒート発動時・ヒート発動投げ・ヒートバースト）", "heatengage.webp"],
-    ["recoverable", "回復可能体力削除効果", "recoverable.webp"],
+    ["recoverable", "リカバリアブルダメージ", "recoverable.webp"],
     ["homing", "ホーミング", "homing.webp"],
     ["forcedcrouch", "強制しゃがみ", "forcedcrouch.webp"],
     ["floorgimmick", "フロアギミック発動", "floorgimmick.webp"],

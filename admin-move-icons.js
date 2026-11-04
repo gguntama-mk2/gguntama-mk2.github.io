@@ -104,7 +104,7 @@
     ctx = context; host = target; host.replaceChildren();
     var panel = make("section", undefined, "card");
     panel.appendChild(make("h2", "技のアイコン設定"));
-    panel.appendChild(make("p", "技ごとに、技表のコマンド欄の右はしに出すアイコンを設定します。設定していない技は、自動の判定（トルネード・パワークラッシュ・ヒートエンゲージ・回復可能体力）のままです。"));
+    panel.appendChild(make("p", "技ごとに、技表のコマンド欄の右はしに出すアイコンを設定します。設定していない技は、自動の判定（トルネード・パワークラッシュ・ヒートエンゲージ・リカバリアブルダメージ）のままです。"));
     ui.char = make("select"); ui.char.addEventListener("change", function () { ui.editor.hidden = true; sel = null; renderList(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索"; ui.q.addEventListener("input", renderList);
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
