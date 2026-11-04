@@ -57,11 +57,11 @@
     ui.editor.appendChild(make("h3", "まとめて設定：" + n + "件を選択中"));
     var save = make("button", n + "件に保存"); save.type = "button"; save.className = "btn primary";
     var modes = make("div", undefined, "pt-mi-modes");
-    [["add", "追加する", "いま付いているアイコンは残して、選んだアイコンを足します"], ["remove", "外す", "選んだアイコンだけを、取り外します"], ["replace", "置き換える", "選んだアイコンだけにします（いまの設定は消えます）"]].forEach(function (m) {
+    [["add", "追加する", "いま付いているアイコンは残して、選んだアイコンを足します"], ["replace", "置き換える", "選んだアイコンだけにします（いまの設定は消えます）"]].forEach(function (m) {
       var lab = make("label", undefined, "pt-mi-mode"), r = make("input"); r.type = "radio"; r.name = "pt-mi-mode"; r.value = m[0]; r.checked = bulkMode === m[0];
       r.addEventListener("change", function () { bulkMode = m[0]; hint.textContent = m[2]; }); lab.append(r, make("span", m[1])); modes.appendChild(lab);
     });
-    var hint = make("p", ({ add: "いま付いているアイコンは残して、選んだアイコンを足します", remove: "選んだアイコンだけを、取り外します", replace: "選んだアイコンだけにします（いまの設定は消えます）" })[bulkMode], "pt-mi-hint");
+    var hint = make("p", ({ add: "いま付いているアイコンは残して、選んだアイコンを足します", replace: "選んだアイコンだけにします（いまの設定は消えます）" })[bulkMode], "pt-mi-hint");
     var reset = make("button", "自動に戻す"); reset.type = "button"; reset.className = "btn";
     var clear = make("button", "選択をすべて外す"); clear.type = "button"; clear.className = "btn";
     save.addEventListener("click", function () { bulkAct("set"); });
@@ -83,9 +83,10 @@
   async function bulkAct(which) {
     var keys = Object.keys(checked), picked = catalog.filter(function (it) { return bulkPick[it.id]; }).map(function (it) { return it.id; });
     if (!keys.length) return;
+    if (which === "set" && bulkMode !== "add" && bulkMode !== "replace") { say("無効な設定方法です。", "error"); return; }
     if (which === "set" && picked.length > 6) { say("アイコンは6つまでです。", "error"); return; }
     if (which === "reset" && !confirm(keys.length + "件の技のアイコン設定を消して、自動の判定に戻しますか？")) return;
-    if (which === "set" && !picked.length && bulkMode !== "replace") { say("追加・取り外しするアイコンを選んでください。", "error"); return; }
+    if (which === "set" && !picked.length && bulkMode !== "replace") { say("追加するアイコンを選んでください。", "error"); return; }
     if (which === "set" && !picked.length && !confirm("アイコンが1つも選ばれていません。" + keys.length + "件を「アイコンなし」にしますか？")) return;
     var btns = ui.editor.querySelectorAll("button"); btns.forEach(function (b) { b.disabled = true; });
     var done = 0, skipped = 0, failed = [], i = 0;
@@ -93,9 +94,9 @@
       while (i < keys.length) {
         var key = keys[i++], c = checked[key], next = picked;
         try {
-          if (which === "set" && bulkMode !== "replace") {          // 追加／取り外し：その技のいまのアイコン（管理者の設定、なければ自動）をもとに計算する
+          if (which === "set" && bulkMode !== "replace") {          // 追加のみ。管理者設定や既存自動アイコンを消さない
             var cur = effective(c.char, c.mv, c.k).icons;
-            var merged = bulkMode === "add" ? cur.concat(picked.filter(function (x) { return cur.indexOf(x) < 0; })) : cur.filter(function (x) { return picked.indexOf(x) < 0; });
+            var merged = cur.concat(picked.filter(function (x) { return cur.indexOf(x) < 0; }));
             next = catalog.map(function (it) { return it.id; }).filter(function (id) { return merged.indexOf(id) >= 0; });
             if (next.length > 6) throw new Error("アイコンが6つを超えます");
             if (next.join() === cur.join()) { delete checked[key]; skipped++; continue; }                 // 変わらない技は、書き込まない
