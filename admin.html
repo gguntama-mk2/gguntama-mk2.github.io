@@ -69,8 +69,15 @@
   #secMedia .pt-mm-form button { justify-self:start; }
   #secIcons .pt-mi-bar { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; } #secIcons .pt-mi-bar input { flex:1 1 220px; }
   #secIcons .pt-mi-cell { display:flex; gap:3px; align-items:center; min-height:22px; } #secIcons table td { vertical-align:middle; } #secIcons .pt-mi-cell img { border-radius:4px; }
-  #secIcons .pt-mi-editor { margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:10px; }
-  #secIcons .pt-mi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:8px; margin:10px 0; }
+  #secIcons .pt-mi-wrap { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start; }
+  #secIcons .pt-mi-editor { position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel,#1c1f2e); }
+  #secIcons .pt-mi-editor h3 { margin:0 0 6px; font-size:1rem; } #secIcons .pt-mi-hint { color:var(--sub,#99a); margin:0; }
+  #secIcons .pt-mi-close { display:none; float:right; }
+  #secIcons tr[data-sel] td { background:rgba(240,192,64,.14); }
+  #secIcons .pt-mi-grid { display:grid; grid-template-columns:1fr; gap:6px; margin:10px 0; }
+  @media (max-width:999px) { #secIcons .pt-mi-wrap { display:block; }
+    #secIcons .pt-mi-editor { display:none; position:fixed; top:0; right:0; bottom:0; max-height:none; width:min(360px,92vw); z-index:50; border-radius:12px 0 0 12px; box-shadow:-8px 0 30px rgba(0,0,0,.5); }
+    #secIcons .pt-mi-editor[data-open] { display:block; } #secIcons .pt-mi-close { display:inline-block; } }
   #secIcons .pt-mi-opt { display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; cursor:pointer; } #secIcons .pt-mi-opt img { border-radius:5px; flex:none; }
   #secIcons .pt-mi-actions { display:flex; gap:10px; flex-wrap:wrap; }
   #secIcons [data-state="error"] { color:var(--ng); } #secIcons [data-state="ok"] { color:var(--ok); }

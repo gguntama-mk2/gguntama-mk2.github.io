@@ -37,6 +37,10 @@
     var d = await request("/api/v1/admin/move-icons");
     overrides = {}; d.entries.forEach(function (e) { (overrides[e.character_id] = overrides[e.character_id] || {})[String(e.site_k)] = e; });
   }
+  function closeEditor() {
+    sel = null; delete ui.editor.dataset.open; ui.editor.replaceChildren();
+    ui.editor.appendChild(make("p", "左の一覧で技の「選ぶ」を押すと、ここにアイコン一覧が出ます。", "pt-mi-hint"));
+  }
   function currentChar() { return characters.find(function (c) { return c.id === ui.char.value; }); }
   function renderList() {
     var c = currentChar(); ui.list.replaceChildren(); if (!c) return;
@@ -50,6 +54,7 @@
       if (q && (String(k) + " " + mv.name + " " + cmd).normalize("NFKC").toLowerCase().indexOf(q) < 0) return;
       shown++;
       var e = effective(c.id, mv, k), tr = make("tr");
+      if (sel && sel.char === c.id && sel.k === k) tr.dataset.sel = "1";
       tr.appendChild(make("td", String(k))); tr.appendChild(make("td", mv.name)); tr.appendChild(make("td", cmd));
       var td = make("td"), box = make("div", undefined, "pt-mi-cell"); e.icons.forEach(function (id) { box.appendChild(iconImg(id, 22)); }); if (!e.icons.length) box.textContent = "なし"; td.appendChild(box);
       tr.appendChild(td); tr.appendChild(make("td", e.custom ? "管理者の設定" : "自動"));
@@ -62,8 +67,11 @@
   }
   function choose(c, mv, k) {
     sel = { char: c.id, k: k, name: mv.name, mv: mv };
+    renderList();                                                  // 選んだ行に印を付ける（ページの位置は動かさない）
     var e = effective(c.id, mv, k), have = {}; e.icons.forEach(function (id) { have[id] = 1; });
-    ui.editor.replaceChildren(); ui.editor.hidden = false;
+    ui.editor.replaceChildren(); ui.editor.dataset.open = "1";
+    var closeBtn = make("button", "× 閉じる", "btn pt-mi-close"); closeBtn.type = "button"; closeBtn.addEventListener("click", function () { closeEditor(); renderList(); });
+    ui.editor.appendChild(closeBtn);
     ui.editor.appendChild(make("h3", c.name + "　" + k + " · " + mv.name));
     var grid = make("div", undefined, "pt-mi-grid");
     ui.boxes = {};
@@ -71,14 +79,14 @@
       var lab = make("label", undefined, "pt-mi-opt"), cb = make("input"); cb.type = "checkbox"; cb.checked = !!have[it.id]; ui.boxes[it.id] = cb;
       lab.append(cb, iconImg(it.id, 32), make("span", it.label)); grid.appendChild(lab);
     });
-    ui.editor.appendChild(grid);
     var auto = autoOf(c.id, mv);
     ui.editor.appendChild(make("p", "自動の判定：" + (auto.length ? auto.map(label).join("、") : "なし") + (e.custom ? "　（いまは管理者の設定が優先されています）" : "")));
     var save = make("button", "この内容で保存"); save.type = "button"; save.className = "btn primary";
     var reset = make("button", "自動に戻す"); reset.type = "button"; reset.className = "btn"; reset.disabled = !e.custom;
     save.addEventListener("click", function () { act(save, "set"); }); reset.addEventListener("click", function () { act(reset, "reset"); });
-    var row = make("div", undefined, "pt-mi-actions"); row.append(save, reset); ui.editor.appendChild(row);
-    ui.editor.scrollIntoView({ block: "nearest" });
+    var row = make("div", undefined, "pt-mi-actions"); row.append(save, reset);
+    var h3 = ui.editor.querySelector("h3"); h3.insertAdjacentElement("afterend", row);   // 保存ボタンは上に置く（一覧が長くても、ボタンまでスクロールしなくてよい）
+    row.insertAdjacentElement("afterend", grid);
   }
   async function act(btn, which) {
     if (!sel) return;
@@ -89,7 +97,7 @@
     try {
       await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: sel.char, site_k: sel.k, move_name: sel.name, icons: picked } : { character_id: sel.char, site_k: sel.k }) });
       say(sel.name + (which === "set" ? " のアイコンを保存しました。公開サイトには、1分ほどで反映されます。" : " を自動の判定に戻しました。"), "ok");
-      await loadOverrides(); var c = currentChar(), mv = sel.mv, k = sel.k; renderList(); if (c) choose(c, mv, k);
+      await loadOverrides(); var c = currentChar(), mv = sel.mv, k = sel.k; if (c) choose(c, mv, k);
     } catch (e) { say("保存できませんでした：" + e.message, "error"); btn.disabled = false; }
   }
   function setCharacters(list) {
@@ -98,19 +106,20 @@
     var prev = ui.char.value; ui.char.replaceChildren();
     characters.forEach(function (c) { var o = make("option", c.name + "（" + (c.en || c.id) + "）"); o.value = c.id; ui.char.appendChild(o); });
     if (characters.some(function (c) { return c.id === prev; })) ui.char.value = prev;
-    ui.editor.hidden = true; sel = null; renderList();
+    closeEditor(); renderList();
   }
   function mount(target, context) {
     ctx = context; host = target; host.replaceChildren();
     var panel = make("section", undefined, "card");
     panel.appendChild(make("h2", "技のアイコン設定"));
     panel.appendChild(make("p", "技ごとに、技表のコマンド欄の右はしに出すアイコンを設定します。設定していない技は、自動の判定（トルネード・パワークラッシュ・ヒートエンゲージ・リカバリアブルダメージ）のままです。"));
-    ui.char = make("select"); ui.char.addEventListener("change", function () { ui.editor.hidden = true; sel = null; renderList(); });
+    ui.char = make("select"); ui.char.addEventListener("change", function () { closeEditor(); renderList(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索"; ui.q.addEventListener("input", renderList);
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
-    ui.count = make("p", ""); ui.list = make("div", undefined, "tw"); ui.editor = make("div", undefined, "pt-mi-editor"); ui.editor.hidden = true;
+    ui.count = make("p", ""); ui.list = make("div", undefined, "tw"); ui.editor = make("aside", undefined, "pt-mi-editor"); ui.editor.setAttribute("aria-label", "アイコンの設定"); closeEditor();
+    var wrap = make("div", undefined, "pt-mi-wrap"); wrap.append(ui.list, ui.editor);
     ui.note = make("p", "技を選んでください。"); ui.note.setAttribute("role", "status"); ui.note.setAttribute("aria-live", "polite");
-    panel.append(bar, ui.count, ui.list, ui.editor, ui.note); host.appendChild(panel);
+    panel.append(bar, ui.count, wrap, ui.note); host.appendChild(panel);
     var w = ctx.win && ctx.win(); var ic = w && w.PTIcons; catalog = ic ? ic.catalog : [];
     loadOverrides().then(function () { setCharacters(ctx.characters()); }).catch(function (e) { say("設定の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
   }
