@@ -7,7 +7,7 @@
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
-  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = {};
+  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = {}, bulkMode = "add";
   var ckey = function (c, k) { return c + "/" + k; };
   var nChecked = function () { return Object.keys(checked).length; };
 
@@ -56,13 +56,20 @@
     ui.editor.appendChild(closeBtn);
     ui.editor.appendChild(make("h3", "まとめて設定：" + n + "件を選択中"));
     var save = make("button", n + "件に保存"); save.type = "button"; save.className = "btn primary";
+    var modes = make("div", undefined, "pt-mi-modes");
+    [["add", "追加する", "いま付いているアイコンは残して、選んだアイコンを足します"], ["remove", "外す", "選んだアイコンだけを、取り外します"], ["replace", "置き換える", "選んだアイコンだけにします（いまの設定は消えます）"]].forEach(function (m) {
+      var lab = make("label", undefined, "pt-mi-mode"), r = make("input"); r.type = "radio"; r.name = "pt-mi-mode"; r.value = m[0]; r.checked = bulkMode === m[0];
+      r.addEventListener("change", function () { bulkMode = m[0]; hint.textContent = m[2]; }); lab.append(r, make("span", m[1])); modes.appendChild(lab);
+    });
+    var hint = make("p", ({ add: "いま付いているアイコンは残して、選んだアイコンを足します", remove: "選んだアイコンだけを、取り外します", replace: "選んだアイコンだけにします（いまの設定は消えます）" })[bulkMode], "pt-mi-hint");
     var reset = make("button", "自動に戻す"); reset.type = "button"; reset.className = "btn";
     var clear = make("button", "選択をすべて外す"); clear.type = "button"; clear.className = "btn";
     save.addEventListener("click", function () { bulkAct("set"); });
     reset.addEventListener("click", function () { bulkAct("reset"); });
     clear.addEventListener("click", function () { checked = {}; bulkPick = {}; updateBulkBar(); closeEditor(); renderList(); });
     var row = make("div", undefined, "pt-mi-actions"); row.append(save, reset, clear); ui.editor.appendChild(row);
-    ui.editor.appendChild(make("p", "選んだアイコンが、チェックした技すべてに設定されます（いまの設定は置き換わります）。保存を押すまで、チェックもアイコンの選択も残ります。", "pt-mi-hint"));
+    ui.editor.appendChild(modes); ui.editor.appendChild(hint);
+    ui.editor.appendChild(make("p", "保存を押すまで、チェックもアイコンの選択も残ります。", "pt-mi-hint"));
     var grid = make("div", undefined, "pt-mi-grid"); ui.boxes = {};
     catalog.forEach(function (it) {
       var lab = make("label", undefined, "pt-mi-opt"), cb = make("input"); cb.type = "checkbox"; cb.checked = !!bulkPick[it.id]; ui.boxes[it.id] = cb;
@@ -78,14 +85,22 @@
     if (!keys.length) return;
     if (which === "set" && picked.length > 6) { say("アイコンは6つまでです。", "error"); return; }
     if (which === "reset" && !confirm(keys.length + "件の技のアイコン設定を消して、自動の判定に戻しますか？")) return;
+    if (which === "set" && !picked.length && bulkMode !== "replace") { say("追加・取り外しするアイコンを選んでください。", "error"); return; }
     if (which === "set" && !picked.length && !confirm("アイコンが1つも選ばれていません。" + keys.length + "件を「アイコンなし」にしますか？")) return;
     var btns = ui.editor.querySelectorAll("button"); btns.forEach(function (b) { b.disabled = true; });
-    var done = 0, failed = [], i = 0;
+    var done = 0, skipped = 0, failed = [], i = 0;
     async function worker() {
       while (i < keys.length) {
-        var key = keys[i++], c = checked[key];
+        var key = keys[i++], c = checked[key], next = picked;
         try {
-          await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: c.char, site_k: c.k, move_name: c.name, icons: picked } : { character_id: c.char, site_k: c.k }) });
+          if (which === "set" && bulkMode !== "replace") {          // 追加／取り外し：その技のいまのアイコン（管理者の設定、なければ自動）をもとに計算する
+            var cur = effective(c.char, c.mv, c.k).icons;
+            var merged = bulkMode === "add" ? cur.concat(picked.filter(function (x) { return cur.indexOf(x) < 0; })) : cur.filter(function (x) { return picked.indexOf(x) < 0; });
+            next = catalog.map(function (it) { return it.id; }).filter(function (id) { return merged.indexOf(id) >= 0; });
+            if (next.length > 6) throw new Error("アイコンが6つを超えます");
+            if (next.join() === cur.join()) { delete checked[key]; skipped++; continue; }                 // 変わらない技は、書き込まない
+          }
+          await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: c.char, site_k: c.k, move_name: c.name, icons: next } : { character_id: c.char, site_k: c.k }) });
           delete checked[key]; done++;
         } catch (e) { failed.push(c.name + "（" + e.message + "）"); }
         say("保存中… " + (done + failed.length) + " / " + keys.length, "neutral");
@@ -95,7 +110,7 @@
     try { await loadOverrides(); } catch (e) {}
     if (!failed.length) bulkPick = {};
     updateBulkBar(); renderList(); closeEditor();
-    say(done + "件を" + (which === "set" ? "保存しました。公開サイトには、1分ほどで反映されます。" : "自動の判定に戻しました。") + (failed.length ? "　保存できなかった技が" + failed.length + "件あります（チェックは残してあります）：" + failed.slice(0, 3).join("、") : ""), failed.length ? "error" : "ok");
+    say(done + "件を" + (which === "set" ? "保存しました。公開サイトには、1分ほどで反映されます。" : "自動の判定に戻しました。") + (skipped ? "　（変更がなかった" + skipped + "件は、そのままです）" : "") + (failed.length ? "　保存できなかった技が" + failed.length + "件あります（チェックは残してあります）：" + failed.slice(0, 3).join("、") : ""), failed.length ? "error" : "ok");
   }
   function currentChar() { return characters.find(function (c) { return c.id === ui.char.value; }); }
   function renderList() {
@@ -119,7 +134,7 @@
       var b = make("button", "選ぶ"); b.type = "button"; b.className = "btn"; b.addEventListener("click", function () { choose(c, mv, k); });
       var bt = make("td"); bt.appendChild(b); tr.appendChild(bt);
       var ck = make("td", undefined, "pt-mi-ck"), cb = make("input"), key = ckey(c.id, k); cb.type = "checkbox"; cb.checked = !!checked[key]; cb.setAttribute("aria-label", mv.name + "を一括設定の対象にする");
-      var entry = { char: c.id, cname: c.name, k: k, name: mv.name };
+      var entry = { char: c.id, cname: c.name, k: k, name: mv.name, mv: mv };
       cb.addEventListener("change", function () { if (cb.checked) checked[key] = entry; else delete checked[key]; syncAll(); onCheckChange(); });
       visible.push({ cb: cb, key: key, entry: entry });
       ck.appendChild(cb); tr.appendChild(ck);
