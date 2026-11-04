@@ -1,0 +1,32 @@
+name: Icon import safety test
+on:
+  push:
+    branches:
+      - test/icon-auto-add-replace-20261105
+  workflow_dispatch:
+jobs:
+  icon-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse JavaScript
+        run: |
+          node --check admin-move-icons.js
+          node --check move-icons.js
+          node --check tools/plan-verified-move-icons.mjs
+      - name: Verified-only add and replace test
+        run: node tools/plan-verified-move-icons.mjs --self-test
+      - name: Disallow bulk remove mode in test branch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          code=Path('admin-move-icons.js').read_text()
+          assert '["remove", "外す"' not in code
+          assert 'cur.filter(function (x) { return picked.indexOf(x) < 0; })' not in code
+          assert '["add", "追加する"' in code
+          assert '["replace", "置き換える"' in code
+          print('Icon bulk operation safety PASS')
+          PY
