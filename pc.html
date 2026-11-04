@@ -11631,6 +11631,7 @@ function renderTable() {
   jumpSet(c.id, c.moves);
   if (nfApi) nfApi.render();
   applyFilter();
+  window.__ptMvChar = c.id; if (window.PTMoveMedia) PTMoveMedia.pcSheet(c.id);   // 技の動画（公開済みのものがあるキャラだけ MOVIE 列を足す）
 }
 
 function updateRow(tr, cid, i, off) {
@@ -22313,5 +22314,6 @@ input[type="checkbox"] { border-radius: 8px; }
 })();
 /*CLKJS-END*/
 </script>
+<script src="move-media.js" defer></script>
 </body>
 </html>

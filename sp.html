@@ -12670,6 +12670,7 @@ function cardEl(m) {
   refreshCard(card, m);
   if (opened.has(m.i)) { card.classList.add("open"); fillBody(body, m); }
   head.setAttribute("aria-expanded", opened.has(m.i));
+  window.__ptMvChar = C.id; if (window.PTMoveMedia) PTMoveMedia.spCard(card, C.id);   // 技の動画（公開済みのものがある技だけ、サムネイルを出す）
   return card;
 }
 
@@ -22172,4 +22173,4 @@ input[type="checkbox"] { border-radius: 8px; }
 })();
 
 /*CLKJS-END*/
-</script></html>
+</script><script src="move-media.js" defer></script></html>
