@@ -39,7 +39,9 @@
   #chars button { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 9px; cursor:pointer; font:inherit; display:flex; gap:6px; align-items:center; }
   #chars button[aria-pressed="true"] { border-color:var(--accent); outline:1px solid var(--accent); }
   .editor { display:grid; grid-template-columns:minmax(220px,300px) 1fr; gap:12px; align-items:start; }
-  #mlist { max-height:70vh; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+  :root { --hh:60px; }
+  .editor > .mleft { position:sticky; top:calc(var(--hh) + 8px); display:flex; flex-direction:column; height:calc(100vh - var(--hh) - 20px); min-height:360px; }   /* 左の技一覧は、スクロールしても画面に留まる。一覧は残りの高さいっぱい */
+  #mlist { flex:1 1 auto; min-height:240px; overflow:auto; border:1px solid var(--line); border-radius:8px; }
   #mlist button { display:block; width:100%; text-align:left; background:transparent; color:var(--text); border:0; border-bottom:1px solid var(--line); padding:5px 8px; cursor:pointer; font:inherit; }
   #mlist button[aria-pressed="true"] { background:var(--panel2); box-shadow:inset 3px 0 0 var(--accent); }
   #mlist .k { color:var(--sub); font-size:11px; margin-right:6px; }
@@ -70,7 +72,7 @@
   #secIcons .pt-mi-bar { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; } #secIcons .pt-mi-bar input { flex:1 1 220px; }
   #secIcons .pt-mi-cell { display:flex; gap:3px; align-items:center; min-height:22px; } #secIcons table td { vertical-align:middle; } #secIcons .pt-mi-cell img { border-radius:4px; }
   #secIcons .pt-mi-wrap { display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:16px; align-items:start; }
-  #secIcons .pt-mi-editor { position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel,#1c1f2e); }
+  #secIcons .pt-mi-editor { position:sticky; top:calc(var(--hh) + 8px); max-height:calc(100vh - var(--hh) - 20px); overflow:auto; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel,#1c1f2e); }
   #secIcons .pt-mi-editor h3 { margin:0 0 6px; font-size:1rem; } #secIcons .pt-mi-hint { color:var(--sub,#99a); margin:0; }
   #secIcons .pt-mi-close { display:none; float:right; }
   #secIcons .pt-mi-ck, #secIcons th:last-child { width:34px; text-align:center; } #secIcons .pt-mi-ck input, #secIcons th:last-child input { width:18px; height:18px; cursor:pointer; }
@@ -88,7 +90,7 @@
   #secIcons [data-state="error"] { color:var(--ng); } #secIcons [data-state="ok"] { color:var(--ok); }
   #secMedia [data-state="error"] { color:var(--ng); } #secMedia [data-state="ok"] { color:var(--ok); }
   .hist li { margin:3px 0; } code { background:#10111a; padding:0 5px; border-radius:4px; font-size:12px; }
-  @media (max-width:860px) { .editor { grid-template-columns:1fr; } #mlist { max-height:30vh; } .grid { grid-template-columns:100px 1fr; } .grid .off { grid-column:2; } #pvSP { width:100%; } }
+  @media (max-width:860px) { .editor { grid-template-columns:1fr; } .editor > .mleft { position:static; height:auto; min-height:0; } #mlist { max-height:30vh; flex:none; } .grid { grid-template-columns:100px 1fr; } .grid .off { grid-column:2; } #pvSP { width:100%; } }
 </style>
 </head>
 <body>

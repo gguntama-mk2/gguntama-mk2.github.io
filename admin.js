@@ -207,6 +207,8 @@
 
   // ------------------------------------------------------------ キャラを開く
   function baseOf(id) { return S.chars.find(function (c) { return c.id === id; }); }
+  function syncHeaderHeight() { var hd = document.querySelector("header"); if (hd) document.documentElement.style.setProperty("--hh", hd.offsetHeight + "px"); }
+  window.addEventListener("resize", syncHeaderHeight); window.addEventListener("load", syncHeaderHeight); setTimeout(syncHeaderHeight, 300); setTimeout(syncHeaderHeight, 1500);
   async function openChar(id) {
     var base = baseOf(id); if (!base) return;
     banner("", "読み込み中…");
@@ -477,8 +479,11 @@
     return m + 1;
   }
   function renderEditor() {
-    var c = S.cur; D.editor.replaceChildren();
+    var c = S.cur;
+    var oldList = D.editor.querySelector("#mlist"), keepTop = oldList && S.listFor === (c && c.id) ? oldList.scrollTop : 0, keepY = window.pageYOffset;   // 作り直しても、一覧とページの位置を保つ
+    D.editor.replaceChildren();
     if (!c) return;
+    S.listFor = c.id;
     var baseK = {}; baseOf(c.id).moves.forEach(function (m) { baseK[m.k] = JSON.stringify(m); });
     var list = h("div", { id: "mlist" });
     var q = (c.filter || "").trim().toLowerCase();
@@ -489,13 +494,17 @@
       list.appendChild(h("button", { type: "button", "aria-pressed": String(i === c.sel), onclick: function () { c.sel = i; renderEditor(); } },
         h("span", { class: "k", text: "#" + m.k }), h("span", { class: cls, text: m.name }), cmd ? h("div", { class: "muted", text: cmd }) : null));
     });
-    var left = h("div", null,
+    var left = h("div", { class: "mleft" },
       h("input", { type: "search", placeholder: "技名・コマンドで絞り込み", value: c.filter || "", oninput: function (ev) { c.filter = ev.target.value; var pos = ev.target.selectionStart; renderEditor(); var n = $("input[type=search]", D.editor); n.focus(); n.setSelectionRange(pos, pos); } }),
       h("div", { class: "row", style: "margin:6px 0" },
         h("button", { type: "button", class: "btn", text: "＋技を追加", onclick: addMove }),
         missingBase().length ? h("select", { onchange: function (ev) { restoreBase(+ev.target.value); } }, h("option", { value: "", text: "元データから復元…" }), missingBase().map(function (m) { return h("option", { value: m.k, text: "#" + m.k + " " + m.name }); })) : null),
       list, h("div", { class: "muted", text: "● 元データから変更　＋新規（元データに無い）" }));
     D.editor.append(left, c.moves[c.sel] ? form(c.moves[c.sel]) : h("div", { class: "muted", text: c.moves.length ? "左の一覧から技を選んでください" : "このキャラの技はまだありません。「＋技を追加」から作れます。" }));
+    list.scrollTop = keepTop;
+    var on = list.querySelector('[aria-pressed="true"]');       // 選んだ技が一覧の外にあるときだけ、一覧の中だけを動かして見える位置にする
+    if (on && (on.offsetTop < list.scrollTop || on.offsetTop + on.offsetHeight > list.scrollTop + list.clientHeight)) list.scrollTop = Math.max(0, on.offsetTop - Math.round(list.clientHeight / 3));
+    if (Math.abs(window.pageYOffset - keepY) > 1) window.scrollTo(window.pageXOffset, keepY);
   }
   function missingBase() { var have = {}; S.cur.moves.forEach(function (m) { have[m.k] = 1; }); return baseOf(S.cur.id).moves.filter(function (m) { return !have[m.k]; }); }
   function restoreBase(k) { var m = baseOf(S.cur.id).moves.find(function (x) { return x.k === k; }); if (!m) return; S.cur.moves.push(clone(m)); S.cur.sel = S.cur.moves.length - 1; touch(); renderEditor(); }
