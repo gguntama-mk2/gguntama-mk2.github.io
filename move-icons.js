@@ -57,6 +57,47 @@
     return out;
   }
 
+
+  /* TEST BRANCH ONLY: 2026-11-05 Bryan candidate preview.
+     These are historical site-tag candidates, NOT binary-verified gameplay facts.
+     Explicit query opt-in. No admin API writes, no deletion, no production changes.
+     Strict char ID / site k / move name match prevents accidentally applying to renamed moves. */
+  var ICON_TEST = /(?:^|[?&])pticons=bryan-test(?:&|$)/.test(location.search) && !PREVIEW;
+  var ICON_TEST_ROWS = {
+    "5": ["ワンツーネックハント(ヒート発動可能状態)", ["heatengage"]],
+    "34": ["スネークピット(1)", ["homing"]],
+    "35": ["スネークチェーン", ["homing"]],
+    "36": ["スネークチェーン～スウェー", ["homing"]],
+    "37": ["スネークピット", ["homing"]],
+    "59": ["スネークエッジ", ["homing"]],
+    "60": ["レッグスラッシュ", ["homing"]],
+    "79": ["クラッシュインパクト(ヒート発動可能状態)", ["heatengage"]],
+    "103": ["マッドマンズブロー～スネークアイ", ["powercrush"]],
+    "104": ["マッドマンズブロー(強化)～スネークアイ", ["powercrush"]],
+    "118": ["マッハパンチ(ヒート発動可能状態)", ["heatengage"]],
+    "125": ["マッハキック", ["homing"]],
+    "147": ["スネークバイト(ヒート発動可能状態)", ["heatengage"]],
+    "172": ["イモータルペイバック", ["powercrush"]],
+    "187": ["レクイエム(ハイドクローラー中・ヒート発動可能状態)", ["heatengage"]],
+    "195": ["ヒートバースト", ["powercrush","heatengage"]],
+    "204": ["レクイエム(ヒート発動可能状態)", ["heatengage"]],
+    "209": ["トータルヴァンダライゼーション", ["powercrush","recoverable"]],
+    "210": ["DDT", ["homing"]],
+    "211": ["ブライアンクラッシャー", ["homing"]]
+  };
+  var ICON_TEST_REPORT = { matched: {}, rejected: {} };
+  function candidateIcons(charId, raw) {
+    if (!ICON_TEST || charId !== "bryan" || !raw) return [];
+    var row = ICON_TEST_ROWS[String(raw.k)];
+    if (!row) return [];
+    if (key(row[0]) !== key(raw.name)) {
+      ICON_TEST_REPORT.rejected[String(raw.k)] = { expected: row[0], actual: String(raw.name || "") };
+      return [];
+    }
+    ICON_TEST_REPORT.matched[String(raw.k)] = true;
+    return row[1];
+  }
+
   /* ② 管理者ページで設定した内容 */
   var overrides = null, loading = null, loadedAt = 0;
   function apiBase() {
@@ -110,6 +151,11 @@
   function paint(strip) {
     var host = strip.parentNode; if (!host) return;
     var ids = iconsFor(strip.dataset.c, strip.dataset.k, strip._auto || []);
+    // Candidate preview appends to current effective icons; never removes existing icons.
+    if (ICON_TEST && strip._candidate && strip._candidate.length) {
+      var merged = ids.concat(strip._candidate.filter(function (i) { return ids.indexOf(i) < 0; }));
+      if (merged.length <= MAX_ICONS) ids = clean(merged);
+    }
     var sig = ids.join(",");
     if (strip._sig === sig) return;
     strip._sig = sig;
@@ -137,11 +183,12 @@
       ensureStyle();
       var strip = document.createElement("span"); strip.className = "pt-ic"; strip.dataset.c = String(charId); strip.dataset.k = String(raw.k);
       strip._auto = auto(charId, raw, tagIds);
+      strip._candidate = candidateIcons(charId, raw);
       cmdEl.insertAdjacentElement("afterend", strip);
       paint(strip);
       if (!overrides) load();
     } catch (e) { /* アイコンが出せなくても、技表はこれまでどおり */ }
   }
 
-  window.PTIcons = Object.freeze({ attach: attach, auto: auto, iconsFor: iconsFor, catalog: CATALOG.map(function (c) { return { id: c[0], label: c[1], file: c[2] }; }), refresh: refresh, reload: function () { overrides = null; loadedAt = 0; return load(); } });
+  window.PTIcons = Object.freeze({ attach: attach, auto: auto, iconsFor: iconsFor, catalog: CATALOG.map(function (c) { return { id: c[0], label: c[1], file: c[2] }; }), refresh: refresh, testPreview: function () { return { enabled: ICON_TEST, matched: Object.keys(ICON_TEST_REPORT.matched), rejected: ICON_TEST_REPORT.rejected, expected_count: 20, game_binary_verified: false }; }, reload: function () { overrides = null; loadedAt = 0; return load(); } });
 })();
