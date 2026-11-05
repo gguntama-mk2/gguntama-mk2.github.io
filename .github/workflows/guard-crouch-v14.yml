@@ -71,7 +71,7 @@ jobs:
                   page.goto(base,wait_until='domcontentloaded')
                   page.wait_for_function("document.body.dataset.ready === 'true'",timeout=30000)
                   assert '1166技' in page.locator('#summary').inner_text()
-                  page.locator('#origin').select_option('full_site_guard_only')
+                  page.locator('#origin').select_option('new_guard_s_only')
                   page.locator('#group').select_option('low')
                   assert '535技' in page.locator('#count').inner_text()
                   page.locator('#character').select_option('jin')
