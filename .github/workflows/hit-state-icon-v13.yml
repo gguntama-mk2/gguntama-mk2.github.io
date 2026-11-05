@@ -88,8 +88,9 @@ jobs:
                   page.locator('#character').select_option('alisa')
                   page.locator('#query').fill('アンインストール')
                   page.locator('#effect').select_option('wall_stage_effect')
-                  assert page.locator('tbody tr').count()==1
-                  assert page.locator('tbody tr img[alt="壁ギミック"]').count()==1
+                  # Two names contain アンインストール. Verify the exact stable move key k20.
+                  assert page.locator('tbody tr').filter(has=page.locator('td:nth-child(2):text-is("k20")')).count()==1
+                  assert page.locator('tbody tr img[alt="壁ギミック"]').count()>=1
                   page.locator('#hitstate').select_option('air')
                   page.locator('#effect').select_option('floor_stage_effect')
                   assert page.locator('tbody tr').count()==1
