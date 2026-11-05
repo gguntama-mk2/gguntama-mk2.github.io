@@ -59,3 +59,9 @@ jobs:
           assert '["replace", "置き換える"' in code
           print('Icon bulk operation safety PASS')
           PY
+      - name: Publish self-contained preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_BRYAN_ICON_TEST_WEBSITE
+          path: bryan-icon-test-standalone.html
+          if-no-files-found: error
