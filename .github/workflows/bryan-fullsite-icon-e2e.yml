@@ -67,7 +67,7 @@ jobs:
                  'admin-move-media.js','move-icons.js','move-media.js','checksheet-base.json',
                  'combos-live.json','index.html','favicon.svg',
                  'tests/icon_replica_server.py','tests/e2e_bryan_isolated_icons.py',
-                 'test-data/bryan-icon-candidates-v2.json','docs/BRYAN_FULL_SITE_ICON_TEST_JA.md']
+                 'test-data/bryan-icon-candidates-v2.json','test-data/isolated-move-icons-overrides.json','docs/BRYAN_FULL_SITE_ICON_TEST_JA.md']
           names += [str(p) for p in Path('icons').glob('*.webp')]
           out=Path('/tmp/pt-icon-replica/PROJECT_T_BRYAN_TEST_FULL_SITE.zip')
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
