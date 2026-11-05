@@ -35,6 +35,26 @@ jobs:
           assert page.count('<tr>')==11
           print('PASS V7',len(data['rows']),'stage records, 10 dual cases, no icon assignment')
           PY
+      - name: Render review page in isolated browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install chromium
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          p=Path('/tmp/pt-stage-v7')
+          with sync_playwright() as pw:
+              browser=pw.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              page=browser.new_page(viewport={'width':1440,'height':900})
+              page.goto((p/'stage-conditions-review-v7.html').as_uri())
+              assert page.locator('tbody tr').count()==10
+              assert page.locator('tbody tr').first.locator('td').count()==7
+              assert page.get_by_text('ノーマル・カウンターヒット時').count()==10
+              assert page.get_by_text('空中ヒット時').count()==10
+              page.screenshot(path=str(p/'STAGE_CONDITIONS_V7_BROWSER.png'),full_page=True)
+              browser.close()
+          print('PASS: 10 condition rows rendered in Chromium; screenshot saved')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: PROJECT_T_STAGE_CONDITIONS_V7
