@@ -54,8 +54,8 @@ jobs:
           for k in ('evidence_cases','provisional_ground_reaction_cases','reported_or_supported_floor_cases','source_moves','hold_variant_site_key'):
               assert a[k]==b[k],k
           assert a['source_moves']==9569
-          assert a['evidence_cases']==7 and a['provisional_ground_reaction_cases']==5
-          assert a['reported_or_supported_floor_cases']==7
+          assert a['evidence_cases']==8 and a['provisional_ground_reaction_cases']==6
+          assert a['reported_or_supported_floor_cases']==8
           assert a['binary_reaction_id_resolved']==a['game_binary_verified']==a['existing_icons_written']==a['production_changes']==0
           by={x['case_id']:x for x in pc['cases']}
           assert by['bob_ground_NH']['site_move_id']=='bob/184'
@@ -67,12 +67,13 @@ jobs:
           assert by['heihachi_7WP_unheld_ground_CH']['site_move_id']=='heihachi/97'
           assert by['heihachi_7WP_hold_ground_NH']['variant']=='7WPホールド'
           assert by['heihachi_7WP_hold_ground_NH']['site_move_id']==a['hold_variant_site_key']
+          assert by['heihachi_7WP_hold_ground_CH']['site_move_id']=='heihachi/98'
           assert all(x['internal_reaction_id'] is None and x['game_binary_verified'] is False and x['official_icon_assignment_approved'] is False for x in pc['cases'])
           original=json.loads((root/'pc-v24/V24_JAPANESE_REVIEW.json').read_text())
           assert original['summary']['japanese_pending']==22
           assert len(original['records'])==128
           assert not json.loads(Path('test-data/v21-game-icon-observations.json').read_text())['observations']
-          print('PASS V25: 3 grounded anchors, 7 state cases, 0 invented binary effect IDs, 0 icon writes')
+          print('PASS V25: 3 grounded anchors, 8 state cases, 0 invented binary effect IDs, 0 icon writes')
           print('HOLD_VARIANT_RESOLVED',a['hold_variant_site_key'],a['source_held_candidates'])
           PY
       - name: Install Chromium
@@ -97,11 +98,11 @@ jobs:
                   page=browser.new_page(viewport=viewport)
                   page.goto(url,wait_until='domcontentloaded',timeout=60000)
                   page.wait_for_function("document.body.dataset.ready==='true'",timeout=45000)
-                  assert page.locator('tbody tr').count()==7
-                  assert page.locator('#cases').inner_text()=='7'
-                  assert page.locator('#shared').inner_text()=='5'
-                  assert page.locator('#stages').inner_text()=='7'
-                  assert page.locator('img[alt="床効果の参考アイコン"]').count()==7
+                  assert page.locator('tbody tr').count()==8
+                  assert page.locator('#cases').inner_text()=='8'
+                  assert page.locator('#shared').inner_text()=='6'
+                  assert page.locator('#stages').inner_text()=='8'
+                  assert page.locator('img[alt="床効果の参考アイコン"]').count()==8
                   assert page.evaluate("Array.from(document.images).every(img=>img.complete && img.naturalWidth>0)")
                   page.locator('#character').select_option('bob')
                   assert page.locator('tbody tr').count()==3
@@ -114,6 +115,8 @@ jobs:
                   page.locator('#character').select_option('heihachi')
                   page.locator('#hit').select_option('ground_normal')
                   assert page.locator('tbody tr[data-case-id="heihachi_7WP_hold_ground_NH"]').count()==1
+                  page.locator('#hit').select_option('ground_counter')
+                  assert page.locator('tbody tr[data-case-id="heihachi_7WP_hold_ground_CH"]').count()==1
                   page.locator('#character').select_option('alisa')
                   page.locator('#hit').select_option('ground_counter')
                   assert page.locator('tbody tr[data-case-id="alisa_7LP_ground_CH"]').count()==1
