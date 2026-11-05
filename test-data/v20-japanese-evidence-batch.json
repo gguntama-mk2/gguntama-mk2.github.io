@@ -1,0 +1,330 @@
+{
+  "schema": 20,
+  "date": "2026-11-05",
+  "site_baseline": "V19 128 review groups",
+  "rules": {
+    "japanese_sources_primary": true,
+    "foreign_sites_final_authority": false,
+    "automatic_icon_assignment": false,
+    "distinguish_attacker_crouch": true,
+    "explicit_absence_not_proven_by_missing_annotation": true
+  },
+  "entries": [
+    {
+      "move_id": "asuka/140",
+      "site_guard": "±0s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "流雲二段蹴りの最終ガード値",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/asuka/data.htm",
+          "guard": "±0^{S}",
+          "version": "1.00.00",
+          "notes": "流雲二段蹴り、ガードで強制しゃがみと説明",
+          "explicit_forced_crouch_annotation": true
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "asuka/141",
+      "site_guard": "±0s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "流雲二段蹴り～しゃがみ",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/asuka/data.htm",
+          "guard": "±0^{S}",
+          "version": "1.00.00",
+          "notes": "相手強制しゃがみと攻撃者しゃがみ帰着の両方を明記",
+          "explicit_forced_crouch_annotation": true
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/30",
+      "site_guard": "+1s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/yoshimitsu/frame/",
+          "guard": "+1s",
+          "version": "2026 Japanese frame page",
+          "notes": "散羽烏：ガード時は相手を強制しゃがみにして+1F",
+          "explicit_forced_crouch_annotation": true
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/yoshimitsu/data.htm",
+          "guard": "+4^{S}",
+          "version": "1.00.00",
+          "notes": "古い資料では散羽鳥と表記。名前と数値差があるため対応行としては参考のみ",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/162",
+      "site_guard": "+1s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/yoshimitsu/frame-data/s3/",
+          "guard": "+1s",
+          "version": "3.02.02",
+          "notes": "八咫烏のガード値",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/yoshimitsu/data.htm",
+          "guard": "+1^{S}",
+          "version": "1.00.00",
+          "notes": "八咫烏はガードで相手を強制しゃがみにする説明",
+          "explicit_forced_crouch_annotation": true
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/378",
+      "site_guard": "-8s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/yoshimitsu/frame-data/s3/",
+          "guard": "-8s",
+          "version": "3.02.02",
+          "notes": "朧車(無刀ノ極中)、構え条件を指定",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/yoshimitsu/data.htm",
+          "guard": "-8^{S}",
+          "version": "1.00.00",
+          "notes": "無刀ノ極中の朧車はガードで強制しゃがみ",
+          "explicit_forced_crouch_annotation": true
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/396",
+      "site_guard": "-8s",
+      "jp_status": "jp_explicit",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/yoshimitsu/frame-data/s3/",
+          "guard": "-8s",
+          "version": "3.02.02",
+          "notes": "千覚朧車(無刀ノ極中)",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/yoshimitsu/data.htm",
+          "guard": "-8^{S}",
+          "version": "1.00.00",
+          "notes": "千覚朧車(無刀ノ極中)でガード時相手強制しゃがみ",
+          "explicit_forced_crouch_annotation": true
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "jun/154",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_disagreement",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jun/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "流雲二段蹴り(4ヒット版)、末尾sあり",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/jun/data.htm",
+          "guard": "±0",
+          "version": "1.00.00",
+          "notes": "同名4ヒット版は±0でS記載なし。未記載は非対応を証明しない",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "jun/155",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_disagreement",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jun/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "流雲二段蹴り～しゃがみ、末尾sあり",
+          "explicit_forced_crouch_annotation": false
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/jun/data.htm",
+          "guard": "±0",
+          "version": "1.00.00",
+          "notes": "同名～しゃがみ4ヒット版は±0、攻撃側のしゃがみ帰着のみの記載",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/24",
+      "site_guard": "-3s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "-3s",
+          "version": "3.02.02",
+          "notes": "絶招横打擺腿（ヒート中）、s表記のみ",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/222",
+      "site_guard": "-3s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "-3s",
+          "version": "3.02.02",
+          "notes": "絶招横打擺腿（閃電保有時）、s表記のみ",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/25",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "絶招横打擺腿～仆歩（ヒート中）; 攻撃側構え移行を分離",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/223",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "絶招横打擺腿～仆歩（閃電保有時）; 攻撃側構え移行を分離",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/70",
+      "site_guard": "-11s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "-11s",
+          "version": "3.02.02",
+          "notes": "二郎担山（ヒート発動可能状態）; 派生差異は未確認",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    },
+    {
+      "move_id": "leo/110",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_only",
+      "evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "±0s",
+          "version": "3.02.02",
+          "notes": "跳山斧刃～仆歩; 攻撃側CS移行を分離",
+          "explicit_forced_crouch_annotation": false
+        }
+      ],
+      "evidence_scope": "guard_opponent_crouch_only",
+      "game_binary_verified": false,
+      "icon_approved": false
+    }
+  ]
+}
