@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PROJECT T｜ガード時 強制しゃがみ候補 v14</title>
+<style>
+body{font:14px/1.6 system-ui,sans-serif;background:#141824;color:#f1f3f8;margin:20px}
+h1{font-size:24px}.warning{border:1px solid #b08c47;padding:12px;background:#322a20;border-radius:8px}
+input,select{padding:9px;background:#252e43;color:white;border:1px solid #5d6b87;border-radius:5px;margin:5px}
+input{min-width:180px}section{margin:16px 0}.table{overflow-x:auto}
+table{min-width:800px;width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #46506a;text-align:left;padding:9px}
+th{background:#30374e}.label{display:inline-flex;align-items:center;gap:6px;margin:2px;padding:4px 8px;background:#303c52;border-radius:6px}
+.label img{width:27px;height:27px;object-fit:contain}.muted{color:#b3c0d3}
+</style></head>
+<body><h1>PROJECT T｜ガード時の強制しゃがみ検証 v14</h1>
+<p class="warning">サイトのs表記は強制しゃがみアイコンの正式な付与根拠ではありません。下段攻撃のしゃがみガードによる表記と混同しないように分類しています。既存アイコン設定の書き換えなし。</p>
+<section><strong id="summary">読込中…</strong></section>
+<section>
+<select id="origin"><option value="">全1,166技</option><option value="full_site_guard_only">追加778技のみ</option><option value="v12_hit_effects">従来の388技</option></select>
+<select id="group"><option value="">全攻撃レベル</option><option value="low">下段終わり</option><option value="mid">中段終わり</option><option value="high">上段終わり</option><option value="ambiguous">特殊・不明</option></select>
+<select id="character"><option value="">全キャラクター</option></select>
+<input id="search" type="search" placeholder="技ID・技名・コマンドを検索">
+</section>
+<p id="count" class="muted"></p>
+<div class="table"><table><thead><tr><th>キャラ</th><th>ID</th><th>技名</th><th>攻撃判定</th><th>ガード</th><th>判定方針</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<p class="muted">下段終わりは保留。中段・上段・特殊終わりは要確認であり、ゲーム内部データで確定した技はありません。</p>
+<script>
+(async()=>{
+const data=await fetch('./V14_GUARD_REVIEW.json').then(r=>{if(!r.ok)throw Error('データの読込失敗');return r.json()});
+const rows=data.reviews,$=id=>document.getElementById(id);
+const origin=$('origin'),group=$('group'),ch=$('character'),search=$('search'),tbody=$('tbody');
+$('summary').textContent='ガード時s表記 '+data.summary.counts.total+'技／今回追加 '+data.summary.counts.new_guard_only+'技／追加内の下段 '+data.summary.counts.new_low+'技';
+const chars=new Map(rows.map(r=>[r.character_id,r.character_name]));
+for(const [id,name] of chars){let op=document.createElement('option');op.value=id;op.textContent=name;ch.append(op)}
+const names={low:'下段ガードの可能性・保留',mid:'中段・反応要確認',high:'上段・反応要確認',ambiguous:'特殊/不明・技内容要確認'};
+function render(){
+const q=search.value.normalize('NFKC').toLowerCase().trim();
+const found=rows.filter(r=>(!origin.value||r.review_origin===origin.value)&&(!group.value||r.last_attack_group===group.value)&&(!ch.value||r.character_id===ch.value)&&(!q||(r.move_id+' '+r.move_name+' '+r.command).normalize('NFKC').toLowerCase().includes(q)));
+$('count').textContent=found.length+'技に一致。先頭100技を表示';
+tbody.replaceChildren();
+for(const r of found.slice(0,100)){
+ const tr=document.createElement('tr');tr.dataset.moveId=r.move_id;
+ for(const v of [r.character_name,'k'+r.site_k,r.move_name,r.attack,r.guard_value]){
+   const td=document.createElement('td');td.textContent=v;tr.append(td)
+ }
+ const cell=document.createElement('td');const tag=document.createElement('span');tag.className='label';
+ if(r.last_attack_group!=='low'){
+   const img=document.createElement('img');img.src='forcedcrouch.webp';img.alt='強制しゃがみ検証候補';tag.append(img)
+ }
+ tag.append(document.createTextNode(names[r.last_attack_group]));cell.append(tag);
+ if(r.external_comparison){const p=document.createElement('div');p.textContent='外部照合: '+r.external_comparison.result;cell.append(p)}
+ tr.append(cell);tbody.append(tr);
+}
+}
+for(const el of [origin,group,ch,search])el.addEventListener('input',render);
+render();document.body.dataset.ready='true';
+})().catch(e=>{document.body.dataset.ready='error';document.getElementById('summary').textContent='エラー '+e.message});
+</script></body></html>
