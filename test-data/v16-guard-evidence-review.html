@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>PROJECT T｜強制しゃがみ外部照合 v16</title>
+<style>
+:root{color-scheme:dark;font:14px/1.6 system-ui,"Yu Gothic",Meiryo,sans-serif;background:#121622;color:#ecf0fa}
+*{box-sizing:border-box}body{margin:0}
+header{padding:22px max(16px,calc((100vw - 1130px)/2));background:#20283b;border-bottom:1px solid #43516b}
+main{max-width:1170px;margin:auto;padding:21px 16px 70px}
+h1{font-size:clamp(22px,3vw,28px);margin:0 0 6px}.sub{color:#b2bfd4}
+.warning{background:#332b23;border:1px solid #b09560;border-radius:8px;padding:13px 15px;margin:16px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+.stats article{background:#222b3f;border:1px solid #48556e;border-radius:8px;padding:10px 14px}
+.stats strong{font-size:26px;display:block}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+select,input{padding:10px;background:#253149;color:white;border:1px solid #60708c;border-radius:7px;font:inherit}
+input{flex:1;min-width:195px}.scroll{overflow:auto;border:1px solid #45516a;border-radius:8px}
+table{border-collapse:collapse;min-width:950px;width:100%}th,td{padding:10px;text-align:left;vertical-align:top;border-bottom:1px solid #414b63}
+th{background:#303b53}.state{display:inline-block;border-radius:5px;padding:3px 8px;background:#35435b;font-size:12px}
+.state.good{color:#abebce}.state.conflict{color:#ffcb83}.state.unknown{color:#b7c1d5}
+a{color:#9ecbff}td:nth-child(2){white-space:nowrap;color:#f5d48a}
+@media(max-width:650px){td,th{padding:8px 6px}}
+</style></head><body><header><h1>PROJECT T｜強制しゃがみ外部照合 v16</h1>
+<div class="sub">全128レビューグループ｜9件一致・1件資料間の相違・118件未照合</div></header>
+<main><p class="warning"><strong>検証用データ</strong>：外部技表と一致してもゲーム内部の効果IDまでは検証できていません。各サイトのバージョン差にも注意し、既存の管理者設定を変更しないでください。</p>
+<div class="stats">
+<article><strong id="total">—</strong>レビュー対象</article>
+<article><strong id="matches">—</strong>別サイトでc表記</article>
+<article><strong id="disagree">—</strong>資料間の不一致</article>
+<article><strong id="unreviewed">—</strong>未照合</article></div>
+<div class="filters"><select id="status">
+<option value="">全128件</option><option value="independent_c_match">c表記一致</option>
+<option value="source_disagreement">資料間で不一致</option><option value="unreviewed_external">未照合</option>
+</select><input id="q" placeholder="キャラ・技ID・技名・コマンドで検索"></div>
+<p id="count" class="sub">読込中</p>
+<div class="scroll"><table><thead><tr><th>キャラクター</th><th>技ID</th><th>技名・コマンド</th><th>PROJECT T</th><th>照合したガード結果</th><th>判定・外部資料</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<p class="sub">表記参照：<a href="https://wavu.wiki/t/Notation" target="_blank" rel="noopener noreferrer">Wavu WikiのNotation</a>。cは相手のしゃがみ状態での回復、sはスタッガーを表す規則です。</p>
+</main><script>
+(async()=>{
+const resp=await fetch('V16_128_REVIEW.json');if(!resp.ok)throw Error('JSON not found');
+const data=await resp.json(),R=data.reviews,S=data.summary;
+const $=id=>document.getElementById(id);
+$('total').textContent=S.priority_review_groups;
+$('matches').textContent=S.independent_c_matches;
+$('disagree').textContent=S.source_disagreements;
+$('unreviewed').textContent=S.unreviewed_groups;
+const labels={independent_c_match:'独立技表でもc表記',source_disagreement:'資料ごとに異なる',unreviewed_external:'未照合'};
+function render(){
+ const val=$('status').value,query=$('q').value.normalize('NFKC').toLowerCase().trim();
+ const list=R.filter(r=>(!val||r.source_status===val)&&(!query||(r.move_id+' '+r.move_name+' '+r.command).normalize('NFKC').toLowerCase().includes(query)));
+ $('count').textContent=list.length+'件が該当（最大128件表示）';const tbody=$('tbody');tbody.replaceChildren();
+ for(const r of list){
+  const tr=document.createElement('tr');tr.dataset.moveId=r.move_id;
+  for(const v of [r.character_id,'k'+r.site_k,r.move_name+'／'+r.command,r.site_guard,r.external_guard||'未照合']){
+   const cell=document.createElement('td');cell.textContent=v;tr.append(cell)
+  }
+  const cell=document.createElement('td'),st=document.createElement('span');st.className='state '+({independent_c_match:'good',source_disagreement:'conflict',unreviewed_external:'unknown'}[r.source_status]);
+  st.textContent=labels[r.source_status];cell.append(st);
+  if(r.external_url){const div=document.createElement('div'),a=document.createElement('a');
+   a.href=r.external_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='TekkenDocs';div.append(a);cell.append(div)}
+  if(r.additional_external_url){const div=document.createElement('div'),a=document.createElement('a');a.href=r.additional_external_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='geppopotamus: '+r.additional_external_guard;div.append(a);cell.append(div)}
+  tr.append(cell);tbody.append(tr);
+ }
+}
+$('status').addEventListener('change',render);$('q').addEventListener('input',render);
+render();document.body.dataset.ready='true';
+})().catch(e=>{$('count').textContent='表示エラー: '+e.message;document.body.dataset.ready='error'});
+</script></body></html>
