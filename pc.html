@@ -368,7 +368,7 @@ dialog.iodlg::backdrop{background:rgba(0,0,0,.55)}
 .search{flex:1 1 220px;min-width:180px;max-width:360px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:.8125rem}
 .search::placeholder{color:var(--ph)}
 th.memo{width:16%;min-width:160px}
-th.hic { width: 58px; min-width: 58px; } td.hic { text-align: center; vertical-align: middle; line-height: 0; } td.hic img { display: inline-block; width: 24px; height: 24px; margin: 1px; vertical-align: middle; border-radius: 4px; }
+th.hic { width: 58px; min-width: 58px; } col.c-hic { width: 58px; } td.hic { text-align: center; vertical-align: middle; line-height: 0; } td.hic img { display: inline-block; width: 24px; height: 24px; margin: 1px; vertical-align: middle; border-radius: 4px; }
 td.memo{padding:6px 8px;text-align:left;vertical-align:middle}
 textarea.memo{display:block;width:100%;min-height:34px;resize:vertical;box-sizing:border-box;background:var(--bg,#1a1b2e);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:.8125rem;line-height:1.4}
 textarea.memo::placeholder{color:var(--ph2)}
@@ -11299,6 +11299,10 @@ function renderHead() {
   first.className = "name";
   first.textContent = "技名";
   row.appendChild(first);
+  if (HC) [["地上\nヒット時", "地上ヒット時"], ["空中\nヒット時", "空中ヒット時"]].forEach(([s, full]) => {   // 〔表示の試作〕アイコン用の新しい2列
+    const th = document.createElement("th"); th.className = "hic"; th.textContent = s; th.title = full; th.setAttribute("aria-label", full); row.appendChild(th);
+  });
+  if (HC) { const cn = document.querySelector("colgroup col.c-name"); if (cn) for (let n = 0; n < 2; n++) { const cc = document.createElement("col"); cc.className = "c-hic"; cn.insertAdjacentElement("afterend", cc); } }   // 列の幅の割り当て（技名の次に、アイコンの2列ぶん）
   const tagh = document.createElement("th");   // 技名の右の、タグ専用の列
   tagh.className = "tagc";
   tagh.textContent = "タグ";
@@ -11308,9 +11312,6 @@ function renderHead() {
     th.textContent = col.s || col.label; th.dataset.col = col.id;
     if (col.s) { th.title = col.label; th.setAttribute("aria-label", col.label); }
     row.appendChild(th);
-  });
-  if (HC) [["地上\nヒット時", "地上ヒット時"], ["空中\nヒット時", "空中ヒット時"]].forEach(([s, full]) => {   // 〔表示の試作〕アイコン用の新しい2列
-    const th = document.createElement("th"); th.className = "hic"; th.textContent = s; th.title = full; th.setAttribute("aria-label", full); row.appendChild(th);
   });
   if (HC !== "nomemo") {
     const mh = document.createElement("th");
@@ -11553,6 +11554,10 @@ function renderTable() {
     th.appendChild(nmw);
     tr.appendChild(th);
 
+    if (HC) {   // 〔試作〕新しい2列：「地上ヒット時」には、いま技表に出ているアイコンを移す。「空中ヒット時」は、これから設定する（いまは空）
+      [0, 1].forEach(side => { const td = document.createElement("td"); td.className = "hic"; td.dataset.side = side ? "air" : "ground"; tr.appendChild(td);
+        if (!side && window.PTIcons) PTIcons.attach(td, null, c.id, raw, moveInfo(raw).tags.map(t => t.id), { into: td }); });
+    }
     const tgd = document.createElement("td");   // タグ専用列：取得・消費・ヒート発動技などのカプセルを並べる
     tgd.className = "tagc";
     const tgs = infoEl(raw, "tags");
@@ -11612,10 +11617,6 @@ function renderTable() {
       tr.appendChild(td);
     });
 
-    if (HC) {   // 〔試作〕新しい2列：「地上ヒット時」には、いま技表に出ているアイコンを移す。「空中ヒット時」は、これから設定する（いまは空）
-      [0, 1].forEach(side => { const td = document.createElement("td"); td.className = "hic"; td.dataset.side = side ? "air" : "ground"; tr.appendChild(td);
-        if (!side && window.PTIcons) PTIcons.attach(td, null, c.id, raw, moveInfo(raw).tags.map(t => t.id), { into: td }); });
-    }
     const mtd = document.createElement("td");
     mtd.className = "memo";
     const ta = document.createElement("textarea");
