@@ -56,6 +56,11 @@ jobs:
           assert a['source_moves']==9569
           assert a['evidence_cases']==8 and a['provisional_ground_reaction_cases']==6
           assert a['reported_or_supported_floor_cases']==8
+          assert a['lexical_reaction_label_cases']>=2 and a['lexical_candidate_moves']>=2
+          assert a['lexical_reaction_label_cases']==b['lexical_reaction_label_cases']
+          assert a['lexical_candidate_moves']==b['lexical_candidate_moves']
+          assert pc['lexicalLeads']==sp['lexicalLeads']
+          assert all(x['same_as_s3_special_reaction']=='NOT_ESTABLISHED' and x['automatic_icon_allowed'] is False for x in pc['lexicalLeads'])
           assert a['binary_reaction_id_resolved']==a['game_binary_verified']==a['existing_icons_written']==a['production_changes']==0
           by={x['case_id']:x for x in pc['cases']}
           assert by['bob_ground_NH']['site_move_id']=='bob/184'
