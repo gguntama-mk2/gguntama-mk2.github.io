@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "character_id": "bryan",
+  "source": "historical-site-tags+handoff-2026-11-05",
+  "game_binary_verified": false,
+  "expected_count": 20,
+  "moves": [
+    {
+      "k": 5,
+      "name": "ワンツーネックハント(ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 34,
+      "name": "スネークピット(1)",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 35,
+      "name": "スネークチェーン",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 36,
+      "name": "スネークチェーン～スウェー",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 37,
+      "name": "スネークピット",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 59,
+      "name": "スネークエッジ",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 60,
+      "name": "レッグスラッシュ",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 79,
+      "name": "クラッシュインパクト(ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 103,
+      "name": "マッドマンズブロー～スネークアイ",
+      "icons": [
+        "powercrush"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 104,
+      "name": "マッドマンズブロー(強化)～スネークアイ",
+      "icons": [
+        "powercrush"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 118,
+      "name": "マッハパンチ(ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 125,
+      "name": "マッハキック",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 147,
+      "name": "スネークバイト(ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 172,
+      "name": "イモータルペイバック",
+      "icons": [
+        "powercrush"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 187,
+      "name": "レクイエム(ハイドクローラー中・ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 195,
+      "name": "ヒートバースト",
+      "icons": [
+        "powercrush",
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 204,
+      "name": "レクイエム(ヒート発動可能状態)",
+      "icons": [
+        "heatengage"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 209,
+      "name": "トータルヴァンダライゼーション",
+      "icons": [
+        "powercrush",
+        "recoverable"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 210,
+      "name": "DDT",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    },
+    {
+      "k": 211,
+      "name": "ブライアンクラッシャー",
+      "icons": [
+        "homing"
+      ],
+      "status": "review_required"
+    }
+  ]
+}
