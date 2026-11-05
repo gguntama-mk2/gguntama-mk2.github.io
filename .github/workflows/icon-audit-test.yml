@@ -17,8 +17,11 @@ jobs:
           node --check admin-move-icons.js
           node --check move-icons.js
           node --check tools/plan-verified-move-icons.mjs
+          node --check tests/test-bryan-icon-preview.mjs
       - name: Verified-only add and replace test
         run: node tools/plan-verified-move-icons.mjs --self-test
+      - name: Bryan candidate preview test
+        run: node tests/test-bryan-icon-preview.mjs
       - name: Disallow bulk remove mode in test branch
         run: |
           python - <<'PY'
