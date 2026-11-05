@@ -11083,8 +11083,8 @@ const CHARACTERS = [
 /* チェック項目の列（この並び順で表示されます）
    id    : 保存用の固有ID（変更しない）
    label : 見出しの表示名 */
-const HC = ((location.search.match(/[?&]hc=(memo|nomemo)(&|$)/) || [])[1]) || "";   // 〔表示の試作〕?hc=memo／?hc=nomemo のときだけ、新しい2列（地上ヒット・空中ヒット）を出す
-if (HC) document.documentElement.dataset.hc = HC;
+const HC = "nomemo";   // 技表の新しい2列（地上ヒット時・空中ヒット時。技名とタグの間）。そのぶん、メモの列は技表から外した（書いたメモのデータは、ブラウザに残したまま）
+document.documentElement.dataset.hc = HC;
 const COLS = [
   { id: "command",  label: "コマンド" },
   { id: "attack", label: "攻撃判定", s: "攻撃\n判定" },
@@ -11636,7 +11636,7 @@ function renderTable() {
     tr.dataset.q = normQ(move + " " + (typeof raw === "object" && raw.y ? raw.y : "") + " " + (answers.command || "") + " " + (answers.ci || "") + " " + moveInfo(raw).kw + " " + (answers.gimmick || "").replace(/\n/g, " "));
     tr.dataset.cmd = normQ((answers.command || "") + " " + (answers.ci || "").replace(/[.^]/g, ""));
     rowCols[idx] = wsCols(raw);   // ワード検索：技表の文字すべて（qa）と、項目ごとの文字
-    tr.dataset.qa = wsHay(raw, memos[key(c.id, i, "memo")]);
+    tr.dataset.qa = wsHay(raw, "");   // メモの列は技表に出さないので、検索の対象にもしない
 
     updateRow(tr, c.id, i, off);
     body.appendChild(tr);
