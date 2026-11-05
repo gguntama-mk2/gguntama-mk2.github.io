@@ -1,0 +1,40 @@
+name: Special Icon Evidence Audit V5
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extract evidence from latest copied site
+        run: |
+          node --check tools/audit-special-icon-evidence.mjs
+          node tools/audit-special-icon-evidence.mjs pc.html /tmp/project-t-v5
+      - name: Validate no game-verified or production override claims
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/project-t-v5')
+          data=json.loads((p/'SPECIAL_ICON_EVIDENCE_V5.json').read_text())
+          summary=data['summary']
+          assert summary['characters']==44
+          assert summary['total_moves']==9569
+          assert summary['game_binary_confirmed']==0
+          assert all(not hit['auto_set_allowed'] for hit in data['hits'])
+          assert all(not hit['verified_from_game_binary'] for hit in data['hits'])
+          print('V5 VALID:',summary['text_evidence_hits'],'text evidence hits')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_SPECIAL_ICON_EVIDENCE_V5
+          path: /tmp/project-t-v5/*
+          retention-days: 30
