@@ -1,0 +1,58 @@
+name: Bryan Full-Site Isolated Icon E2E
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-and-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Start isolated local API and original production UI
+        run: |
+          mkdir -p /tmp/pt-icon-replica
+          python tests/icon_replica_server.py --data-dir /tmp/pt-icon-replica --port 8000 > /tmp/pt-icon-replica/server.log 2>&1 &
+          echo $! > /tmp/pt-icon-replica/pid
+          python - <<'PY'
+          import time,urllib.request
+          for n in range(30):
+              try:
+                  assert b'"isolated": true' in urllib.request.urlopen('http://127.0.0.1:8000/healthz').read()
+                  break
+              except Exception:
+                  time.sleep(1)
+          else: raise RuntimeError('Isolated server failed to start')
+          PY
+      - name: Save 20 icon overrides and verify real PC and SP rendering
+        env:
+          PT_ICON_E2E_OUTPUT: /tmp/pt-icon-replica/results
+        run: python tests/e2e_bryan_isolated_icons.py
+      - name: Verify no unintended changes
+        if: always()
+        run: |
+          git status --short
+          python - <<'PY'
+          from pathlib import Path
+          for p in ['pc.html','sp.html','checksheet-base.json']:
+              assert Path(p).exists()
+          print('Original site files present; no production deployment')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bryan-fullsite-isolated-icon-test
+          path: |
+            /tmp/pt-icon-replica/results/
+            /tmp/pt-icon-replica/move-icons/overrides.json
+            /tmp/pt-icon-replica/server.log
+          if-no-files-found: warn
