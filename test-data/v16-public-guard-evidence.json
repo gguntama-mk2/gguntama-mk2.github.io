@@ -1,0 +1,99 @@
+{
+  "schema": 16,
+  "review_as_of": "2026-11-05",
+  "provenance": "Independent frame-data webpages manually checked, not Tekken 8 binary",
+  "reference": "https://wavu.wiki/t/Notation",
+  "entries": [
+    {
+      "id": "king/60",
+      "input": "db+2",
+      "block": "-5c",
+      "url": "https://tekkendocs.com/t8/king",
+      "status": "independent_c_match",
+      "note": "脳天唐竹割り / -5c"
+    },
+    {
+      "id": "bryan/125",
+      "input": "f,F+4",
+      "block": "-9c~-6c",
+      "url": "https://tekkendocs.com/t8/bryan/f,F4",
+      "status": "independent_c_match",
+      "note": "Mach Kick / frame range"
+    },
+    {
+      "id": "kazuya/80",
+      "input": "f,F+3",
+      "block": "-3c",
+      "url": "https://tekkendocs.com/t8/kazuya/f,F3",
+      "status": "independent_c_match",
+      "note": "左踵落とし"
+    },
+    {
+      "id": "law/127",
+      "input": "f,F+3",
+      "block": "+0c",
+      "url": "https://tekkendocs.com/t8/law/f,F3",
+      "status": "independent_c_match",
+      "note": "ドラゴンディバイド / site ±0s, external +0c"
+    },
+    {
+      "id": "jack8/106",
+      "input": "b+4,4",
+      "block": "-4c",
+      "url": "https://tekkendocs.com/t8/jack-8",
+      "status": "independent_c_match",
+      "note": "ニーウェッジ・フルアクセル"
+    },
+    {
+      "id": "asuka/60",
+      "input": "d+2",
+      "block": "-4c",
+      "url": "https://tekkendocs.com/t8/asuka",
+      "status": "independent_c_match",
+      "note": "雲雀槌"
+    },
+    {
+      "id": "leo/109",
+      "input": "f,F+3",
+      "block": "-7c~-4c",
+      "url": "https://tekkendocs.com/t8/leo/f,F3",
+      "status": "independent_c_match",
+      "note": "跳山斧刃 / frame range"
+    },
+    {
+      "id": "eddy/83",
+      "input": "ub+3",
+      "block": "+4c",
+      "url": "https://tekkendocs.com/t8/eddy",
+      "status": "independent_c_match",
+      "note": "ルーア・ペルナ"
+    },
+    {
+      "id": "steve/111",
+      "input": "f,F+2",
+      "block": "-13c",
+      "url": "https://tekkendocs.com/t8/steve/f,F2",
+      "status": "independent_c_match",
+      "note": "ドラゴニックハンマー"
+    },
+    {
+      "id": "reina/107",
+      "input": "f,F+3",
+      "block": "-3",
+      "url": "https://tekkendocs.com/t8/reina/f,F3",
+      "status": "source_disagreement",
+      "alternative": {
+        "url": "https://geppopotamus.info/game/tekken8/reina/data.htm",
+        "block": "-3S",
+        "text": "ガードで強制しゃがみ"
+      },
+      "note": "三界落とし: TekkenDocs -3 vs Geppopotamus -3S (forces crouch)"
+    }
+  ],
+  "policy": {
+    "auto_assign_icons": false,
+    "overwrite_admin": false,
+    "preserve_site_k": true,
+    "release_allowed": false
+  }
+}
