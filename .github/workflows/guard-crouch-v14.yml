@@ -1,0 +1,105 @@
+name: V14 Guard Crouch Risk Isolated E2E
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guard-risk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build V13 source from PC and SP and classify V14 guard candidates
+        run: |
+          node --check tools/build-hit-state-sidecar-v13.mjs
+          node --check tools/audit-guard-crouch-v14.mjs
+          node tools/build-hit-state-sidecar-v13.mjs pc.html /tmp/pt-guard-v14/v13pc
+          node tools/build-hit-state-sidecar-v13.mjs sp.html /tmp/pt-guard-v14/v13sp
+          node tools/audit-guard-crouch-v14.mjs pc.html /tmp/pt-guard-v14/v13pc/v13_hit_state_review.json /tmp/pt-guard-v14/pc
+          node tools/audit-guard-crouch-v14.mjs sp.html /tmp/pt-guard-v14/v13sp/v13_hit_state_review.json /tmp/pt-guard-v14/sp
+          cp test-data/v14-guard-crouch-review.html /tmp/pt-guard-v14/pc/index.html
+      - name: Validate 1166 site guard markers, evidence provenance and PC SP consistency
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/pt-guard-v14')
+          a,b=[json.loads((root/x/'V14_GUARD_REVIEW.json').read_text()) for x in ('pc','sp')]
+          assert a['summary']['counts']==b['summary']['counts']
+          assert a['reviews']==b['reviews']
+          c=a['summary']['counts']
+          assert (c['total'],c['low'],c['mid'],c['high'],c['ambiguous'])==(1166,720,223,16,207)
+          assert (c['new_guard_only'],c['new_low'],c['new_mid'],c['new_high'],c['new_ambiguous'])==(778,535,107,10,126)
+          assert c['simple_notation']==1160 and c['complex_notation']==6
+          assert c['externally_compared']==3
+          by={r['move_id']:r for r in a['reviews']}
+          assert by['jin/5']['last_attack_group']=='low'
+          assert by['jin/6']['last_attack_group']=='low'
+          assert by['kazuya/20']['last_attack_group']=='mid'
+          assert by['kazuya/20']['external_comparison']['result']=='external_support_mid_forced_crouch'
+          assert not any(r['approved_icon_assignment'] or r['opponent_forced_crouch_proven_by_binary'] for r in a['reviews'])
+          print('PASS: 778 newly reviewed guard-s, 535 low guard holds; no icon assignments')
+          PY
+      - name: Install headless browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Test actual isolated PC and phone browser review
+        run: |
+          (cd /tmp/pt-guard-v14/pc && python -m http.server 8736 --bind 127.0.0.1 >/tmp/pt-guard-v14/server.log 2>&1) &
+          python - <<'PY'
+          import time,urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          base='http://127.0.0.1:8736/index.html'
+          for i in range(30):
+              try:urllib.request.urlopen(base,timeout=2);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('Isolated preview server failed')
+          with sync_playwright() as pw:
+              browser=pw.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for name,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=browser.new_page(viewport=viewport)
+                  page.goto(base,wait_until='domcontentloaded')
+                  page.wait_for_function("document.body.dataset.ready === 'true'",timeout=30000)
+                  assert '1166技' in page.locator('#summary').inner_text()
+                  page.locator('#origin').select_option('full_site_guard_only')
+                  page.locator('#group').select_option('low')
+                  assert '535技' in page.locator('#count').inner_text()
+                  page.locator('#character').select_option('jin')
+                  page.locator('#search').fill('直突き～左下段蹴り')
+                  assert page.locator('tbody tr[data-move-id="jin/5"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="jin/5"] img').count()==0
+                  page.locator('#search').fill('')
+                  page.locator('#origin').select_option('')
+                  page.locator('#group').select_option('mid')
+                  page.locator('#character').select_option('kazuya')
+                  page.locator('#search').fill('右踵落とし')
+                  assert page.locator('tbody tr[data-move-id="kazuya/20"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="kazuya/20"] img').count()==1
+                  assert page.locator('tbody tr[data-move-id="kazuya/20"] img').evaluate('(img)=>img.complete && img.naturalWidth>0')
+                  page.locator('#group').select_option('')
+                  page.locator('#character').select_option('')
+                  page.locator('#search').fill('')
+                  page.screenshot(path=str(Path('/tmp/pt-guard-v14/pc')/(name+'_V14_GUARD_AUDIT.png')),full_page=False)
+                  page.close()
+              browser.close()
+          print('PASS V14: PC+phone held low examples and reviewed mid example')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_GUARD_CROUCH_V14_TEST
+          path: |
+            /tmp/pt-guard-v14/pc/
+            /tmp/pt-guard-v14/server.log
+          if-no-files-found: warn
+          retention-days: 30
