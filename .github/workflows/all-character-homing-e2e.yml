@@ -1,0 +1,64 @@
+name: All Character Homing Isolated UI E2E
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-and-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Export current 44-character move candidates
+        run: |
+          mkdir -p /tmp/pt-icon-all /tmp/pt-icon-all-replica
+          node tools/export-all-icons.mjs pc.html move-icons.js /tmp/pt-icon-all
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/pt-icon-all/ALL_CHARACTER_ICON_CANDIDATES.json').read_text())
+          assert d['summary']['characters']==44
+          assert d['summary']['total_moves']==9569
+          assert len(d['candidates'])==1154
+          assert sum(bool(r['evidence']['homing_column']) for r in d['candidates'])==545
+          PY
+      - name: Start isolated test backend with existing Bryan seed
+        run: |
+          python tests/icon_replica_server.py --data-dir /tmp/pt-icon-all-replica --port 8000 >/tmp/pt-icon-all-replica/server.log 2>&1 &
+          python - <<'PY'
+          import urllib.request,time
+          for i in range(35):
+              try:
+                  assert b'"isolated": true' in urllib.request.urlopen('http://localhost:8000/healthz').read()
+                  break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('local test server did not start')
+          PY
+      - name: Add 545 candidates and verify PC and SP using production UI
+        env:
+          PT_ICON_CANDIDATES: /tmp/pt-icon-all/ALL_CHARACTER_ICON_CANDIDATES.json
+          PT_ICON_E2E_OUTPUT: /tmp/pt-icon-all-replica/results
+        run: python tests/e2e_all_character_homing_icons.py
+      - name: Upload results and isolated registry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_ALL_CHARACTER_HOMING_E2E
+          path: |
+            /tmp/pt-icon-all-replica/results/
+            /tmp/pt-icon-all-replica/move-icons/overrides.json
+            /tmp/pt-icon-all/ALL_CHARACTER_ICON_SUMMARY.json
+            /tmp/pt-icon-all-replica/server.log
+          if-no-files-found: warn
