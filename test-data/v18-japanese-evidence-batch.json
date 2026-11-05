@@ -1,0 +1,305 @@
+{
+  "schema": 18,
+  "as_of": "2026-11-05",
+  "scope": "New 15 IDs from 114 Japanese-unreviewed v17 candidates",
+  "source_rule": "Japanese-language frame tables and explicit effects are primary. TekkenDocs etc do not approve icons. Binary verification required for definitive approval.",
+  "entries": [
+    {
+      "move_id": "king/79",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "+2s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "+2^{S}",
+          "detail": "アメリカンジャブ～ヘッドバット：ガードで強制しゃがみ",
+          "source_version": "version_not_confirmed"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "+2s",
+          "detail": "同名の技でs表記を確認",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "bryan/192",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-9s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/bryan/data.htm",
+          "guard": "-9^{S}",
+          "detail": "スマッシュ&マッハキック：ガードで強制しゃがみを明記",
+          "source_version": "version_not_confirmed"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "asuka/59",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "-4s",
+          "detail": "雲雀槌(ヒート発動可能状態)のs表記。通常版の強制しゃがみ説明は参考だが派生版の効果までは確定しない",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "asuka/170",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "-4s",
+          "detail": "雲雀槌(ヒート状態)のs表記。通常版の強制しゃがみ説明を派生版へ無条件で引き継がない",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "king/86",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-17s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-17s",
+          "detail": "エルボードロップ：ガードs表記。方向違いの同名行もあり技IDで確認要",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "king/158",
+      "japanese_status": "jp_numeric_conflict",
+      "project_t_guard": "-16s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-16s",
+          "detail": "ジャガーステップ･ソバット・プレス(近距離)",
+          "source_version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "-17^{S}",
+          "detail": "同名の近距離版、相手を強制しゃがみにする旨を明記。フレーム値は一致しない",
+          "source_version": "version_not_confirmed"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "king/189",
+      "japanese_status": "jp_numeric_conflict",
+      "project_t_guard": "-16s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-16s",
+          "detail": "ジャガースプリント中ダイビングボディプレス(近距離)",
+          "source_version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "-17^{S}",
+          "detail": "JSp中の近距離版。ガードで強制しゃがみと記載。数値差は未解決",
+          "source_version": "version_not_confirmed"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "king/191",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-16s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-16s",
+          "detail": "ダイビングボディプレス(近距離)(強)のs表記",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "king/193",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-16s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-16s",
+          "detail": "ダイビングボディプレス(近距離)(強)(ヒート状態)のs表記",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "claudio/71",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/claudio/frame-data/s3/",
+          "guard": "+4s",
+          "detail": "メテオストーム(ヒート発動可能状態)にガードs表記",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "claudio/72",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/claudio/frame-data/s3/",
+          "guard": "+4s",
+          "detail": "メテオストーム～SB状態にガードs表記。PROJECT TのSB記載との対応は要確認",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "claudio/73",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/claudio/frame-data/s3/",
+          "guard": "+4s",
+          "detail": "メテオストーム(ヒート状態)のs表記",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "claudio/74",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/claudio/frame-data/s3/",
+          "guard": "+4s",
+          "detail": "メテオストーム(ヒート状態)～しゃがみ：攻撃側のしゃがみ移行と相手強制しゃがみを分離",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "reina/106",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-3s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/reina/frame-data/s3/",
+          "guard": "-3s",
+          "detail": "三界落とし(ヒート発動可能状態)。通常版の強制しゃがみ説明を同一視せず表記確認のみ",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    },
+    {
+      "move_id": "reina/216",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-3s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/reina/frame-data/s3/",
+          "guard": "-3s",
+          "detail": "三界落とし(ヒート状態)。通常版の強制しゃがみ説明を同一視せず表記確認のみ",
+          "source_version": "3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "icon_assignment_approved": false,
+      "evidence_priority": "Japanese site corroboration; overseas-only sources excluded",
+      "approval_note": "Evidence-only update: do not modify admin override icons"
+    }
+  ],
+  "review_goals": [
+    "Separate identical normal/heat versions by fixed site_k",
+    "Keep 2 numerical conflicts as unresolved",
+    "Treat any s notation as candidate until opponent reaction is confirmed"
+  ],
+  "immutable_production": true
+}
