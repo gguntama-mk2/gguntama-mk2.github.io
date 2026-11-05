@@ -31,9 +31,9 @@ with sync_playwright() as p:
     for kind,viewport in [("pc",{"width":1440,"height":900}),("sp",{"width":390,"height":844})]:
         page=browser.new_page(viewport=viewport,ignore_https_errors=True)
         page.goto(f"{BASE}/{kind}.html",wait_until="domcontentloaded",timeout=120000)
-        page.wait_for_function("typeof window.PTIcons==='object' && Array.isArray(window.CHARACTERS)",timeout=120000)
+        page.wait_for_function("typeof window.PTIcons==='object' && typeof CHARACTERS !== 'undefined' && Array.isArray(CHARACTERS)",timeout=120000)
         evidence=page.evaluate("""async () => {
-          const c=window.CHARACTERS.find(x=>x.id==='bryan');
+          const c=CHARACTERS.find(x=>x.id==='bryan');
           if(!c) return {error:'Bryan not found'};
           const expected=await fetch('/api/v1/move-icons').then(r=>r.json());
           await window.PTIcons.reload();
