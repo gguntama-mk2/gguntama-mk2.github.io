@@ -1,0 +1,109 @@
+name: Hit Icon Evidence Preview V12
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  icon-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build source-derived candidates from PC and SP separately
+        run: |
+          node --check tools/build-icon-review-v12.mjs
+          node tools/audit-hit-outcomes-v9.mjs pc.html /tmp/pt-icon-v12/site-pc
+          node tools/audit-hit-outcomes-v9.mjs sp.html /tmp/pt-icon-v12/site-sp
+          node tools/build-icon-review-v12.mjs /tmp/pt-icon-v12/site-pc/HIT_OUTCOMES_V9_CANDIDATES.json /tmp/pt-icon-v12/preview
+          node tools/build-icon-review-v12.mjs /tmp/pt-icon-v12/site-sp/HIT_OUTCOMES_V9_CANDIDATES.json /tmp/pt-icon-v12/preview-sp
+      - name: Verify PC SP parity and no unsafe assignments
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/pt-icon-v12')
+          a,b=[json.loads((root/d/'v12_icon_candidates.json').read_text()) for d in ('preview','preview-sp')]
+          assert a['stats']==b['stats']
+          assert a['records']==b['records']
+          s=a['stats']
+          assert s['characters']==44 and s['site_moves']==9569 and s['candidates']==1741
+          assert (s['wall_normal'],s['wall_counter'],s['wall_air'])==(227,435,140)
+          assert (s['floor_normal'],s['floor_counter'],s['floor_air'])==(11,12,57)
+          assert (s['pink_normal'],s['pink_counter'])==(607,419)
+          assert s['air_wall_tornado_only']==3 and s['icon_assignments_saved']==0
+          assert all(not r['allow_auto_assign'] and not r['binary_verified'] for r in a['records'])
+          for v in ('preview','preview-sp'):
+            for f in ('wallbreak.webp','floorgimmick.webp','forcedcrouch.webp'):
+              assert (root/v/'icons'/f).read_bytes()[:4]==b'RIFF'
+          print('PASS: 1741 candidates, 3 original WebP assets, zero icon assignments')
+          PY
+      - name: Install headless browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Launch isolated review site and run browser checks
+        run: |
+          (cd /tmp/pt-icon-v12/preview && python -m http.server 8733 --bind 127.0.0.1 >/tmp/pt-icon-v12/server.log 2>&1) &
+          python - <<'PY'
+          from pathlib import Path
+          import time,urllib.request
+          from playwright.sync_api import sync_playwright
+          url='http://127.0.0.1:8733/v12_icon_review.html'
+          for _ in range(30):
+              try:urllib.request.urlopen(url,timeout=2);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('Test server not reachable')
+          with sync_playwright() as p:
+              b=p.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              page=b.new_page(viewport={'width':1400,'height':900})
+              page.goto(url,wait_until='domcontentloaded')
+              page.wait_for_function("document.body.dataset.ready === 'true'",timeout=30000)
+              assert page.locator('tbody tr').count()==100
+              assert page.locator('.legend img').count()==3
+              assert page.evaluate("Array.from(document.querySelectorAll('.legend img')).every(x=>x.complete && x.naturalWidth>0)")
+              page.locator('#character').select_option('jin')
+              page.locator('#state').select_option('normal')
+              page.locator('#kind').select_option('forcedcrouch')
+              page.locator('#search').fill('災禍')
+              assert page.locator('tbody tr').count()==1
+              assert page.locator('tbody tr .pill img[alt="強制しゃがみ候補"]').count()==1
+              page.locator('#character').select_option('alisa')
+              page.locator('#state').select_option('air')
+              page.locator('#kind').select_option('wallbreak')
+              page.locator('#search').fill('ワンツーリフトオフ')
+              assert page.locator('tbody tr').count()==1
+              assert 'トルネード成立時限定' in page.locator('tbody tr').first.inner_text()
+              page.locator('#kind').select_option('floorgimmick')
+              page.locator('#search').fill('サイクロンクラッキング')
+              assert page.locator('tbody tr').count()==1
+              assert page.locator('tbody tr .pill img[alt="床ギミック"]').count()==1
+              page.locator('#character').select_option('')
+              page.locator('#search').fill('')
+              page.locator('#kind').select_option('')
+              page.locator('#state').select_option('normal')
+              page.screenshot(path='/tmp/pt-icon-v12/preview/PC_ICON_EVIDENCE_SCREENSHOT.png',full_page=False)
+              phone=b.new_page(viewport={'width':390,'height':844})
+              phone.goto(url,wait_until='domcontentloaded')
+              phone.wait_for_function("document.body.dataset.ready === 'true'",timeout=30000)
+              phone.screenshot(path='/tmp/pt-icon-v12/preview/SP_ICON_EVIDENCE_SCREENSHOT.png',full_page=False)
+              assert phone.locator('.legend img').count()==3
+              b.close()
+          print('PASS: headless PC and SP reviews; Jin/44 pink, Alisa/4 conditional green and Alisa/42 yellow')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_HIT_ICON_V12_TEST_PREVIEW
+          path: |
+            /tmp/pt-icon-v12/preview/
+            /tmp/pt-icon-v12/server.log
+          retention-days: 30
+          if-no-files-found: warn
