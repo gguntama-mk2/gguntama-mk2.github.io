@@ -1,0 +1,277 @@
+{
+  "schema": 22,
+  "as_of": "2026-11-05",
+  "scope": "10 newly reviewed stable move IDs from v21 pending 60",
+  "sources_priority": "Japanese evidence only; foreign resources are non-authoritative",
+  "important": "A crouching attacker is distinct from forcing the defender to crouch. Missing s text is not confirmed absence. Move variants must remain separate.",
+  "new_evidence": [
+    {
+      "move_id": "kazuya/95",
+      "site_guard": "-11s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/kazuya/frame-data/s3/",
+          "guard": "-11s",
+          "note": "螺旋岩砕蹴・しゃがみ中の中段技",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/kazuya/data.htm",
+          "guard": "-11^S",
+          "note": "ガードで相手を強制しゃがみ、攻撃者自身もしゃがみ帰着",
+          "source_version": "older",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "feng/16",
+      "site_guard": "-7s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "guard": "-7s",
+          "note": "旋風地背脚(1)のガード値",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/feng/data.htm",
+          "guard": "-7^S",
+          "note": "ガードで強制しゃがみ",
+          "source_version": "older",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "feng/17",
+      "site_guard": "-2s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "guard": "-2s",
+          "note": "旋風地背脚(1)～背向け",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/feng/data.htm",
+          "guard": "-2^S",
+          "note": "背向け移行と相手強制しゃがみを別々に記載",
+          "source_version": "older",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "victor/78",
+      "site_guard": "-20s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/victor/frame-data/s3/",
+          "guard": "-20s",
+          "note": "カリブルヌスのガード値",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/victor/data.htm",
+          "guard": "-20^S",
+          "note": "ガードで強制しゃがみ",
+          "source_version": "1.05.00",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "azucena/119",
+      "site_guard": "-5s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/azucena/frame-data/s3/",
+          "guard": "-5s",
+          "note": "フー・ファイター～背向け",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/azucena/data.htm",
+          "guard": "-5^S",
+          "note": "ガードで強制しゃがみ、攻撃側は背向け移行",
+          "source_version": "older",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "devil-jin/16",
+      "site_guard": "-7s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/devil-jin/frame-data/s3/",
+          "guard": "-7s",
+          "note": "骸落襲（通常コマンド）",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "-7^S",
+          "note": "骸落襲のガードで強制しゃがみ",
+          "source_version": "1.05.00",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "devil-jin/103",
+      "site_guard": "-7s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/devil-jin/frame-data/s3/",
+          "guard": "-7s",
+          "note": "骸落襲（立ち途中版）",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "-7^S",
+          "note": "通常版または立ち途中版の同一技名で説明あり。別技ID維持",
+          "source_version": "1.05.00",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "heihachi/79",
+      "site_guard": "-12s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/heihachi/frame-data/s3/",
+          "guard": "-12s",
+          "note": "鰐下駄",
+          "source_version": "3.02.02",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/heihachi/data.htm",
+          "guard": "-12^S",
+          "note": "ガードで強制しゃがみ",
+          "source_version": "1.08.01",
+          "kind": "explicit"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "kunimitsu/33",
+      "site_guard": "-14s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/kunimitsu/frame/",
+          "guard": "-14s",
+          "note": "雲霧斬～朧炎月",
+          "source_version": "2026",
+          "kind": "notation"
+        },
+        {
+          "publisher": "tettk",
+          "url": "https://tettk.com/tekken8-kunimitsu/",
+          "guard": "-14",
+          "note": "3発目ガード時しゃがみ強制と明記",
+          "source_version": "2026",
+          "kind": "explicit"
+        },
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/kunimitsu_framelist/",
+          "guard": "-14F",
+          "note": "強制しゃがみの上付き表示なし。未記載は効果なしの証拠ではない",
+          "source_version": "2026",
+          "kind": "notation_missing"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    },
+    {
+      "move_id": "kunimitsu/104",
+      "site_guard": "-12s",
+      "jp_status": "jp_notation_disagreement",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/kunimitsu/frame/",
+          "guard": "-12s",
+          "note": "朧炎月",
+          "source_version": "2026",
+          "kind": "notation"
+        },
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/kunimitsu_framelist/",
+          "guard": "-12F",
+          "note": "同技のガード値にsを付記せず。技効果なしと断定は不可",
+          "source_version": "2026",
+          "kind": "notation_missing"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon": false,
+      "foreign_source_used_for_approval": false
+    }
+  ]
+}
