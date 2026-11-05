@@ -1,0 +1,49 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>PROJECT T｜強制しゃがみ解析 v15</title><style>
+:root{color-scheme:dark;font:14px/1.55 system-ui,"Yu Gothic",Meiryo,sans-serif;background:#131722;color:#f3f4fa}*{box-sizing:border-box}body{margin:0}
+header{padding:25px max(18px,calc((100vw - 1140px)/2));border-bottom:1px solid #404b64;background:#222b3f}
+main{max-width:1180px;margin:0 auto;padding:21px 18px 60px}h1{font-size:25px;margin:0 0 8px}.sub{color:#b2bed3}.warning{background:#352c23;border:1px solid #ac8c56;padding:13px;border-radius:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:18px 0}.tiles section{background:#222c42;border:1px solid #3b4b67;border-radius:8px;padding:12px}.tiles strong{font-size:26px;display:block}
+.filter{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}input,select{font:inherit;color:#f2f4ff;background:#273149;border:1px solid #60718f;border-radius:6px;padding:9px}input{min-width:170px;flex:1}
+.table{overflow:auto;border:1px solid #49516b;border-radius:8px}table{width:100%;min-width:970px;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #3d4a62;vertical-align:top}th{background:#2b3750;font-size:12px}
+code{color:#eecb85}a{color:#9fc6ff}.pill{display:inline-block;border-radius:5px;background:#34445e;padding:3px 7px;font-size:12px}.review{color:#f4d59a}.muted{color:#a8b2ca}
+small{color:#b2bed3}
+</style></head><body><header><h1>PROJECT T｜強制しゃがみ解析 v15</h1><div class="sub">隔離テスト環境／ガード時s表記の再照合</div></header>
+<main><p class="warning"><strong>自動設定は禁止</strong>：最後の実攻撃判定はサイト文字列からの推定です。外部技表との一致もゲームバイナリの直接確認ではありません。下段候補を「強制しゃがみ効果なし」と断定しないでください。</p>
+<div class="tiles"><section><strong id="all">—</strong>今回の対象技</section><section><strong id="low">—</strong>下段関連・保留</section><section><strong id="next">—</strong>中・上段の再調査</section><section><strong id="unique">—</strong>固有の確認グループ</section></div>
+<div class="filter"><select id="queue">
+<option value="targeted_external_or_binary_verification">優先確認：中・上段（壁登り除外）</option><option value="">すべて</option>
+<option value="hold_low_strike_or_crouch_block">下段関連を保留</option>
+<option value="shared_wall_climb_special_review">共通の壁登り技</option></select>
+<select id="level"><option value="">攻撃判定すべて</option><option value="low">下段</option><option value="mid">中段</option><option value="high">上段</option></select>
+<select id="external"><option value="">全照合</option><option value="yes">外部技表の照合あり</option></select>
+<input id="search" type="search" placeholder="技名・技ID・キャラ・コマンド"></div>
+<p id="count" class="sub">読み込み中</p><div class="table"><table><thead><tr><th>キャラ</th><th>技ID</th><th>技名</th><th>ガード</th><th>最後の攻撃判定（仮）</th><th>次の確認</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p class="sub">同じコマンド・ガード結果・攻撃判定の別行は同じレビューグループにまとめています。固定の技IDは削除せず、すべてデータに保持しています。</p></main>
+<script>
+(async()=>{
+const d=await fetch('./V15_778_REVIEW.json').then(r=>{if(!r.ok)throw Error('データファイルがありません');return r.json()});const R=d.reviews,s=d.summary;
+const by=id=>document.getElementById(id),q=by('search'),queue=by('queue'),level=by('level'),external=by('external'),tbody=by('rows');
+by('all').textContent=s.new_guard_only;by('low').textContent=s.low_related_total;by('next').textContent=s.remaining_mid_or_high;by('unique').textContent=s.unique_review_signatures;
+const categories={hold_low_strike_or_crouch_block:'下段が最後の攻撃：保留',shared_wall_climb_special_review:'壁登り共通技：個別照合',targeted_external_or_binary_verification:'外部技表・相手リアクション確認'};
+const levels={low:'下段',mid:'中段',high:'上段',unknown:'不明'};
+function redraw(){
+ const term=q.value.normalize('NFKC').toLowerCase().trim();
+ const a=R.filter(r=>(!queue.value||r.queue===queue.value)&&(!level.value||r.last_effective_attack_level_heuristic===level.value)&&(!external.value||!!r.external_match)&&(!term||(r.move_id+' '+r.move_name+' '+r.command+' '+r.character_id).normalize('NFKC').toLowerCase().includes(term)));
+ by('count').textContent=a.length+'技該当（先頭100件表示）。自動割当：0件';tbody.replaceChildren();
+ for(const r of a.slice(0,100)){
+   const tr=document.createElement('tr');tr.dataset.moveId=r.move_id;
+   for(const v of [r.character_id,'k'+r.site_k,r.move_name,r.guard_value]){
+      const td=document.createElement('td');td.textContent=v;tr.append(td);
+   }
+   const hit=document.createElement('td');const span=document.createElement('span');span.className='pill';span.textContent=levels[r.last_effective_attack_level_heuristic]||'不明';
+   hit.append(span);if(r.has_trailing_special_or_throw){const note=document.createElement('div');note.className='review';note.textContent='特殊・投げの直前を参照';hit.append(note)}tr.append(hit);
+   const td=document.createElement('td');td.textContent=categories[r.queue]||r.queue;
+   if(r.external_match){const link=document.createElement('a');link.href=r.external_match.source_url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=' 外部フレーム表照合';td.append(link)}
+   if(r.is_group_member_duplicate){const note=document.createElement('div');note.className='muted';note.textContent='同一グループ '+r.review_group_leader;td.append(note)}
+   tr.append(td);tbody.append(tr)
+ }
+}
+[queue,level,external,q].forEach(e=>e.addEventListener('input',redraw));redraw();document.body.dataset.ready='true';
+})().catch(e=>{document.body.dataset.ready='error';document.getElementById('count').textContent='エラー: '+e.message});
+</script></body></html>
