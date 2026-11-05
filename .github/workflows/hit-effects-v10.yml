@@ -1,0 +1,40 @@
+name: Hit Effects V10 Isolated Regression
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  site-effect-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate PC and SP site effect predicates
+        run: |
+          node --check tools/verify-hit-effects-v10.mjs
+          node tools/verify-hit-effects-v10.mjs pc.html /tmp/hit-v10/pc.json
+          node tools/verify-hit-effects-v10.mjs sp.html /tmp/hit-v10/sp.json
+      - name: Ensure same effects in PC and SP
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/hit-v10')
+          pc=json.loads((p/'pc.json').read_text())
+          sp=json.loads((p/'sp.json').read_text())
+          assert pc['counts']==sp['counts']
+          assert pc['site_examples']==sp['site_examples']
+          assert pc['write_count']==sp['write_count']==0
+          assert pc['binary_verified_count']==sp['binary_verified_count']==0
+          print('PASS: both production-clone UI datasets agree; no icon writes')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_HIT_EFFECTS_V10_REGRESSION
+          path: /tmp/hit-v10/*
+          retention-days: 30
