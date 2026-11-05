@@ -1,0 +1,8 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>PROJECT T ブライアン技アイコン テスト表示</title>
+<style>body{margin:0;background:#131521;color:#f3f3f9;font:14px/1.55 system-ui,sans-serif}header{padding:12px 18px;background:#22263b}h1{font-size:19px;margin:0 0 8px}p{margin:6px 0}button{background:#464b66;border:1px solid #878ba6;border-radius:6px;color:white;padding:8px;cursor:pointer}#data{font-size:13px;color:#dcd0a6}iframe{display:block;border:0;width:100%;height:calc(100vh - 170px);background:white}</style></head>
+<body><header><h1>ブライアン技アイコン：候補20技をテスト表示</h1><p>ゲームデータ未確定の候補。既存表示を維持し追加のみ。本番・管理者DBを変更しません。</p><p id="data">技一覧を読み込み中…</p><button type="button" onclick="document.getElementById('preview').contentWindow.location.reload()">プレビューを再読み込み</button></header>
+<iframe id="preview" title="PROJECT T PC テスト表示" src="pc.html?pticons=bryan-test"></iframe>
+<script>document.getElementById("preview").addEventListener("load",function(){
+const f=this.contentWindow;
+try{const o=f.PTIcons?.testPreview?.();document.getElementById("data").textContent=o?"照合結果：一致 "+o.matched.length+"技 / 予定 "+o.expected_count+"技、不一致 "+Object.keys(o.rejected).length+"技（不一致は適用しません）。ブライアンを選択すると表示を確認できます。":"候補プレビュー処理が見つかりません。"}catch(e){document.getElementById("data").textContent="読み込み状況は取得できませんでした。"}
+});</script></body></html>
