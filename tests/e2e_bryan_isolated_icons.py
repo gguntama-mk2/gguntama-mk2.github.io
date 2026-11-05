@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.request import Request,urlopen
 from playwright.sync_api import sync_playwright
 
-BASE="http://127.0.0.1:8000"
+BASE="http://localhost:8000"
 ROOT=Path(__file__).resolve().parents[1]
 OUT=Path(os.environ.get("PT_ICON_E2E_OUTPUT","/tmp/pt-icon-e2e"))
 OUT.mkdir(parents=True,exist_ok=True)
