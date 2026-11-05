@@ -1,0 +1,42 @@
+name: Stage Conditions Audit V7
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extract stage conditions from synced production frontend
+        run: |
+          node --check tools/audit-stage-conditions-v7.mjs
+          node tools/audit-stage-conditions-v7.mjs pc.html /tmp/pt-stage-v7
+      - name: Validate data and test-rendered HTML
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/pt-stage-v7')
+          data=json.loads((p/'STAGE_CONDITIONS_V7_ALL.json').read_text())
+          s=data['summary']
+          assert (s['characters'],s['total_moves'])==(44,9569)
+          assert (s['wall_moves'],s['floor_moves'],s['both'],s['gimmick_moves'])==(275,68,10,333)
+          assert s['assigned_stage_icons']==0 and s['binary_verified']==0
+          assert len(json.loads((p/'STAGE_CONDITIONS_V7_DUAL_10.json').read_text())['rows'])==10
+          assert all(r['wall_condition'] and r['floor_condition'] for r in data['rows'] if r['wall_related'] and r['floor_related'])
+          page=(p/'stage-conditions-review-v7.html').read_text()
+          assert page.count('<tr>')==11
+          print('PASS V7',len(data['rows']),'stage records, 10 dual cases, no icon assignment')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_STAGE_CONDITIONS_V7
+          path: /tmp/pt-stage-v7/*
+          retention-days: 30
