@@ -1,0 +1,208 @@
+{
+  "schema": 24,
+  "as_of": "2026-11-05",
+  "origin": "v23 Japanese-priority 128-review inventory",
+  "evidence_priority": "Japanese websites; foreign-only evidence never confirms attributes",
+  "new_entries": [
+    {
+      "move_id": "asuka/28",
+      "site_guard": "-3(-19s)",
+      "status": "jp_conditional_guard_branch",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "block": "-3(-19s)",
+          "version": "3.02.02",
+          "remark": "白鷺遊舞(1)。ガード値は-3と括弧内-19sが併記される。適用条件不明のまま統合しない。",
+          "kind": "conditional_parenthesis"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "asuka/168",
+      "site_guard": "-3(-19s)",
+      "status": "jp_conditional_guard_branch",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "block": "-3(-19s)",
+          "version": "3.02.02",
+          "remark": "刈脚白鷺。白鷺遊舞(1)とは別の技ID。ガードの括弧内状態を無条件適用禁止。",
+          "kind": "conditional_parenthesis"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "lars/143",
+      "site_guard": "-14s",
+      "status": "jp_low_guard_risk",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lars/frame-data/s3/",
+          "block": "-14s",
+          "version": "3.02.02",
+          "remark": "スタックアップ・リベリオン。下段+特中、立ちガードが成立するか別途調査。",
+          "kind": "low_start_sequence"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "lars/144",
+      "site_guard": "-7s",
+      "status": "jp_low_guard_risk",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lars/frame-data/s3/",
+          "block": "-7s",
+          "version": "3.02.02",
+          "remark": "スタックアップ・リベリオン～SE。下段始動・SE移行。攻撃者構えと相手のしゃがみを分離。",
+          "kind": "low_start_stance"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "feng/77",
+      "site_guard": "-6s",
+      "status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "block": "-6s",
+          "version": "3.02.02",
+          "remark": "伏虎連脚陣。中下中中の最終段。相手リアクションの実機照合待ち。",
+          "kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "feng/85",
+      "site_guard": "+7s",
+      "status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "block": "+7s",
+          "version": "3.02.02",
+          "remark": "側腹裂海踏。ヒート状態の派生、特殊動作を含むため個別に確認。",
+          "kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "feng/196",
+      "site_guard": "+7s",
+      "status": "jp_numeric_conflict",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "block": "+7s",
+          "version": "3.02.02",
+          "remark": "角竜裂海踏～背向け。現サイトのガード値。",
+          "kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/feng/data.htm",
+          "block": "+12^{S}^{G}",
+          "version": "1.08.01",
+          "remark": "同名技の旧版に強制しゃがみ明記。数値とG派生も異なる。",
+          "kind": "explicit_historical"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "kazuya/24",
+      "site_guard": "±0s",
+      "status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/kazuya/frame-data/s3/",
+          "block": "±0s",
+          "version": "3.02.02",
+          "remark": "六腑凶襲拳(ヒート発動可能状態)。通常版・ヒート状態を混同しない。",
+          "kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "jack8/67",
+      "site_guard": "-18s",
+      "status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "block": "-18s",
+          "version": "3.02.02",
+          "remark": "ヘルプレス(打撃)。投げ派生のヘルプレスと混同しない。",
+          "kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    },
+    {
+      "move_id": "yoshimitsu/16",
+      "site_guard": "-14s",
+      "status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/yoshimitsu/frame-data/s3/",
+          "block": "-14s",
+          "version": "3.02.02",
+          "remark": "閻魔之利剣(ヒート状態)(クリーンヒット)。",
+          "kind": "notation"
+        },
+        {
+          "publisher": "apoblog",
+          "url": "https://www.apoblog.net/move/7160",
+          "block": "-14F",
+          "version": "historical",
+          "remark": "LKRPWP3発目ガードで相手しゃがみ。ヒート時は威力増加という記述あり。",
+          "kind": "explicit_defender_crouch"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_icon_assignment": false
+    }
+  ],
+  "guard_branch_policy": "Never promote parenthetical s notation to unconditional forced crouch",
+  "low_attack_policy": "Low/multihit guard context does not establish special forced-crouch property",
+  "bob_floor_lead": {
+    "move_id": "bob/184",
+    "icon": "floorgimmick",
+    "site": "https://mogura-ya.net/bob_framelist/",
+    "NH": "D^FB",
+    "CH": "D^FB",
+    "defender_initial_state": "unspecified",
+    "ground_hit": "unverified",
+    "air_hit": "unverified",
+    "type": "ability_not_activation",
+    "approved": false
+  }
+}
