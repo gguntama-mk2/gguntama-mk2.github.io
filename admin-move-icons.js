@@ -143,7 +143,7 @@
   function renderList() {
     var c = currentChar(); ui.list.replaceChildren(); if (!c) return;
     var q = ui.q.value.normalize("NFKC").toLowerCase().trim(), shown = 0;
-    var table = make("table"), head = make("tr");
+    var table = make("table", undefined, "pt-mi-list"), head = make("tr");
     ["k", "技名", "コマンド", "いまの表示", "設定", "", ""].forEach(function (t) { head.appendChild(make("th", t)); });
     var allTh = head.lastChild, allCb = make("input"); allCb.type = "checkbox"; allCb.title = "表示中の技をすべてチェック／解除"; allCb.setAttribute("aria-label", "表示中の技をすべてチェック"); allTh.appendChild(allCb);
     var visible = [];
