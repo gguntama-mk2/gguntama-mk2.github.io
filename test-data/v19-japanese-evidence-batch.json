@@ -1,0 +1,336 @@
+{
+  "schema": 19,
+  "date": "2026-11-05",
+  "source_policy": "日本語資料を優先。海外サイトは参考のみで確定に使わない。MOTBIN・実機リアクション未確認につき全件アイコン設定保留。",
+  "version_policy": "数値不一致はバージョン差・技の改変の可能性として残す。sと上付きSの違いおよび攻撃側のしゃがみ帰着を区別する。",
+  "entries": [
+    {
+      "move_id": "nina/147",
+      "site_guard": "-3s",
+      "jp_status": "jp_explicit",
+      "japanese_evidence": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/nina/data.htm",
+          "guard": "-3^S",
+          "meaning": "ガードで強制しゃがみと明記。鉄拳7の記録を含むため現行版の確認が必要",
+          "version": "historical"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/nina/frame-data/s3/",
+          "guard": "-3s",
+          "meaning": "フラッピングホーネットのシーズン3ガード値",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "lili/119",
+      "site_guard": "+4s",
+      "jp_status": "jp_explicit",
+      "japanese_evidence": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/lili/data.htm",
+          "guard": "+4^S",
+          "meaning": "ハニーサックルのガード強制しゃがみ説明",
+          "version": "historical"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lili/frame-data/s3/",
+          "guard": "+4s",
+          "meaning": "ハニーサックル通常版のガード値",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "devil-jin/69",
+      "site_guard": "+3s",
+      "jp_status": "jp_explicit",
+      "japanese_evidence": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "+3^S",
+          "meaning": "鎌首はガードまたは通常ヒットで強制しゃがみ（旧説明）",
+          "version": "historical"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/devil-jin/frame-data/s3/",
+          "guard": "+3s",
+          "meaning": "鎌首のガード値",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/124",
+      "site_guard": "+13s",
+      "jp_status": "jp_explicit",
+      "japanese_evidence": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/jack8/data.htm",
+          "guard": "+13^S",
+          "meaning": "ヒッププレス～シットダウンはガードで強制しゃがみと明記",
+          "version": "historical"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "+13s",
+          "meaning": "通常立ち状態からのヒッププレス～シットダウン",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "lili/120",
+      "site_guard": "+4s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lili/frame-data/s3/",
+          "guard": "+4s",
+          "meaning": "ハニーサックル（2発目）固有行。通常版と別IDで保持",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "lili/144",
+      "site_guard": "-11s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lili/frame-data/s3/",
+          "guard": "-11s",
+          "meaning": "背向けテンペストのガードs表記。実機効果の個別確認が必要",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "asuka/106",
+      "site_guard": "-13s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "-13s",
+          "meaning": "住吉降打のガードs表記。効果説明は未確認",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/126",
+      "site_guard": "-23s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "-23s",
+          "meaning": "ヒッププレス～シットダウン～前転。姿勢移行を含むため分離確認",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/127",
+      "site_guard": "-23s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "-23s",
+          "meaning": "ヒッププレス～シットダウン～後転。姿勢移行を含むため分離確認",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/221",
+      "site_guard": "+13s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "+13s",
+          "meaning": "シットダウン中のヒッププレス～シットダウン。同名通常版とIDを区別",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/234",
+      "site_guard": "-23s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "-23s",
+          "meaning": "ヒッププレス・エクストラ～シットダウン～前転。終端移行と相手効果を区別",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jack8/235",
+      "site_guard": "-23s",
+      "jp_status": "jp_notation_only",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "-23s",
+          "meaning": "ヒッププレス・エクストラ～シットダウン～後転。終端移行と相手効果を区別",
+          "version": "3.02.02"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "devil-jin/84",
+      "site_guard": "-7s",
+      "jp_status": "jp_numeric_conflict",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/devil-jin/frame-data/s3/",
+          "guard": "-7s",
+          "meaning": "羅刹門･参、シーズン3のガード値",
+          "version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "-8^S",
+          "meaning": "旧資料はガード強制しゃがみと説明するがフレーム値が異なる",
+          "version": "historical"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "shaheen/26",
+      "site_guard": "+4s",
+      "jp_status": "jp_numeric_conflict",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/shaheen/frame-data/s3/",
+          "guard": "+4s",
+          "meaning": "ロムフ・アルダウラ～スネークイン、現行公開版の表記",
+          "version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/shaheen/data.htm",
+          "guard": "+6",
+          "meaning": "過去版は+6で上付きSなし。バージョン差・名称対応に注意",
+          "version": "historical"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "jin/175",
+      "site_guard": "-23s",
+      "jp_status": "jp_notation_disagreement",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jin/frame-data/s3/",
+          "guard": "-23s",
+          "meaning": "覚醒等活閃空は下段を含む。しゃがみガード由来のsの可能性を除外できない",
+          "version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/jin/data.htm",
+          "guard": "-23",
+          "meaning": "Ver.1/2の掲載値に上付きSがない。未記載は効果なしの証明ではない",
+          "version": "1.x-2.x"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    },
+    {
+      "move_id": "claudio/19",
+      "site_guard": "-11s",
+      "jp_status": "jp_attacker_crouch_risk",
+      "japanese_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/claudio/frame-data/s3/",
+          "guard": "-11s",
+          "meaning": "ローリングスフィアのシーズン3表記",
+          "version": "3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/claudio/data.htm",
+          "guard": "-10",
+          "meaning": "過去版はしゃがみ帰着（攻撃側）と記載。相手強制しゃがみと混同しない",
+          "version": "historical"
+        }
+      ],
+      "binary_verified": false,
+      "icon_approved": false,
+      "needs_current_build_check": true
+    }
+  ]
+}
