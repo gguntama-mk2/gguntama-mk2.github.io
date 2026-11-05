@@ -11304,7 +11304,7 @@ function renderHead() {
   first.className = "name";
   first.textContent = "技名";
   row.appendChild(first);
-  if (HC) [["地上\nヒット時", "地上ヒット時"], ["空中\nヒット時", "空中ヒット時"]].forEach(([s, full]) => {   // 〔表示の試作〕アイコン用の新しい2列
+  if (HC) [["地上ヒット\nガード時", "地上ヒット・ガード時"], ["空中\nヒット時", "空中ヒット時"]].forEach(([s, full]) => {   // 〔表示の試作〕アイコン用の新しい2列
     const th = document.createElement("th"); th.className = "hic"; th.textContent = s; th.title = full; th.setAttribute("aria-label", full); row.appendChild(th);
   });
   if (HC) { const cn = document.querySelector("colgroup col.c-name"); if (cn) for (let n = 0; n < 2; n++) { const cc = document.createElement("col"); cc.className = "c-hic"; cn.insertAdjacentElement("afterend", cc); } }   // 列の幅の割り当て（技名の次に、アイコンの2列ぶん）

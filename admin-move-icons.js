@@ -22,10 +22,10 @@
   }
   function say(text, state) { ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
   function iconsApi() { var w = ctx.win && ctx.win(); return w && w.PTIcons ? w.PTIcons : null; }
-  var ZN = { c: "コマンドの横", g: "地上ヒット時", a: "空中ヒット時" };
+  var ZN = { c: "コマンドの横", g: "地上ヒット・ガード時", a: "空中ヒット時" };
   function isCmd(id) { var c = catalog.find(function (x) { return x.id === id; }); return !!(c && c.cmd); }
   function order(list) { return catalog.map(function (it) { return it.id; }).filter(function (id) { return list.indexOf(id) >= 0; }); }
-  function splitFlat(list) {            // 従来の形式（場所を分けない一覧）：ホーミング／パワークラッシュ→コマンドの横、ほか→地上ヒット時
+  function splitFlat(list) {            // 従来の形式（場所を分けない一覧）：ホーミング／パワークラッシュ→コマンドの横、ほか→地上ヒット・ガード時
     var l = order(list || []); return { c: l.filter(isCmd), g: l.filter(function (id) { return !isCmd(id); }), a: [] };
   }
   function autoPlace(charId, mv) {
@@ -72,7 +72,7 @@
     wrap.appendChild(g1);
     wrap.appendChild(make("h4", "ヒットしたときに出す（地上／空中）"));
     var tb = make("table", undefined, "pt-mi-matrix"), hd = make("tr");
-    ["アイコン", "地上ヒット時", "空中ヒット時"].forEach(function (x) { hd.appendChild(make("th", x)); }); tb.appendChild(hd);
+    ["アイコン", "地上ヒット・ガード時", "空中ヒット時"].forEach(function (x) { hd.appendChild(make("th", x)); }); tb.appendChild(hd);
     catalog.filter(function (it) { return !it.cmd; }).forEach(function (it) {
       var tr = make("tr"), n = make("td", undefined, "pt-mi-nm"); n.append(iconImg(it.id, 22), make("span", it.label.split("（")[0])); n.title = it.label;
       var g = make("td", undefined, "pt-mi-ck2"), a = make("td", undefined, "pt-mi-ck2"); g.appendChild(box("g", it.id)); a.appendChild(box("a", it.id));
@@ -214,7 +214,7 @@
     ctx = context; host = target; host.replaceChildren();
     var panel = make("section", undefined, "card");
     panel.appendChild(make("h2", "技のアイコン設定"));
-    panel.appendChild(make("p", "技ごとに、技表に出すアイコンを設定します。ホーミング・パワークラッシュは、コマンドの右はし。そのほかは、「地上ヒット時」「空中ヒット時」の欄に出ます。設定していない技は、自動の判定（トルネード・ヒートエンゲージ・リカバリアブルダメージ→地上ヒット時、ホーミング・パワークラッシュ→コマンドの横）のままです。"));
+    panel.appendChild(make("p", "技ごとに、技表に出すアイコンを設定します。ホーミング・パワークラッシュは、コマンドの右はし。そのほかは、「地上ヒット・ガード時」「空中ヒット時」の欄に出ます。設定していない技は、自動の判定（トルネード・ヒートエンゲージ・リカバリアブルダメージ→地上ヒット・ガード時、ホーミング・パワークラッシュ→コマンドの横）のままです。"));
     ui.char = make("select"); ui.char.addEventListener("change", function () { closeEditor(); renderList(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索"; ui.q.addEventListener("input", renderList);
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
