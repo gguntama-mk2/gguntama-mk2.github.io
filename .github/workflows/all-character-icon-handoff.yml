@@ -1,0 +1,53 @@
+name: All-Character Icon Candidate Handoff
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  extract-current-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch exact production main source (read-only)
+        run: |
+          git fetch origin main --depth=1
+          git show origin/main:pc.html > /tmp/pt-main-pc.html
+          git show origin/main:move-icons.js > /tmp/pt-main-move-icons.js
+          git rev-parse origin/main > /tmp/pt-main-commit.txt
+      - name: Export all site-derived icon candidates and isolated test registry
+        run: |
+          node --check tools/export-all-icons.mjs
+          node tools/export-all-icons.mjs /tmp/pt-main-pc.html /tmp/pt-main-move-icons.js /tmp/pt-icon-all
+          cp /tmp/pt-main-commit.txt /tmp/pt-icon-all/MAIN_COMMIT_SHA.txt
+      - name: Validate generated counts and IDs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/pt-icon-all')
+          data=json.loads((p/'ALL_CHARACTER_ICON_CANDIDATES.json').read_text())
+          summary=data['summary']
+          assert summary['characters']==44,summary['characters']
+          assert summary['total_moves']==9569,summary['total_moves']
+          candidates=data['candidates']
+          assert len(candidates)==summary['candidate_moves']
+          assert all(0<len(r['icons'])<=6 for r in candidates)
+          assert len({(r['character_id'],r['site_k']) for r in candidates})==len(candidates)
+          assert all(not r['game_binary_verified'] for r in candidates)
+          registry=json.loads((p/'ALL_CHARACTER_ICON_SEED_OVERRIDES.json').read_text())
+          assert len(registry['entries'])==len(candidates)
+          print('VERIFIED CURRENT MAIN:',summary['characters'],'characters,',summary['total_moves'],'moves,',len(candidates),'candidate moves')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_ALL_CHARACTER_ICON_HANDOFF_CURRENT_MAIN
+          path: /tmp/pt-icon-all/*
+          retention-days: 30
