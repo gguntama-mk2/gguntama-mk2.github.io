@@ -1,0 +1,227 @@
+{
+  "schema": 21,
+  "date": "2026-11-05",
+  "source_policy": "日本語資料を優先。海外資料単独では確定しない。",
+  "caution": "日本語資料の旧ゲームバージョンの明記は現行ビルドの証明ではなく、通常技とヒート派生は独立判定。",
+  "entries": [
+    {
+      "move_id": "dragunov/57",
+      "site_guard": "-2s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/dragunov/frame-data/s3/",
+          "guard": "-2s",
+          "source_version": "3.02.02",
+          "observation": "アバランチハンマーラッシュのガード値",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/dragunov/data.htm",
+          "guard": "-2^{S}",
+          "source_version": "1.x",
+          "observation": "ガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_defender_effect"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "feng/174",
+      "site_guard": "-9s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/feng/frame-data/s3/",
+          "guard": "-9s",
+          "source_version": "3.02.02",
+          "observation": "剛砕襲ガード値",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/feng/data.htm",
+          "guard": "-9^{S}",
+          "source_version": "1.x",
+          "observation": "ガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_defender_effect"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "kuma/86",
+      "site_guard": "+10s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/kuma/frame-data/s3/",
+          "guard": "+10s",
+          "source_version": "3.02.02",
+          "observation": "ヒッププレス",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/kuma/data.htm",
+          "guard": "+10^{S}",
+          "source_version": "1.x",
+          "observation": "ヒッププレス～ベアシット：ガードで強制しゃがみ、名称差に注意",
+          "evidence_kind": "explicit_defender_effect"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "lidia/52",
+      "site_guard": "+6s",
+      "jp_status": "jp_explicit",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lidia/frame-data/s3/",
+          "guard": "+6s",
+          "source_version": "3.02.02",
+          "observation": "変則上段回し蹴り",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/lidia/data.htm",
+          "guard": "+6^{S}",
+          "source_version": "1.x",
+          "observation": "ガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_defender_effect"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "shaheen/110",
+      "site_guard": "+4s",
+      "jp_status": "jp_numeric_conflict",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/shaheen/frame-data/s3/",
+          "guard": "+4s",
+          "source_version": "3.02.02",
+          "observation": "アルセイフ（ヒート発動可能状態）",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/shaheen/data.htm",
+          "guard": "+2^{S}",
+          "source_version": "1.x",
+          "observation": "旧版アルセイフ（ヒート発動時）はガードで強制しゃがみ、数値差",
+          "evidence_kind": "explicit_defender_effect"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "azucena/65",
+      "site_guard": "+2s",
+      "jp_status": "jp_variant_mapping_risk",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/azucena/frame-data/s3/",
+          "guard": "+2s",
+          "source_version": "3.02.02",
+          "observation": "タコンプランジャー（ヒート発動可能状態）",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/azucena/data.htm",
+          "guard": "+4^{S}",
+          "source_version": "1.x",
+          "observation": "通常版の効果説明。ヒート派生の同一性は未検証",
+          "evidence_kind": "related_variant_only"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "panda/86",
+      "site_guard": "+10s",
+      "jp_status": "jp_notation_only",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/panda/frame-data/s3/",
+          "guard": "+10s",
+          "source_version": "3.02.02",
+          "observation": "ヒッププレスのs表記のみ",
+          "evidence_kind": "notation"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "bob/23",
+      "site_guard": "+2s",
+      "jp_status": "jp_notation_only",
+      "jp_evidence": [
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/bob_framelist/",
+          "guard": "+2F s",
+          "source_version": "2026",
+          "observation": "ホッピングマカロンのガードs表記",
+          "evidence_kind": "notation"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    },
+    {
+      "move_id": "reina/205",
+      "site_guard": "±0s",
+      "jp_status": "jp_notation_only",
+      "jp_evidence": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/reina/frame-data/s3/",
+          "guard": "±0s",
+          "source_version": "3.02.02",
+          "observation": "降魔砕のガードs表記",
+          "evidence_kind": "notation"
+        }
+      ],
+      "verification_scope": "guard_standing_defender_reaction",
+      "game_binary_verified": false,
+      "icon_approved": false,
+      "admin_write_allowed": false
+    }
+  ]
+}
