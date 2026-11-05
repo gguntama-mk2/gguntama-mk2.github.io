@@ -1,0 +1,138 @@
+name: V25 Season3 Ground Slam Floor State Verification
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-japanese-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build v24 baseline and v25 three-character reaction matrix from PC and mobile source
+        run: |
+          python -m py_compile tests/guard_effect_v15.py tests/guard_effect_v16.py tests/guard_effect_v17.py tests/guard_effect_v18.py tests/guard_effect_v19.py tests/guard_effect_v20.py tests/guard_effect_v21.py tests/guard_effect_v22.py tests/guard_effect_v23.py tests/guard_effect_v24.py tests/validate-game-icon-evidence-v21.py
+          node --check tools/build-season3-floor-v25.mjs
+          for target in pc sp; do
+            node tools/build-hit-state-sidecar-v13.mjs "$target.html" "/tmp/pt-v25/$target-v13"
+            node tools/audit-guard-crouch-v14.mjs "$target.html" "/tmp/pt-v25/$target-v13/v13_hit_state_review.json" "/tmp/pt-v25/$target-v14"
+            python tests/guard_effect_v15.py "/tmp/pt-v25/$target-v14/V14_GUARD_REVIEW.json" "/tmp/pt-v25/$target-v15"
+            python tests/guard_effect_v16.py "/tmp/pt-v25/$target-v15/V15_778_REVIEW.json" "/tmp/pt-v25/$target-v15/V15_REVIEW_128_DEDUPED.csv" test-data/v16-public-guard-evidence.json "/tmp/pt-v25/$target-v16"
+            python tests/guard_effect_v17.py "/tmp/pt-v25/$target-v16/V16_128_REVIEW.json" test-data/v17-japanese-source-review.json "/tmp/pt-v25/$target-v17"
+            python tests/guard_effect_v18.py "/tmp/pt-v25/$target-v17/V17_JAPANESE_REVIEW.json" test-data/v18-japanese-evidence-batch.json "/tmp/pt-v25/$target-v18"
+            python tests/guard_effect_v19.py "/tmp/pt-v25/$target-v18/V18_JAPANESE_REVIEW.json" test-data/v19-japanese-evidence-batch.json "/tmp/pt-v25/$target-v19"
+            python tests/guard_effect_v20.py "/tmp/pt-v25/$target-v19/V19_JAPANESE_REVIEW.json" test-data/v20-japanese-evidence-batch.json "/tmp/pt-v25/$target-v20"
+            python tests/guard_effect_v21.py "/tmp/pt-v25/$target-v20/V20_JAPANESE_REVIEW.json" test-data/v21-japanese-evidence-batch.json "/tmp/pt-v25/$target-v21"
+            python tests/guard_effect_v22.py "/tmp/pt-v25/$target-v21/V21_JAPANESE_REVIEW.json" test-data/v22-japanese-evidence-batch.json "/tmp/pt-v25/$target-v22"
+            python tests/guard_effect_v23.py "/tmp/pt-v25/$target-v22/V22_JAPANESE_REVIEW.json" test-data/v23-japanese-evidence-batch.json "/tmp/pt-v25/$target-v23"
+            python tests/guard_effect_v24.py "/tmp/pt-v25/$target-v23/V23_JAPANESE_REVIEW.json" test-data/v24-japanese-evidence-batch.json "/tmp/pt-v25/$target-v24"
+            node tools/build-season3-floor-v25.mjs "$target.html" "/tmp/pt-v25/$target-v24/V24_JAPANESE_REVIEW.json" test-data/v25-season3-special-slam-evidence.json "/tmp/pt-v25/$target"
+            python tests/validate-game-icon-evidence-v21.py "/tmp/pt-v25/$target-v24/V24_JAPANESE_REVIEW.json" test-data/v21-game-icon-observations.json
+          done
+          cp test-data/v25-season3-floor-reaction-view.html /tmp/pt-v25/pc/index.html
+          cp test-data/v21-game-icon-observations.json /tmp/pt-v25/pc/
+          for icon in forcedcrouch wallbreak floorgimmick; do cp "icons/$icon.webp" "/tmp/pt-v25/pc/$icon.webp"; done
+      - name: Verify three anchor moves, stage condition matrix and no icon writes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/pt-v25')
+          pc=json.loads((root/'pc/V25_S3_FLOOR_REACTION_MATRIX.json').read_text())
+          sp=json.loads((root/'sp/V25_S3_FLOOR_REACTION_MATRIX.json').read_text())
+          assert pc['cases']==sp['cases'], 'PC/SP move conditions differ'
+          assert pc['site_anchor_data']==sp['site_anchor_data']
+          a=pc['summary'];b=sp['summary']
+          for k in ('evidence_cases','provisional_ground_reaction_cases','reported_or_supported_floor_cases','source_moves','hold_variant_site_key'):
+              assert a[k]==b[k],k
+          assert a['source_moves']==9569
+          assert a['evidence_cases']==7 and a['provisional_ground_reaction_cases']==5
+          assert a['reported_or_supported_floor_cases']==7
+          assert a['binary_reaction_id_resolved']==a['game_binary_verified']==a['existing_icons_written']==a['production_changes']==0
+          by={x['case_id']:x for x in pc['cases']}
+          assert by['bob_ground_NH']['site_move_id']=='bob/184'
+          assert by['bob_ground_CH']['provisional_ground_reaction_family']
+          assert by['bob_airborne']['floor_gimmick_claim']=='user_reported'
+          assert by['bob_airborne']['provisional_ground_reaction_family'] is None
+          assert by['alisa_7LP_ground_CH']['site_move_id']=='alisa/227'
+          assert by['alisa_7LP_airborne']['provisional_ground_reaction_family'] is None
+          assert by['heihachi_7WP_unheld_ground_CH']['site_move_id']=='heihachi/97'
+          assert by['heihachi_7WP_hold_ground_NH']['variant']=='7WPホールド'
+          assert by['heihachi_7WP_hold_ground_NH']['site_move_id']==a['hold_variant_site_key']
+          assert all(x['internal_reaction_id'] is None and x['game_binary_verified'] is False and x['official_icon_assignment_approved'] is False for x in pc['cases'])
+          original=json.loads((root/'pc-v24/V24_JAPANESE_REVIEW.json').read_text())
+          assert original['summary']['japanese_pending']==22
+          assert len(original['records'])==128
+          assert not json.loads(Path('test-data/v21-game-icon-observations.json').read_text())['observations']
+          print('PASS V25: 3 grounded anchors, 7 state cases, 0 invented binary effect IDs, 0 icon writes')
+          print('HOLD_VARIANT_RESOLVED',a['hold_variant_site_key'],a['source_held_candidates'])
+          PY
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Run desktop and phone Season3 reaction-state viewer
+        run: |
+          (cd /tmp/pt-v25/pc && python -m http.server 8740 --bind 127.0.0.1 > /tmp/pt-v25/server.log 2>&1) &
+          python - <<'PY'
+          import time,urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          url='http://127.0.0.1:8740/index.html'
+          for _ in range(40):
+              try:urllib.request.urlopen(url,timeout=3);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('viewer not reachable')
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for name,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=browser.new_page(viewport=viewport)
+                  page.goto(url,wait_until='domcontentloaded',timeout=60000)
+                  page.wait_for_function("document.body.dataset.ready==='true'",timeout=45000)
+                  assert page.locator('tbody tr').count()==7
+                  assert page.locator('#cases').inner_text()=='7'
+                  assert page.locator('#shared').inner_text()=='5'
+                  assert page.locator('#stages').inner_text()=='7'
+                  assert page.locator('img[alt="床効果の参考アイコン"]').count()==7
+                  assert page.evaluate("Array.from(document.images).every(img=>img.complete && img.naturalWidth>0)")
+                  page.locator('#character').select_option('bob')
+                  assert page.locator('tbody tr').count()==3
+                  page.locator('#hit').select_option('airborne')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr[data-case-id="bob_airborne"]').count()==1
+                  page.locator('#reaction').select_option('shared')
+                  assert page.locator('tbody tr').count()==0
+                  page.locator('#reaction').select_option('')
+                  page.locator('#character').select_option('heihachi')
+                  page.locator('#hit').select_option('ground_normal')
+                  assert page.locator('tbody tr[data-case-id="heihachi_7WP_hold_ground_NH"]').count()==1
+                  page.locator('#character').select_option('alisa')
+                  page.locator('#hit').select_option('ground_counter')
+                  assert page.locator('tbody tr[data-case-id="alisa_7LP_ground_CH"]').count()==1
+                  page.locator('#character').select_option('')
+                  page.locator('#hit').select_option('')
+                  page.screenshot(path=str(Path('/tmp/pt-v25/pc')/(name+'_V25_FLOOR_REACTION.png')),full_page=False)
+                  page.close()
+              browser.close()
+          print('PASS V25 PC/mobile, conditional three-character reaction matrix')
+          PY
+      - name: Show diff guard (all source editing limited to test branch)
+        if: always()
+        run: git status --short
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V25_SEASON3_FLOOR_REACTION
+          path: |
+            /tmp/pt-v25/pc/
+            /tmp/pt-v25/server.log
+          retention-days: 30
+          if-no-files-found: warn
