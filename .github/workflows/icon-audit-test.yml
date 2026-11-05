@@ -22,6 +22,32 @@ jobs:
         run: node tools/plan-verified-move-icons.mjs --self-test
       - name: Bryan candidate preview test
         run: node tests/test-bryan-icon-preview.mjs
+      - name: Validate standalone icon page and inline WebP assets
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re,base64,json
+          page=Path('bryan-icon-test-standalone.html').read_text(encoding='utf8')
+          fixture=json.loads(Path('test-data/bryan-icon-candidates-v2.json').read_text())
+          class Scan(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.rows=[];self.images=[]
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  if tag=='tr' and 'data-k' in d: self.rows.append(d)
+                  if tag=='img': self.images.append(d)
+          scan=Scan();scan.feed(page)
+          assert len(scan.rows)==20,(len(scan.rows),'expected 20 rows')
+          assert len(scan.images)==22,(len(scan.images),'expected 22 icons')
+          assert {int(r['data-k']) for r in scan.rows}=={r['k'] for r in fixture['moves']}
+          assert not {212,213,214}&{int(r['data-k']) for r in scan.rows}
+          for img in scan.images:
+              m=re.fullmatch(r'data:image/webp;base64,([A-Za-z0-9+/=]+)',img['src'])
+              assert m,'not a data-url image'
+              assert base64.b64decode(m.group(1)).startswith(b'RIFF'),'bad webp'
+          print('PASS: 20 rows, 22 embedded valid WebP icon instances; no excluded throws')
+          PY
       - name: Disallow bulk remove mode in test branch
         run: |
           python - <<'PY'
