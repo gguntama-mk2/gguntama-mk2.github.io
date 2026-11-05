@@ -35,7 +35,7 @@ jobs:
           from pathlib import Path
           import json
           root=Path('/tmp/pt-v18')
-          a,b=[json.loads((root/k/'V17_JAPANESE_REVIEW.json').read_text()) for k in ['pc','sp']]
+          a,b=[json.loads((root/k/'V18_JAPANESE_REVIEW.json').read_text()) for k in ['pc','sp']]
           assert a==b
           summary=a['summary']
           assert summary['priority_groups']==128
