@@ -630,6 +630,13 @@ html[data-info~="atk"] .nm .minfo { display: flex; }
 .nm .mcmd.w2 { white-space: normal; max-height: 4.4em; --cs: .87; }
 th.tagc { text-align: left; padding-left: 10px; letter-spacing: .08em; }
 td.tagc { height: var(--row-h); padding: 0 6px; text-align: left; vertical-align: middle; border-right: 1px solid var(--line); }
+/* 地上ヒット時・空中ヒット時・タグの間に縦の線を入れる／技名とタグは列の中央に寄せる */
+th.hic, td.hic { border-right: 1px solid var(--line); }
+th.name, th.tagc { text-align: center; padding-left: 1px; padding-right: 1px; }
+.nm { padding: 8px 10px 6px; align-items: center; text-align: center; }
+.nm .minfo, .nm .mcmd { justify-content: center; }
+td.tagc { text-align: center; }
+.tgc { justify-content: center; }
 .tgc { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; max-height: calc(var(--row-h) - 14px); overflow: hidden; font-size: calc(var(--tag-fs) * var(--tgs, 1)); line-height: 1.3; }
 .tgc [data-k] { display: none; }
 .tgc[data-many] { gap: 1px; }   /* タグが5つ以上の技は、行の高さに収まるよう、タグの上下の余白だけ詰める（文字の大きさ・幅は他の行と同じ） */
