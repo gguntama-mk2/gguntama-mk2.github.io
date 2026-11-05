@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "entries": {
+    "bryan/5": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "ワンツーネックハント(ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/34": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "スネークピット(1)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/35": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "スネークチェーン",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/36": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "スネークチェーン～スウェー",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/37": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "スネークピット",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/59": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "スネークエッジ",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/60": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "レッグスラッシュ",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/79": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "クラッシュインパクト(ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/103": {
+      "icons": [
+        "powercrush"
+      ],
+      "move_name": "マッドマンズブロー～スネークアイ",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/104": {
+      "icons": [
+        "powercrush"
+      ],
+      "move_name": "マッドマンズブロー(強化)～スネークアイ",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/118": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "マッハパンチ(ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/125": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "マッハキック",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/147": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "スネークバイト(ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/172": {
+      "icons": [
+        "powercrush"
+      ],
+      "move_name": "イモータルペイバック",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/187": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "レクイエム(ハイドクローラー中・ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/195": {
+      "icons": [
+        "powercrush",
+        "heatengage"
+      ],
+      "move_name": "ヒートバースト",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/204": {
+      "icons": [
+        "heatengage"
+      ],
+      "move_name": "レクイエム(ヒート発動可能状態)",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/209": {
+      "icons": [
+        "powercrush",
+        "recoverable"
+      ],
+      "move_name": "トータルヴァンダライゼーション",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/210": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "DDT",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    },
+    "bryan/211": {
+      "icons": [
+        "homing"
+      ],
+      "move_name": "ブライアンクラッシャー",
+      "updated_at": 0,
+      "updated_by": "isolated-test-seed"
+    }
+  }
+}
