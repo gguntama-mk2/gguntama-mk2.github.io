@@ -94,7 +94,7 @@ const cases=[
 const floorTrue=cases.filter(r=>r.floor_gimmick_claim!=='unknown');
 if(cases.length!==8||floorTrue.length!==8||cases.filter(r=>r.provisional_ground_reaction_family).length!==6)
  throw Error('Unexpected state-case matrix counts');
-if(new Set(cases.map(x=>x.case_id)).size!==7)throw Error('Duplicate case IDs');
+if(new Set(cases.map(x=>x.case_id)).size!==8)throw Error('Duplicate case IDs');
 for(const c of cases){
  if(c.game_binary_verified||c.official_icon_assignment_approved||c.internal_reaction_id!==null)
    throw Error('Accidental approval or invented numeric ID');
