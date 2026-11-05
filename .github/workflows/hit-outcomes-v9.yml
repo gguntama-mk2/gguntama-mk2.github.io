@@ -1,0 +1,47 @@
+name: Hit Outcomes V9 Isolated Audit
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  data-and-ui-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Scan PC and SP with identical read-only rules
+        run: |
+          node --check tools/audit-hit-outcomes-v9.mjs
+          node tools/audit-hit-outcomes-v9.mjs pc.html /tmp/pt-hit-v9/pc
+          node tools/audit-hit-outcomes-v9.mjs sp.html /tmp/pt-hit-v9/sp
+      - name: Independent consistency, source and safety tests
+        run: |
+          python - <<'PY'
+          import json, pathlib, csv, collections
+          root=pathlib.Path('/tmp/pt-hit-v9')
+          a,b=[json.loads((root/d/'HIT_OUTCOMES_V9_SUMMARY.json').read_text()) for d in ('pc','sp')]
+          keys=['total_characters','total_site_moves','wall_reaction_rows','wall_gimmick_rows','floor_gimmick_rows','wall_any_rows','forced_crouch_hit_or_counter_unique','guard_suffix_s_only_review']
+          assert all(a[k]==b[k] for k in keys),(a,b)
+          assert a['total_characters']==44 and a['total_site_moves']==9569
+          assert (a['wall_reaction_rows'],a['wall_gimmick_rows'],a['floor_gimmick_rows'],a['wall_any_rows'])==(1055,275,68,1087) or a['wall_any_rows']==1087,(a['wall_any_rows'],a['wall_reaction_gimmick_overlap'])
+          assert a['forced_crouch_hit_or_counter_unique']==673
+          assert a['binary_verified']==a['icon_assignments']==0
+          for folder in ('pc','sp'):
+              f=root/folder/'HIT_OUTCOMES_V9_CANDIDATES.json'
+              data=json.loads(f.read_text())['rows']
+              assert len(data)==a['all_distinct_candidate_rows']
+              assert len({(r['character_id'],r['site_k']) for r in data})==len(data)
+              assert all(not r['game_binary_verified'] and not r['game_icon_assigned'] for r in data)
+          print('PASS: PC/SP site hit-state parity, zero auto-icon assignment')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_HIT_OUTCOMES_V9
+          path: /tmp/pt-hit-v9/*
+          retention-days: 30
