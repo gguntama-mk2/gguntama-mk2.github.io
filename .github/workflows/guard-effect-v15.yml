@@ -1,0 +1,104 @@
+name: V15 Guard Forced Crouch Follow-up
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract current site's 44 characters and v13-v15 guard audit
+        run: |
+          python -m py_compile tests/guard_effect_v15.py
+          node tools/build-hit-state-sidecar-v13.mjs pc.html /tmp/pt-v15/pc-v13
+          node tools/build-hit-state-sidecar-v13.mjs sp.html /tmp/pt-v15/sp-v13
+          node tools/audit-guard-crouch-v14.mjs pc.html /tmp/pt-v15/pc-v13/v13_hit_state_review.json /tmp/pt-v15/pc-v14
+          node tools/audit-guard-crouch-v14.mjs sp.html /tmp/pt-v15/sp-v13/v13_hit_state_review.json /tmp/pt-v15/sp-v14
+          python tests/guard_effect_v15.py /tmp/pt-v15/pc-v14/V14_GUARD_REVIEW.json /tmp/pt-v15/pc
+          python tests/guard_effect_v15.py /tmp/pt-v15/sp-v14/V14_GUARD_REVIEW.json /tmp/pt-v15/sp
+          cp test-data/v15-guard-effect-review.html /tmp/pt-v15/pc/index.html
+      - name: Validate PC SP effect data, stable IDs and no writes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('/tmp/pt-v15')
+          pc=json.loads((root/'pc/V15_778_REVIEW.json').read_text())
+          sp=json.loads((root/'sp/V15_778_REVIEW.json').read_text())
+          assert pc==sp
+          s=pc['summary']
+          assert s['previous_priority']==243
+          assert s['previous_ambiguous_reclassified']=={'low':88,'mid':37,'high':1}
+          assert s['low_related_total']==623 and s['remaining_mid_or_high']==155
+          assert s['shared_wall_climb_within_mid_or_high']==21
+          assert s['non_wall_climb_mid_or_high']==134
+          assert s['unique_review_signatures']==128 and s['duplicate_signature_members']==6
+          assert s['game_binary_confirmed']==s['admin_icon_writes']==0
+          assert len(pc['reviews'])==len({x['move_id'] for x in pc['reviews']})==778
+          for r in pc['reviews']:
+              assert r['game_binary_verified'] is False and r['icon_auto_set'] is False
+          print('PASS: 778 guard checks, 128 deduplicated review groups, 3 cross-source matches; zero writes')
+          PY
+      - name: Install browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Test isolated PC and phone review page
+        run: |
+          (cd /tmp/pt-v15/pc && python -m http.server 8737 --bind 127.0.0.1 >/tmp/pt-v15/server.log 2>&1) &
+          python - <<'PY'
+          import time,urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          url='http://127.0.0.1:8737/index.html'
+          for i in range(40):
+              try:urllib.request.urlopen(url,timeout=2);break
+              except Exception:time.sleep(1)
+          else: raise RuntimeError('Local server unavailable')
+          with sync_playwright() as pw:
+              browser=pw.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for kind,v in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=browser.new_page(viewport=v)
+                  page.goto(url,wait_until='domcontentloaded')
+                  page.wait_for_function("document.body.dataset.ready === 'true'",timeout=35000)
+                  assert page.locator('#all').inner_text()=='778'
+                  assert page.locator('#low').inner_text()=='623'
+                  assert page.locator('#next').inner_text()=='155'
+                  assert page.locator('#unique').inner_text()=='128'
+                  assert '134技該当' in page.locator('#count').inner_text()
+                  page.locator('#external').select_option('yes')
+                  assert '3技該当' in page.locator('#count').inner_text()
+                  assert page.locator('tbody tr[data-move-id="king/60"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="bryan/125"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="kazuya/80"]').count()==1
+                  assert page.locator('tbody tr a').count()==3
+                  page.locator('#external').select_option('')
+                  page.locator('#queue').select_option('hold_low_strike_or_crouch_block')
+                  assert '623技該当' in page.locator('#count').inner_text()
+                  page.locator('#queue').select_option('shared_wall_climb_special_review')
+                  assert '21技該当' in page.locator('#count').inner_text()
+                  page.locator('#queue').select_option('targeted_external_or_binary_verification')
+                  page.screenshot(path=str(Path('/tmp/pt-v15/pc')/(kind+'_V15_GUARD.png')),full_page=False)
+                  page.close()
+              browser.close()
+          print('PASS: real Chromium PC and mobile review filters and external evidence links')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V15_GUARD_EFFECT_ANALYSIS
+          path: |
+            /tmp/pt-v15/pc/
+            /tmp/pt-v15/server.log
+          if-no-files-found: warn
+          retention-days: 30
