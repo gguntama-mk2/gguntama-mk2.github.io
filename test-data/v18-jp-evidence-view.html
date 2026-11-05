@@ -1,0 +1,46 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>PROJECT T｜日本語資料優先の強制しゃがみ検証 v18</title>
+<style>
+:root{color-scheme:dark;background:#141824;color:#f0f4ff;font:14px/1.55 system-ui,"Yu Gothic",Meiryo,sans-serif}*{box-sizing:border-box}body{margin:0}
+header{background:#232b42;border-bottom:1px solid #4b5672;padding:22px max(16px,calc((100vw - 1150px)/2))}main{max-width:1180px;margin:auto;padding:20px 17px 60px}
+h1{font-size:24px;margin:0 0 8px}.muted{color:#b3c1d7}.notice{border:1px solid #b5955b;background:#342b22;padding:13px;border-radius:8px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:17px 0}.stats>div{border:1px solid #3f4a67;background:#222b41;padding:10px;border-radius:8px}
+.stats strong{display:block;font-size:25px}
+input,select{background:#27334a;color:#fff;border:1px solid #65728e;border-radius:6px;padding:9px;font:inherit}.controls{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}input{flex:1;min-width:190px}
+.scroll{overflow:auto;border:1px solid #4a5771;border-radius:9px}table{border-collapse:collapse;min-width:980px;width:100%}th,td{border-bottom:1px solid #3b4861;padding:10px;text-align:left;vertical-align:top}th{background:#2c3851;font-size:12px}
+a{color:#aad0ff}.tag{border-radius:4px;background:#38465d;padding:4px 7px;font-size:12px;white-space:nowrap}.supported{color:#a6edc2}.notation{color:#cce2ff}.disputed{color:#ffd080}.pending{color:#b6c2d6}
+.note{margin:5px 0;color:#b9c5d9;font-size:12px}
+</style></head><body><header><h1>PROJECT T｜日本語資料優先・技アイコン解析 v18</h1><div class="muted">128技グループの証拠を再評価｜日本語資料の数値差も明示・海外サイトだけでは確定しない</div></header>
+<main><p class="notice">日本語の技表を優先します。効果の説明があってもゲームバイナリの解析が終わるまで「実装正式確定」にはしません。海外サイトの過去の一致・不一致は履歴として保持し、判定には使用しません。S3等の資料と実ゲームのバージョン差も確認が必要です。</p>
+<div class="stats">
+<div><strong id="total">—</strong>調査対象</div><div><strong id="explicit">—</strong>日本語資料で効果の裏付け</div>
+<div><strong id="notation">—</strong>日本語サイトの記号のみ</div><div><strong id="conflict">—</strong>日本語サイト間の数値差</div><div><strong id="remaining">—</strong>日本語サイト未照合</div>
+</div>
+<div class="controls"><select id="status"><option value="">すべて</option><option value="jp_explicit">日本語資料で効果の裏付け</option><option value="jp_notation_only">s表記のみ</option><option value="jp_numeric_conflict">国内のフレーム値に差</option><option value="jp_not_reviewed">国内資料未照合</option></select>
+<input id="search" placeholder="キャラクター・技名・技ID・コマンド検索"></div>
+<p id="count" class="muted">読み込み中</p>
+<div class="scroll"><table><thead><tr><th>キャラ</th><th>技ID</th><th>技名</th><th>PROJECT T<br>ガード</th><th>検証状態</th><th>日本語資料</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p class="muted">日本語の ^S はgeppopotamusで「相手の強制しゃがみ」と定義されています。サイトごとの表記差とパッチ差を区別します。</p></main>
+<script>
+(async()=>{
+const d=await fetch('V18_JAPANESE_REVIEW.json').then(r=>{if(!r.ok)throw Error('データがありません');return r.json()});
+const by=id=>document.getElementById(id),rows=d.records,s=d.summary;
+for(const [id,num] of Object.entries({total:s.priority_groups,explicit:s.japanese_explicit,notation:s.japanese_notation_only,conflict:s.japanese_numeric_conflict,remaining:s.japanese_not_reviewed}))by(id).textContent=num;
+const titles={jp_explicit:'効果の説明あり',jp_notation_only:'日本語のs表記のみ',jp_numeric_conflict:'フレーム数に差あり',jp_not_reviewed:'日本語資料で未照合'};
+const cls={jp_explicit:'supported',jp_notation_only:'notation',jp_numeric_conflict:'disputed',jp_not_reviewed:'pending'};
+function render(){
+const filter=by('status').value,q=by('search').value.normalize('NFKC').toLowerCase().trim();
+const result=rows.filter(r=>(!filter||r.jp_status===filter)&&(!q||(r.move_id+' '+r.move_name+' '+r.command).normalize('NFKC').toLowerCase().includes(q)));
+by('count').textContent=result.length+'件に一致';const tbody=by('rows');tbody.replaceChildren();
+for(const r of result){const tr=document.createElement('tr');tr.dataset.id=r.move_id;
+for(const val of [r.character_id,'k'+r.site_k,r.move_name,r.site_guard]){
+ const td=document.createElement('td');td.textContent=val;tr.append(td)}
+const st=document.createElement('td'),tag=document.createElement('span');tag.className='tag '+cls[r.jp_status];tag.textContent=titles[r.jp_status];st.append(tag);tr.append(st);
+const refs=document.createElement('td');
+for(const src of r.jp_evidence){const p=document.createElement('div'),a=document.createElement('a');a.href=src.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=src.publisher+' '+src.guard+(src.source_version?' ['+src.source_version+']':'');p.append(a);refs.append(p)}
+if(!r.jp_evidence.length)refs.textContent='未照合';
+tr.append(refs);tbody.append(tr)}
+}
+by('status').addEventListener('change',render);by('search').addEventListener('input',render);render();document.body.dataset.ready='true';
+})().catch(err=>{document.body.dataset.ready='error';document.getElementById('count').textContent='表示エラー: '+err.message});
+</script></body></html>
