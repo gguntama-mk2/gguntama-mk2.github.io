@@ -1,0 +1,375 @@
+{
+  "schema": 23,
+  "date": "2026-11-05",
+  "source_policy": "Japanese primary; foreign sites excluded for confirmation",
+  "rules": {
+    "source_specific_notation": true,
+    "do_not_equate_all_s_suffixes": true,
+    "move_id_and_stance_exact": true,
+    "game_binary_confirmation_required": true,
+    "never_write_admin_icons": true
+  },
+  "entries": [
+    {
+      "move_id": "hwoarang/29",
+      "site_guard": "-14s",
+      "jp_status": "jp_numeric_conflict",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/hwoarang/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "ライトキックチェーンソーヒール～右構え",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://www.geppopotamus.info/game/tekken8/hwoarang/data.htm",
+          "guard": "-15^{S}",
+          "version": "earlier_build",
+          "note": "同名のガード時強制しゃがみ記載。数値が現行サイトと異なる",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "hwoarang/144",
+      "site_guard": "-14s",
+      "jp_status": "jp_numeric_conflict",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/hwoarang/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "チェーンソーヒールコンボ～右構え",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://www.geppopotamus.info/game/tekken8/hwoarang/data.htm",
+          "guard": "-15^{S}",
+          "version": "earlier_build",
+          "note": "同名技のS表記、数値不一致",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "hwoarang/152",
+      "site_guard": "-14s",
+      "jp_status": "jp_numeric_conflict",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/hwoarang/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "チェーンソーヒール～右構え",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://www.geppopotamus.info/game/tekken8/hwoarang/data.htm",
+          "guard": "-15^{S}",
+          "version": "earlier_build",
+          "note": "ガードで強制しゃがみと明記、数値不一致",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "devil-jin/155",
+      "site_guard": "-14s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/devil-jin/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "夜蜘蛛・ヒート発動可能状態",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "-14^{S}",
+          "version": "older_build",
+          "note": "夜蜘蛛（ヒート発動時）のガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "devil-jin/156",
+      "site_guard": "-14s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/devil-jin/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "夜蜘蛛・通常版",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/devil/data.htm",
+          "guard": "-14^{S}",
+          "version": "older_build",
+          "note": "夜蜘蛛・ガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "devil-jin/169",
+      "site_guard": "-14s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/devil-jin/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "夜蜘蛛（ヒート状態）。通常版とは技IDを分ける",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/156",
+      "site_guard": "±0s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/yoshimitsu/frame/",
+          "guard": "±0s",
+          "version": "3.02.01",
+          "note": "鋼閃華",
+          "evidence_kind": "notation"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/yoshimitsu/data.htm",
+          "guard": "±0^{S}",
+          "version": "1.00.00",
+          "note": "鋼閃華はガードで強制しゃがみと明記",
+          "evidence_kind": "explicit_japanese"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "yoshimitsu/166",
+      "site_guard": "-1s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/yoshimitsu/frame/",
+          "guard": "-1s",
+          "version": "3.02.01",
+          "note": "飛空襲剣（2段階）",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "kuma/23",
+      "site_guard": "-14s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/kuma/frame/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "ライオットグリズリー（クマ）",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "panda/23",
+      "site_guard": "-14s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/frame-panda/",
+          "guard": "-14s",
+          "version": "season3",
+          "note": "ライオットグリズリー（パンダ）",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "zafina/12",
+      "site_guard": "-9s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/zafina/frame/",
+          "guard": "-9s",
+          "version": "3.02.01",
+          "note": "バステトスクラッチ",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "zafina/176",
+      "site_guard": "-12s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/zafina/frame/",
+          "guard": "-12s",
+          "version": "3.02.01",
+          "note": "タランチュラクロウ",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "zafina/208",
+      "site_guard": "-9s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/zafina/frame/",
+          "guard": "-9s",
+          "version": "3.02.01",
+          "note": "フリーカムイ",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "zafina/209",
+      "site_guard": "-9s",
+      "jp_status": "jp_notation_only",
+      "sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/zafina/frame/",
+          "guard": "-9s",
+          "version": "3.02.01",
+          "note": "フリーカムイ～MM",
+          "evidence_kind": "notation"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "bob/136",
+      "site_guard": "-4s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/bob_framelist/",
+          "guard": "-4F s",
+          "version": "2026_web",
+          "note": "ブリオッシュスター。サイトの凡例でs＝相手しゃがませと明記",
+          "evidence_kind": "notation_defined_as_defender_crouch"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "bob/148",
+      "site_guard": "-5s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/bob_framelist/",
+          "guard": "-5F s",
+          "version": "2026_web",
+          "note": "バインミーストライク。凡例でs＝相手しゃがませ",
+          "evidence_kind": "notation_defined_as_defender_crouch"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "bob/168",
+      "site_guard": "-11s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/bob_framelist/",
+          "guard": "-11F s",
+          "version": "2026_web",
+          "note": "ガンベロ・スピンヒール。凡例でs＝相手しゃがませ",
+          "evidence_kind": "notation_defined_as_defender_crouch"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false
+    },
+    {
+      "move_id": "bob/184",
+      "site_guard": "-13s",
+      "jp_status": "jp_explicit",
+      "sources": [
+        {
+          "publisher": "mogura-ya",
+          "url": "https://mogura-ya.net/bob_framelist/",
+          "guard": "-13F s",
+          "version": "2026_web",
+          "note": "パーフェクトプレス。凡例でs＝相手しゃがませ、通常・CH欄はD^{FB}",
+          "evidence_kind": "notation_defined_as_defender_crouch"
+        }
+      ],
+      "game_binary_verified": false,
+      "admin_icon_write_approved": false,
+      "additional_stage_evidence": {
+        "icon_id": "floorgimmick",
+        "evidence": "Mogura-ya lists D^{FB} in H and CH columns; legend defines FB as floor-break capable",
+        "ground_air_condition": "not_established",
+        "game_binary_verified": false,
+        "icon_assignment_approved": false
+      }
+    }
+  ]
+}
