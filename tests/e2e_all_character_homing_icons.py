@@ -74,6 +74,23 @@ with sync_playwright() as p:
           }
           return {checked:Object.values(bychar).reduce((a,b)=>a+b,0),characters:Object.keys(bychar).length,misses,mismatches,incorrect_icons:images};
         }""",rows)
+        if page_id=="pc":
+            side_audit=page.evaluate("""() => {
+              const out=[];
+              for(const c of CHARACTERS)for(const m of c.moves){
+                const cmd=String(m.a?.command||'');
+                if(!/(?:側面|背後)から接近/.test(cmd))continue;
+                const tags=window.moveInfo(m).tags.map(t=>t.id);
+                out.push({char:c.id,k:m.k,name:m.name,command:cmd,
+                  homing_value:m.a?.homing??null,off:m.off??null,t:m.t??null,tag_hm:tags.includes('hm')});
+              }
+              return out;
+            }""")
+            report["side_throw_audit"]={"count":len(side_audit),"tag_hm_count":sum(bool(r["tag_hm"]) for r in side_audit),
+                "homing_value_count":sum(r["homing_value"]=="あり" for r in side_audit),
+                "rows":side_audit}
+            (OUT/"SIDE_THROW_HOMING_AUDIT.json").write_text(json.dumps(report["side_throw_audit"],ensure_ascii=False,indent=2))
+            print("SIDE_THROW_AUDIT",json.dumps({k:v for k,v in report["side_throw_audit"].items() if k!="rows"}),flush=True)
         report["browsers"][page_id]=result
         print(page_id,json.dumps({k:(v if not isinstance(v,list) else v[:8]) for k,v in result.items()},ensure_ascii=False),flush=True)
         assert result["checked"]==545 and not result["misses"] and not result["mismatches"] and not result["incorrect_icons"],str(result)
