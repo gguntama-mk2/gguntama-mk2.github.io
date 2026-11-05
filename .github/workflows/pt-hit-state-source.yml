@@ -1,0 +1,25 @@
+name: PROJECT T Hit-State Source Export
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read exact site move fields
+        run: |
+          node --check tools/export-hit-state-source.mjs
+          node tools/export-hit-state-source.mjs pc.html /tmp/pt-hit-source
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT_T_HIT_STATE_SOURCE_FIELDS
+          path: /tmp/pt-hit-source/*
+          retention-days: 30
