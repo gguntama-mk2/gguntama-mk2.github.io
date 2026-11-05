@@ -19,7 +19,7 @@ for entry in batch['entries']:
  for e in entry['jp_evidence']:
   assert e['publisher'] in ('geppopotamus','sorao','mogura-ya') and e['url'].startswith('https://') and e['source_version']
  if entry['jp_status']=='jp_explicit':assert any(x['evidence_kind']=='explicit_defender_effect' for x in entry['jp_evidence'])
- if entry['jp_status']=='jp_numeric_conflict':assert len({re.search(r'[+-]?\\d+',x['guard']).group() for x in entry['jp_evidence']})==2
+ if entry['jp_status']=='jp_numeric_conflict':assert len({re.search(r'[+-]?\d+',x['guard']).group() for x in entry['jp_evidence']})==2
  if entry['jp_status']=='jp_variant_mapping_risk':assert any(x['evidence_kind']=='related_variant_only' for x in entry['jp_evidence'])
  changes[mid]=entry
 assert len(changes)==9
@@ -39,8 +39,8 @@ assert dict(counts)==expected,(counts,expected)
 assert len({r['move_id'] for r in records})==128
 summary={'schema':21,'priority_groups':128,'new_japanese_checks':9,'japanese_reviewed_total':68,'japanese_unreviewed':60,'japanese_explicit':23,'japanese_notation_only':33,'japanese_numeric_conflict':7,'japanese_notation_disagreement':3,'japanese_attacker_crouch_risk':1,'japanese_variant_mapping_risk':1,'game_binary_verified':0,'approved_icon_assignments':0,'production_changes':0,'overseas_approval_evidence':0}
 out.mkdir(parents=True,exist_ok=True)
-(out/'V21_JAPANESE_REVIEW.json').write_text(json.dumps({'summary':summary,'records':records},ensure_ascii=False,indent=2)+'\\n',encoding='utf8')
-(out/'V21_SUMMARY.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\\n',encoding='utf8')
+(out/'V21_JAPANESE_REVIEW.json').write_text(json.dumps({'summary':summary,'records':records},ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+(out/'V21_SUMMARY.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
 cols=['move_id','character_id','site_k','move_name','command','site_guard','jp_status','newly_reviewed_v21','jp_evidence','approved_icon']
 for name,selected in [('V21_NEW_9.csv',[r for r in records if r['newly_reviewed_v21']]),('V21_PENDING_60.csv',[r for r in records if r['jp_status']=='jp_not_reviewed'])]:
  with (out/name).open('w',encoding='utf-8-sig',newline='') as f:
