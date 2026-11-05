@@ -42,7 +42,7 @@ for(const r of v13.moves){
  const m=sourceMove.move,a=m.a||{},attack=String(a.attack||"");
  const group=direct(attack),guard=String(a.guard||"");
  const simple=/^[+\-−±]?\d+s$/.test(guard);
- const newOnly=r.review_origin==="full_site_guard_only";
+ const newOnly=r.review_origin==="full_site_guard_only"||r.review_origin==="new_guard_s_only";
  const prior=external[r.move_id]||null;
  const wallOrFloor=Boolean(String(a.wall||"").includes("壁やられ")||/ウォールブレイク|ウォールブラスト|ウォールバウンド|バルコニーブレイク|フロアブレイク|フロアブラスト/.test(String(a.gimmick||"")));
  const priority=group==="low"?"hold_low_block":group==="mid"?"review_mid_guard":group==="high"?"review_high_guard":"manual_sequence_review";
@@ -50,7 +50,7 @@ for(const r of v13.moves){
    character_id:r.character_id,character_name:r.character_name,site_k:r.site_k,move_id:r.move_id,
    move_name:r.move_name,command:r.command,attack,guard_value:guard,last_attack_group:group,
    source_attack_last:attack.replaceAll("，",",").split(",").at(-1)?.trim()||"",
-   guard_notation_simple:simple,review_origin:r.review_origin,
+   guard_notation_simple:simple,review_origin:newOnly?"new_guard_s_only":"v12_style_hit_effects",
    priority,wall_or_floor_overlap:wallOrFloor,
    attacker_crouch_state:a.crouch==="あり",
    external_comparison:prior,
