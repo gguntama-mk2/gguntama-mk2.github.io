@@ -56,3 +56,28 @@ jobs:
             /tmp/pt-icon-replica/move-icons/overrides.json
             /tmp/pt-icon-replica/server.log
           if-no-files-found: warn
+      - name: Bundle original PC/SP/Admin website and isolated API
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          root=Path('.')
+          names=['pc.html','sp.html','admin.html','admin.js','admin-move-icons.js',
+                 'admin-move-media.js','move-icons.js','move-media.js','checksheet-base.json',
+                 'combos-live.json','index.html','favicon.svg',
+                 'tests/icon_replica_server.py','tests/e2e_bryan_isolated_icons.py',
+                 'test-data/bryan-icon-candidates-v2.json','docs/BRYAN_FULL_SITE_ICON_TEST_JA.md']
+          names += [str(p) for p in Path('icons').glob('*.webp')]
+          out=Path('/tmp/pt-icon-replica/PROJECT_T_BRYAN_TEST_FULL_SITE.zip')
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              for p in names:
+                  if Path(p).is_file(): z.write(p)
+          print(out, out.stat().st_size, 'bytes')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_BRYAN_TEST_FULL_SITE
+          path: /tmp/pt-icon-replica/PROJECT_T_BRYAN_TEST_FULL_SITE.zip
+          if-no-files-found: warn
