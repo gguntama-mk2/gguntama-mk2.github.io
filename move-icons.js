@@ -26,7 +26,8 @@
     ["hardfloorbreak", "ハードフロアブレイク", "hardfloorbreak.webp"],
     ["floorblast", "フロアブラスト", "floorblast.webp"]
   ];
-  var BY_ID = {}; CATALOG.forEach(function (c, i) { BY_ID[c[0]] = { id: c[0], label: c[1], file: c[2], order: i }; });
+  var CMD_IDS = { homing: 1, powercrush: 1 };    // 地上・空中にかかわらず出るもの＝コマンドの右はしに出す。ほかは「地上ヒット時」「空中ヒット時」の欄
+  var BY_ID = {}; CATALOG.forEach(function (c, i) { BY_ID[c[0]] = { id: c[0], label: c[1], file: c[2], order: i, cmd: !!CMD_IDS[c[0]] }; });
   var MAX_ICONS = 6;
 
   /* 回復可能体力を削る技（キャラ別）。名前が完全に同じ技だけ。レイジアーツは全部（タグ「レイジアーツ」）なので、ここには書かない */
@@ -87,9 +88,20 @@
     return loading;
   }
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
-  function iconsFor(charId, k, autoList) {
+  /* アイコンの置き場所：c＝コマンドの右はし、g＝地上ヒット時、a＝空中ヒット時 */
+  function splitList(list) {
+    var o = { c: [], g: [], a: [] };
+    clean(list).forEach(function (id) { (BY_ID[id].cmd ? o.c : o.g).push(id); });     // 従来の形式の設定・自動の判定は、ホーミング／パワークラッシュ→コマンドの横、ほか→地上ヒット時
+    return o;
+  }
+  function placeFor(charId, k, autoList) {
     var row = overrides && CHAR_RE.test(String(charId)) && overrides[charId] && Object.prototype.hasOwnProperty.call(overrides[charId], String(k)) ? overrides[charId][String(k)] : null;
-    return row ? clean(row) : clean(autoList);
+    if (row && !Array.isArray(row) && typeof row === "object") return { c: clean(row.c), g: clean(row.g), a: clean(row.a) };
+    return splitList(row ? row : autoList);
+  }
+  function iconsFor(charId, k, autoList) {          // 場所を分けずに、全部（スマホ版・従来の表示）
+    var p = placeFor(charId, k, autoList);
+    return clean([].concat(p.c, p.g, p.a));
   }
 
   /* 見た目 */
@@ -113,7 +125,8 @@
 
   function paint(strip) {
     var host = strip.parentNode; if (!host) return;
-    var ids = iconsFor(strip.dataset.c, strip.dataset.k, strip._auto || []);
+    var z = strip.dataset.z || "all", p = placeFor(strip.dataset.c, strip.dataset.k, strip._auto || []);
+    var ids = z === "all" ? iconsFor(strip.dataset.c, strip.dataset.k, strip._auto || []) : p[z];
     var sig = ids.join(",");
     if (strip._sig === sig) return;
     strip._sig = sig;
@@ -123,7 +136,7 @@
       img.src = assetBase + m.file; img.alt = m.label; img.title = m.label; img.width = 22; img.height = 22; img.draggable = false; img.decoding = "async";
       strip.appendChild(img);
     });
-    if (strip.classList.contains("pt-col")) return;           // 列に出すときは、技名の欄の余白は動かさない
+    if (z === "g" || z === "a") return;                       // 欄に出すときは、技名の欄の余白は動かさない
     host.classList.toggle("pt-has-ic", ids.length > 0);
     if (ids.length) host.style.setProperty("--pt-ic-w", (ids.length * 24 + 4) + "px"); else host.style.removeProperty("--pt-ic-w");
   }
@@ -138,16 +151,23 @@
   /* 技表・カードに差し込む。host＝技名の欄(.nm)、cmdEl＝コマンドの要素、raw＝技のデータ、tagIds＝その技のタグ */
   function attach(host, cmdEl, charId, raw, tagIds, opts) {
     try {
-      var into = opts && opts.into;
-      if (PREVIEW || !host || (!cmdEl && !into) || !raw || typeof raw !== "object" || raw.k === undefined) return;
+      var zones = opts && (opts.ground || opts.air) ? opts : null;       // 欄（地上・空中ヒット時）を渡されたとき＝場所を分けて出す
+      if (PREVIEW || !host || (!cmdEl && !zones) || !raw || typeof raw !== "object" || raw.k === undefined) return;
       ensureStyle();
-      var strip = document.createElement("span"); strip.className = "pt-ic"; strip.dataset.c = String(charId); strip.dataset.k = String(raw.k);
-      strip._auto = auto(charId, raw, tagIds);
-      if (into) { strip.className = "pt-ic pt-col"; into.appendChild(strip); } else cmdEl.insertAdjacentElement("afterend", strip);
-      paint(strip);
+      var flat = auto(charId, raw, tagIds);
+      function mk(z) {
+        var s = document.createElement("span"); s.className = "pt-ic" + (z === "g" || z === "a" ? " pt-col" : ""); s.dataset.c = String(charId); s.dataset.k = String(raw.k); s.dataset.z = z; s._auto = flat; return s;
+      }
+      var strips = [];
+      if (zones) {
+        var sc = mk("c"); if (cmdEl) cmdEl.insertAdjacentElement("afterend", sc); else host.appendChild(sc); strips.push(sc);
+        if (zones.ground) { var sg = mk("g"); zones.ground.appendChild(sg); strips.push(sg); }
+        if (zones.air) { var sa = mk("a"); zones.air.appendChild(sa); strips.push(sa); }
+      } else { var s1 = mk("all"); cmdEl.insertAdjacentElement("afterend", s1); strips.push(s1); }
+      strips.forEach(paint);
       if (!overrides) load();
     } catch (e) { /* アイコンが出せなくても、技表はこれまでどおり */ }
   }
 
-  window.PTIcons = Object.freeze({ attach: attach, auto: auto, iconsFor: iconsFor, catalog: CATALOG.map(function (c) { return { id: c[0], label: c[1], file: c[2] }; }), refresh: refresh, reload: function () { overrides = null; loadedAt = 0; return load(); } });
+  window.PTIcons = Object.freeze({ attach: attach, auto: auto, autoSplit: function (c, raw, tags) { return splitList(auto(c, raw, tags)); }, iconsFor: iconsFor, placeFor: placeFor, catalog: CATALOG.map(function (c) { return { id: c[0], label: c[1], file: c[2], cmd: !!CMD_IDS[c[0]] }; }), refresh: refresh, reload: function () { overrides = null; loadedAt = 0; return load(); } });
 })();

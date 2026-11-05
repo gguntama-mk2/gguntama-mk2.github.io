@@ -11546,18 +11546,18 @@ function renderTable() {
         setTimeout(() => { tr.classList.remove("rvfade"); if (current === c.id && !rvHas(c.id, i)) applyFilter(); }, 650);
       } else updateFbar(document.querySelectorAll("#body tr[data-q]:not(.nomatch)").length, document.querySelectorAll("#body tr[data-q]").length);   // 件数だけ更新（表全体の収め直しはしない）
     }));
+    const hicG = document.createElement("td"), hicA = document.createElement("td");   // 「地上ヒット時」「空中ヒット時」の欄（アイコンは、下で入れる）
+    hicG.className = "hic"; hicG.dataset.side = "ground"; hicA.className = "hic"; hicA.dataset.side = "air";
+    let cs = null;
     if (answers.command) {
-      const cs = document.createElement("span"); cs.className = "mcmd"; renderSheetCmd(cs, answers.ci || answers.command, move, answers);
+      cs = document.createElement("span"); cs.className = "mcmd"; renderSheetCmd(cs, answers.ci || answers.command, move, answers);
       cs.classList.toggle("off", !showCmd); cs.setAttribute("aria-hidden", String(!showCmd)); nmw.appendChild(cs);
-      if (window.PTIcons && !HC) PTIcons.attach(nmw, cs, c.id, raw, moveInfo(raw).tags.map(t => t.id));   // 技のアイコン（コマンドの右はし）。新しい2列の試作（?hc=）のときは、下の「地上ヒット時」の列に出す
     }
+    if (window.PTIcons) PTIcons.attach(nmw, cs, c.id, raw, moveInfo(raw).tags.map(t => t.id), { ground: hicG, air: hicA });   // 技のアイコン：ホーミング・パワークラッシュはコマンドの右はし、そのほかは地上／空中ヒット時の欄
     th.appendChild(nmw);
     tr.appendChild(th);
 
-    if (HC) {   // 〔試作〕新しい2列：「地上ヒット時」には、いま技表に出ているアイコンを移す。「空中ヒット時」は、これから設定する（いまは空）
-      [0, 1].forEach(side => { const td = document.createElement("td"); td.className = "hic"; td.dataset.side = side ? "air" : "ground"; tr.appendChild(td);
-        if (!side && window.PTIcons) PTIcons.attach(td, null, c.id, raw, moveInfo(raw).tags.map(t => t.id), { into: td }); });
-    }
+    if (HC) { tr.appendChild(hicG); tr.appendChild(hicA); }   // 技名とタグの間の2列
     const tgd = document.createElement("td");   // タグ専用列：取得・消費・ヒート発動技などのカプセルを並べる
     tgd.className = "tagc";
     const tgs = infoEl(raw, "tags");
