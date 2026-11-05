@@ -1,0 +1,47 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>PROJECT T｜技アイコン条件別検証 v13</title>
+<style>:root{color-scheme:dark;font:14px/1.6 system-ui,"Yu Gothic",sans-serif;background:#141824;color:#eef2fd}
+body{margin:0}header{background:#232a40;padding:22px max(18px,calc((100vw - 1150px)/2))}main{max-width:1170px;margin:auto;padding:22px 16px}
+h1{margin:0;font-size:26px}.muted{color:#b6bed3}.warn{border:1px solid #a7874b;padding:12px;border-radius:9px;background:#352c20}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.stats>div{background:#222b41;padding:13px;border-radius:8px;flex:1;min-width:145px}
+.stats strong{font-size:24px;display:block}.control{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}
+select,input{background:#27314b;color:#fff;padding:10px;border:1px solid #65718b;border-radius:6px;font:inherit}input{flex:1;min-width:190px}
+.scroller{overflow:auto;border:1px solid #4b5774;border-radius:9px}table{border-collapse:collapse;min-width:850px;width:100%}th,td{padding:9px;border-bottom:1px solid #3f4b64;text-align:left;vertical-align:middle}th{background:#29334d}
+.tag{display:inline-flex;align-items:center;gap:6px;background:#39445d;border-radius:5px;padding:3px 7px;margin:2px 5px 2px 0;font-size:12px;white-space:nowrap}
+.tag img{width:24px;height:24px;object-fit:contain}.caution{color:#f5cd8b}
+@media(max-width:700px){.tag{font-size:0}.tag img{width:26px;height:26px}}</style></head>
+<body><header><h1>PROJECT T｜壁・床・強制しゃがみ v13</h1><div class="muted">状態別の解析候補｜本番への書き込みなし</div></header>
+<main><p class="warn">緑と黄はステージ・ヒット条件付きのサイト記載情報、ピンクは s 表記の候補です。実際のゲームバイナリで確定した技はありません。</p>
+<div class="stats"><div><strong id="n">—</strong>調査対象技</div><div><strong id="added">—</strong>ガード時の追加対象</div><div><strong id="guard">—</strong>ガード時 s 表記</div></div>
+<div class="control"><select id="character"><option value="">全キャラ</option></select>
+<select id="hitstate"><option value="normal">地上・通常ヒット</option><option value="counter">地上・カウンターヒット</option><option value="air">空中ヒット</option><option value="guard">ガード</option></select>
+<select id="effect"><option value="">全効果</option><option value="wall_splat">壁やられ</option><option value="wall_stage_effect">壁ギミック</option><option value="floor_stage_effect">床ギミック</option><option value="opponent_forced_crouch">強制しゃがみ候補</option></select>
+<input id="query" placeholder="技名・コマンド・技IDを検索"></div>
+<p id="count" class="muted">読込中</p>
+<div class="scroller"><table><thead><tr><th>キャラ</th><th>技ID</th><th>技名</th><th>コマンド</th><th>効果・判定根拠</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<p class="muted">「明示的になし」は壁やられのみの否定で、別のステージギミックを否定しません。緑アイコンは壁ギミック群の仮表示で、個別のウォールブレイク属性の確定ではありません。</p>
+</main><script>
+(async()=>{
+const r=await fetch('v13_hit_state_review.json').then(x=>{if(!x.ok)throw Error('JSON loading failed');return x.json()});const rows=r.moves,by=id=>document.getElementById(id);
+by('n').textContent=rows.length.toLocaleString();by('added').textContent=r.metadata.new_guard_only_moves.toLocaleString();by('guard').textContent=r.metadata.guard_s_total.toLocaleString();
+const character=by('character'),hit=by('hitstate'),type=by('effect'),q=by('query');
+for(const id of [...new Set(rows.map(x=>x.character_id))].sort()){const el=document.createElement('option');el.value=id;el.textContent=id;character.append(el)}
+const lab={wall_splat:'壁やられ',wall_stage_effect:'壁ギミック',floor_stage_effect:'床ギミック',opponent_forced_crouch:'強制しゃがみ'},
+states={explicit_yes:'サイト記載あり',explicit_no:'明示的になし',site_conditional:'発生条件記載あり',site_mentioned_condition_unknown:'条件未記載',notation_candidate:'s表記（推定）'},
+icons={wall_splat:'wallbreak.webp',wall_stage_effect:'wallbreak.webp',floor_stage_effect:'floorgimmick.webp',opponent_forced_crouch:'forcedcrouch.webp'};
+function draw(){
+const term=q.value.normalize('NFKC').toLowerCase().trim();
+const match=rows.filter(x=>(!character.value||x.character_id===character.value)&&(!term||(x.move_name+' '+x.command+' k'+x.site_k).normalize('NFKC').toLowerCase().includes(term))&&Object.entries(x.hit_states[hit.value]).some(([id,v])=>v.evidence_state!=='unknown'&&(!type.value||id===type.value)));
+by('count').textContent=match.length+'技が一致（先頭100技表示）';const body=by('tbody');body.replaceChildren();
+for(const r of match.slice(0,100)){const tr=document.createElement('tr');for(const x of [r.character_name,'k'+r.site_k,r.move_name,r.command]){const td=document.createElement('td');td.textContent=x;tr.append(td)}
+const td=document.createElement('td');
+for(const [id,item] of Object.entries(r.hit_states[hit.value])){if(item.evidence_state==='unknown'||(type.value&&type.value!==id))continue;
+const badge=document.createElement('span');badge.className='tag'+(['explicit_no','notation_candidate','site_mentioned_condition_unknown'].includes(item.evidence_state)?' caution':'');
+if(!['explicit_no','site_mentioned_condition_unknown'].includes(item.evidence_state)){const img=document.createElement('img');img.src=icons[id];img.alt=lab[id];badge.append(img)}
+badge.append(document.createTextNode(lab[id]+': '+states[item.evidence_state]+(item.conditions.includes('airborne_tornado_success')?'・トルネード時限定':'')));td.append(badge)}
+tr.append(td);body.append(tr)}
+}
+for(const el of [character,hit,type,q])el.addEventListener('input',draw);
+draw();document.body.dataset.ready='true';
+})().catch(e=>{document.body.dataset.ready='error';document.getElementById('count').textContent='エラー: '+e.message});
+</script></body></html>
