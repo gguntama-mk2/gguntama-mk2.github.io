@@ -95,6 +95,8 @@
   /* 見た目 */
   var CSS = [
     ".pt-ic{display:none}",
+    ".pt-ic.pt-col{display:flex;position:static;flex-wrap:wrap;justify-content:center;align-content:center;gap:2px;line-height:0;visibility:visible}",   /* 列に出すとき：位置はそのまま、折り返して中央に並べる */
+    ".pt-ic.pt-col img{width:24px;height:24px}",
     ".head .nm.pt-has-ic{position:relative}",
     ".pt-has-ic>.pt-ic{display:flex;position:absolute;right:10px;bottom:calc(6px + (var(--cmd-h,23px) - 22px) / 2);gap:2px;z-index:1}",
     ".head .nm.pt-has-ic>.pt-ic{right:2px;bottom:calc((var(--cmd-h,1.375rem) - 22px) / 2)}",
@@ -121,6 +123,7 @@
       img.src = assetBase + m.file; img.alt = m.label; img.title = m.label; img.width = 22; img.height = 22; img.draggable = false; img.decoding = "async";
       strip.appendChild(img);
     });
+    if (strip.classList.contains("pt-col")) return;           // 列に出すときは、技名の欄の余白は動かさない
     host.classList.toggle("pt-has-ic", ids.length > 0);
     if (ids.length) host.style.setProperty("--pt-ic-w", (ids.length * 24 + 4) + "px"); else host.style.removeProperty("--pt-ic-w");
   }
@@ -133,13 +136,14 @@
   }
 
   /* 技表・カードに差し込む。host＝技名の欄(.nm)、cmdEl＝コマンドの要素、raw＝技のデータ、tagIds＝その技のタグ */
-  function attach(host, cmdEl, charId, raw, tagIds) {
+  function attach(host, cmdEl, charId, raw, tagIds, opts) {
     try {
-      if (PREVIEW || !host || !cmdEl || !raw || typeof raw !== "object" || raw.k === undefined) return;
+      var into = opts && opts.into;
+      if (PREVIEW || !host || (!cmdEl && !into) || !raw || typeof raw !== "object" || raw.k === undefined) return;
       ensureStyle();
       var strip = document.createElement("span"); strip.className = "pt-ic"; strip.dataset.c = String(charId); strip.dataset.k = String(raw.k);
       strip._auto = auto(charId, raw, tagIds);
-      cmdEl.insertAdjacentElement("afterend", strip);
+      if (into) { strip.className = "pt-ic pt-col"; into.appendChild(strip); } else cmdEl.insertAdjacentElement("afterend", strip);
       paint(strip);
       if (!overrides) load();
     } catch (e) { /* アイコンが出せなくても、技表はこれまでどおり */ }

@@ -368,6 +368,7 @@ dialog.iodlg::backdrop{background:rgba(0,0,0,.55)}
 .search{flex:1 1 220px;min-width:180px;max-width:360px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:.8125rem}
 .search::placeholder{color:var(--ph)}
 th.memo{width:16%;min-width:160px}
+th.hic { width: 58px; min-width: 58px; } td.hic { text-align: center; vertical-align: middle; line-height: 0; } td.hic img { display: inline-block; width: 24px; height: 24px; margin: 1px; vertical-align: middle; border-radius: 4px; }
 td.memo{padding:6px 8px;text-align:left;vertical-align:middle}
 textarea.memo{display:block;width:100%;min-height:34px;resize:vertical;box-sizing:border-box;background:var(--bg,#1a1b2e);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:.8125rem;line-height:1.4}
 textarea.memo::placeholder{color:var(--ph2)}
@@ -11082,6 +11083,8 @@ const CHARACTERS = [
 /* チェック項目の列（この並び順で表示されます）
    id    : 保存用の固有ID（変更しない）
    label : 見出しの表示名 */
+const HC = ((location.search.match(/[?&]hc=(memo|nomemo)(&|$)/) || [])[1]) || "";   // 〔表示の試作〕?hc=memo／?hc=nomemo のときだけ、新しい2列（地上ヒット・空中ヒット）を出す
+if (HC) document.documentElement.dataset.hc = HC;
 const COLS = [
   { id: "command",  label: "コマンド" },
   { id: "attack", label: "攻撃判定", s: "攻撃\n判定" },
@@ -11306,9 +11309,14 @@ function renderHead() {
     if (col.s) { th.title = col.label; th.setAttribute("aria-label", col.label); }
     row.appendChild(th);
   });
-  const mh = document.createElement("th");
-  mh.className = "memo"; mh.textContent = "メモ";
-  row.appendChild(mh);
+  if (HC) [["地上\nヒット時", "地上ヒット時"], ["空中\nヒット時", "空中ヒット時"]].forEach(([s, full]) => {   // 〔表示の試作〕アイコン用の新しい2列
+    const th = document.createElement("th"); th.className = "hic"; th.textContent = s; th.title = full; th.setAttribute("aria-label", full); row.appendChild(th);
+  });
+  if (HC !== "nomemo") {
+    const mh = document.createElement("th");
+    mh.className = "memo"; mh.textContent = "メモ";
+    row.appendChild(mh);
+  }
 }
 
 const charBtns = {};   // キャラid → 一覧のボタン（ブックマークの数の表示を更新するため）
@@ -11497,7 +11505,7 @@ function renderTable() {
   if (!c.moves.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
-    td.colSpan = COLS.length + 3;
+    td.colSpan = COLS.length + 3 + (HC ? 2 : 0) - (HC === "nomemo" ? 1 : 0);
     td.className = "empty";
     td.textContent = "このキャラの技はまだ登録されていません。";
     tr.appendChild(td);
@@ -11540,7 +11548,7 @@ function renderTable() {
     if (answers.command) {
       const cs = document.createElement("span"); cs.className = "mcmd"; renderSheetCmd(cs, answers.ci || answers.command, move, answers);
       cs.classList.toggle("off", !showCmd); cs.setAttribute("aria-hidden", String(!showCmd)); nmw.appendChild(cs);
-      if (window.PTIcons) PTIcons.attach(nmw, cs, c.id, raw, moveInfo(raw).tags.map(t => t.id));   // 技のアイコン（コマンドの右はし）
+      if (window.PTIcons && !HC) PTIcons.attach(nmw, cs, c.id, raw, moveInfo(raw).tags.map(t => t.id));   // 技のアイコン（コマンドの右はし）。新しい2列の試作（?hc=）のときは、下の「地上ヒット時」の列に出す
     }
     th.appendChild(nmw);
     tr.appendChild(th);
@@ -11604,6 +11612,10 @@ function renderTable() {
       tr.appendChild(td);
     });
 
+    if (HC) {   // 〔試作〕新しい2列：「地上ヒット時」には、いま技表に出ているアイコンを移す。「空中ヒット時」は、これから設定する（いまは空）
+      [0, 1].forEach(side => { const td = document.createElement("td"); td.className = "hic"; td.dataset.side = side ? "air" : "ground"; tr.appendChild(td);
+        if (!side && window.PTIcons) PTIcons.attach(td, null, c.id, raw, moveInfo(raw).tags.map(t => t.id), { into: td }); });
+    }
     const mtd = document.createElement("td");
     mtd.className = "memo";
     const ta = document.createElement("textarea");
@@ -11618,7 +11630,7 @@ function renderTable() {
       saveMemos(); fit();
     });
     mtd.appendChild(ta);
-    tr.appendChild(mtd);
+    if (HC !== "nomemo") tr.appendChild(mtd);
     tr.dataset.mi = idx;   // 技の位置（ジャンプリンクが行を探すのに使う）
     tr.dataset.q = normQ(move + " " + (typeof raw === "object" && raw.y ? raw.y : "") + " " + (answers.command || "") + " " + (answers.ci || "") + " " + moveInfo(raw).kw + " " + (answers.gimmick || "").replace(/\n/g, " "));
     tr.dataset.cmd = normQ((answers.command || "") + " " + (answers.ci || "").replace(/[.^]/g, ""));
