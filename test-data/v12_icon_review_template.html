@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>PROJECT T | 壁・床・強制しゃがみ検証 v12</title>
+<style>
+:root{color-scheme:dark;background:#111521;color:#edf1fc;font:14px/1.6 system-ui,"Yu Gothic",Meiryo,sans-serif}
+*{box-sizing:border-box}body{margin:0}header{background:#1e2437;border-bottom:1px solid #434c63;padding:23px max(20px,calc((100vw - 1150px)/2))}
+main{max-width:1180px;margin:auto;padding:20px 18px 70px}h1{font-size:clamp(22px,3vw,29px);margin:0 0 8px}h2{margin:0 0 12px;font-size:18px}.muted{color:#adb8d1}
+.warning{border:1px solid #a9824b;background:#31291f;border-radius:8px;padding:12px 14px;margin:14px 0 20px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0}.legend span{display:inline-flex;align-items:center;gap:7px}.legend img{width:36px;height:36px;object-fit:contain}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:18px 0}
+.stats article{background:#1e2437;border:1px solid #424b64;border-radius:8px;padding:12px}
+.stats strong{font-size:23px;display:block}.filters{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+input,select{font:inherit;color:white;background:#292f44;border:1px solid #59647e;border-radius:7px;padding:9px}input{flex:1;min-width:190px}
+.scroll{overflow:auto;border:1px solid #444f67;border-radius:8px;background:#1b2132}
+table{width:100%;min-width:960px;border-collapse:collapse}
+td,th{padding:10px;border-bottom:1px solid #3a455c;text-align:left;vertical-align:middle}
+th{background:#293149;font-size:12px;white-space:nowrap}td:nth-child(2){font-weight:700;white-space:nowrap;color:#dec689}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 7px;border-radius:6px;background:#333f54;margin:2px 5px 2px 0;font-size:12px;white-space:nowrap}
+.pill img{width:25px;height:25px;object-fit:contain}.caution{color:#f3c879;font-size:12px}.none{color:#9aa6c0}
+footer{margin-top:24px;font-size:12px;color:#a9b5c9}
+@media(max-width:650px){.pill{font-size:0}.pill img{width:28px;height:28px}}
+</style></head>
+<body><header><h1>PROJECT T｜技アイコン実装候補 v12</h1><div class="muted">本番データと照合した隔離テスト用レビュー画面</div></header>
+<main><div class="warning"><strong>候補表示のみ・本番への設定は0件</strong>。緑と黄はサイトの発動条件による候補、ピンクはヒット結果の記号による推定です。ゲーム内部のHit Condition・Reaction Listを確認するまで正式採用しません。</div>
+<div class="legend">
+<span><img src="icons/wallbreak.webp" alt="壁アイコン">壁やられ・壁ギミック候補</span>
+<span><img src="icons/floorgimmick.webp" alt="床アイコン">床ギミック候補</span>
+<span><img src="icons/forcedcrouch.webp" alt="強制しゃがみアイコン">強制しゃがみ候補</span>
+</div>
+<div class="stats">
+<article><strong id="total">—</strong><span class="muted">技の検証候補</span></article>
+<article><strong id="walls">—</strong><span class="muted">通常ヒット・壁系候補</span></article>
+<article><strong id="floors">—</strong><span class="muted">空中ヒット・床系候補</span></article>
+<article><strong id="crouch">—</strong><span class="muted">ヒット時・しゃがみ候補</span></article>
+</div>
+<h2>技ID別・ヒット状態の確認</h2>
+<div class="filters"><select id="character"><option value="">すべてのキャラクター</option></select>
+<select id="state"><option value="normal">地上・通常ヒット</option><option value="counter">地上・カウンターヒット</option><option value="air">空中ヒット</option></select>
+<select id="kind"><option value="">すべての属性</option><option value="wallbreak">壁</option><option value="floorgimmick">床</option><option value="forcedcrouch">強制しゃがみ（推定）</option></select>
+<input id="search" type="search" placeholder="技名・コマンド・kで検索"></div>
+<p id="match-count" class="muted">データ読み込み中…</p>
+<div class="scroll"><table><thead><tr><th>キャラクター</th><th>技ID</th><th>技名</th><th>コマンド</th><th>表示候補</th></tr></thead><tbody id="results"></tbody></table></div>
+<footer>「効果なし」と「記載がない」を別々に扱います。壁やられ否定は、別種の壁ギミックまで否定するものではありません。表示しているのはサイト属性の検証結果であり、実際のゲーム内付与を保証しません。</footer>
+</main>
+<script>
+(async function(){
+ const data=await fetch('./v12_icon_candidates.json').then(r=>{if(!r.ok)throw Error('候補データの読み込みに失敗');return r.json()});
+ const rows=data.records,stats=data.stats;const find=id=>document.getElementById(id),ch=find('character'),state=find('state'),kind=find('kind'),q=find('search'),tbody=find('results');
+ find('total').textContent=stats.candidates.toLocaleString();
+ find('walls').textContent=stats.wall_normal.toLocaleString();
+ find('floors').textContent=stats.floor_air.toLocaleString();
+ find('crouch').textContent=new Set(rows.filter(x=>x.normal.forced_crouch_s||x.counter.forced_crouch_s).map(x=>x.character_id+'/'+x.site_k)).size.toLocaleString();
+ const chars=new Map(rows.map(r=>[r.character_id,r.character_name]));
+ for(const [id,name] of [...chars].sort((a,b)=>a[1].localeCompare(b[1],'ja'))){const o=document.createElement('option');o.value=id;o.textContent=name;ch.append(o)}
+ const iconFiles={wallbreak:'wallbreak.webp',floorgimmick:'floorgimmick.webp',forcedcrouch:'forcedcrouch.webp'};
+ function render(){
+  const word=q.value.normalize('NFKC').toLowerCase().trim(),type=kind.value,hit=state.value;
+  const matched=rows.filter(r=>(!ch.value||r.character_id===ch.value)&&(!word||(r.move_name+' '+r.command+' k'+r.site_k).normalize('NFKC').toLowerCase().includes(word))&&(!type||r[hit].icons.some(i=>i.id===type)));
+  find('match-count').textContent=matched.length+'技が一致（先頭100技を表示）';
+  tbody.replaceChildren();
+  for(const r of matched.slice(0,100)){
+   const tr=document.createElement('tr');
+   for(const str of [r.character_name,'k'+r.site_k,r.move_name,r.command]){
+     const td=document.createElement('td');td.textContent=str;tr.append(td);
+   }
+   const cell=document.createElement('td'),s=r[hit];
+   if(!s.icons.length){cell.textContent='未判定';cell.className='none'}
+   for(const icon of s.icons){
+     const el=document.createElement('span');el.className='pill';el.title=icon.evidence==='notation_only'?'s表記に基づく推定':'サイトの効果欄に記載あり';
+     const img=document.createElement('img');img.src='icons/'+iconFiles[icon.id];img.alt=icon.label;
+     el.append(img,document.createTextNode(icon.label+(icon.evidence==='notation_only'?' ?':'')));
+     cell.append(el);
+   }
+   if(s.requires_tornado){const info=document.createElement('span');info.className='caution';info.textContent=' トルネード成立時限定';cell.append(info)}
+   if(s.wall_reaction==='no'){const info=document.createElement('span');info.className='caution';info.textContent=' 壁やられ：なし';cell.append(info)}
+   tr.append(cell);tbody.append(tr);
+  }
+ }
+ for(const el of [ch,state,kind,q])el.addEventListener('input',render);
+ render();document.body.dataset.ready='true';
+})().catch(e=>{document.getElementById('match-count').textContent='表示エラー: '+e.message;document.body.dataset.ready='error';});
+</script></body></html>
