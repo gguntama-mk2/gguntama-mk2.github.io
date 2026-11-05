@@ -59,6 +59,35 @@ with sync_playwright() as p:
         print(kind, {k:v for k,v in evidence.items() if k!="passes"},flush=True)
         assert evidence.get("passed")==20 and not evidence.get("failed"),str(evidence)
         page.close()
+    # Actual production admin UI, using the same locally persisted test registry.
+    admin=browser.new_page(viewport={"width":1440,"height":900})
+    admin.goto(f"{BASE}/admin.html",wait_until="domcontentloaded",timeout=120000)
+    admin.locator('#tabs button[data-tab="icons"]').wait_for(timeout=120000)
+    admin.locator('#tabs button[data-tab="icons"]').click()
+    admin.wait_for_function("""() => {
+      const sel=document.querySelector('#secIcons select');
+      return sel && Array.from(sel.options).some(x=>x.value==='bryan');
+    }""",timeout=120000)
+    admin.locator('#secIcons select').first.select_option('bryan')
+    admin.wait_for_function("""() => document.querySelectorAll('#secIcons table tr').length >= 219""",timeout=120000)
+    admin_report=admin.evaluate("""() => {
+      const rows=Array.from(document.querySelectorAll('#secIcons table tr')).slice(1);
+      const samples=[];
+      for(const row of rows){
+        const cells=row.querySelectorAll('td');
+        if(cells.length < 5) continue;
+        const k=Number(cells[0].textContent.trim());
+        if([34,195,209,210].includes(k))
+          samples.push({k,icon_count:cells[3].querySelectorAll('img').length,source:cells[4].textContent.trim()});
+      }
+      return {row_count:rows.length,samples};
+    }""")
+    admin.screenshot(path=str(OUT/"admin-real-icon-settings.png"),full_page=False,timeout=120000)
+    results["browser"]["admin"]=admin_report
+    assert admin_report["row_count"]==218,admin_report
+    assert {r["k"] for r in admin_report["samples"]}=={34,195,209,210},admin_report
+    assert all(r["icon_count"]>=1 and r["source"]=="管理者の設定" for r in admin_report["samples"]),admin_report
+    admin.close()
     browser.close()
 (OUT/"e2e-results.json").write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding="utf8")
 print("PASS",json.dumps({"pc":results["browser"]["pc"]["passed"],"sp":results["browser"]["sp"]["passed"]}))
