@@ -1,0 +1,105 @@
+name: V16 Forced Crouch Cross-Source Review
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verified-state-reviews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate real site state models through V16
+        run: |
+          python -m py_compile tests/guard_effect_v15.py tests/guard_effect_v16.py
+          for kind in pc sp; do
+            node tools/build-hit-state-sidecar-v13.mjs "$kind.html" "/tmp/pt-v16/$kind-v13"
+            node tools/audit-guard-crouch-v14.mjs "$kind.html" "/tmp/pt-v16/$kind-v13/v13_hit_state_review.json" "/tmp/pt-v16/$kind-v14"
+            python tests/guard_effect_v15.py "/tmp/pt-v16/$kind-v14/V14_GUARD_REVIEW.json" "/tmp/pt-v16/$kind-v15"
+            python tests/guard_effect_v16.py "/tmp/pt-v16/$kind-v15/V15_778_REVIEW.json" "/tmp/pt-v16/$kind-v15/V15_REVIEW_128_DEDUPED.csv" test-data/v16-public-guard-evidence.json "/tmp/pt-v16/$kind"
+          done
+          cp test-data/v16-guard-evidence-review.html /tmp/pt-v16/pc/index.html
+      - name: Validate 128 keys, source statuses, and no automatic icon writes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('/tmp/pt-v16')
+          a=json.loads((root/'pc/V16_128_REVIEW.json').read_text())
+          b=json.loads((root/'sp/V16_128_REVIEW.json').read_text())
+          assert a==b, 'PC and SP differ'
+          s=a['summary']
+          assert (s['priority_review_groups'],s['independent_c_matches'],s['source_disagreements'],s['unreviewed_groups'])==(128,9,1,118)
+          assert s['game_binary_verified']==s['icon_assignments']==s['production_changes']==0
+          assert len(a['reviews'])==len({r['move_id'] for r in a['reviews']})==128
+          lookup={r['move_id']:r for r in a['reviews']}
+          assert lookup['reina/107']['source_status']=='source_disagreement'
+          assert lookup['reina/107']['external_guard']=='-3'
+          assert lookup['reina/107']['additional_external_guard']=='-3S'
+          for key in ('king/60','bryan/125','kazuya/80','law/127','jack8/106','asuka/60','leo/109','eddy/83','steve/111'):
+              assert lookup[key]['source_status']=='independent_c_match',key
+          assert all(not r['binary_verified'] and not r['official_icon_assigned'] and not r['admin_override_written'] for r in a['reviews'])
+          print('PASS: 128 groups; 9 c-notation matches, 1 inconsistent Reina source, 118 unreviewed')
+          PY
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Browser-test isolated review UI on desktop and phone
+        run: |
+          (cd /tmp/pt-v16/pc && python -m http.server 8738 --bind 127.0.0.1 >/tmp/pt-v16/server.log 2>&1) &
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          import time,urllib.request
+          url='http://127.0.0.1:8738/index.html'
+          for i in range(40):
+              try:urllib.request.urlopen(url,timeout=2);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('localhost viewer did not start')
+          with sync_playwright() as p:
+              b=p.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for kind,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=b.new_page(viewport=viewport)
+                  page.goto(url,wait_until='domcontentloaded')
+                  page.wait_for_function("document.body.dataset.ready==='true'",timeout=35000)
+                  assert page.locator('#total').inner_text()=='128'
+                  assert page.locator('#matches').inner_text()=='9'
+                  assert page.locator('#disagree').inner_text()=='1'
+                  assert page.locator('#unreviewed').inner_text()=='118'
+                  page.locator('#status').select_option('source_disagreement')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr[data-move-id="reina/107"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="reina/107"] a').count()==2
+                  page.locator('#status').select_option('independent_c_match')
+                  assert page.locator('tbody tr').count()==9
+                  assert page.locator('tbody tr[data-move-id="law/127"]').count()==1
+                  assert page.locator('tbody tr[data-move-id="jack8/106"]').count()==1
+                  page.locator('#status').select_option('unreviewed_external')
+                  assert page.locator('tbody tr').count()==118
+                  page.locator('#status').select_option('')
+                  page.screenshot(path=str(Path('/tmp/pt-v16/pc')/(kind+'_V16_CROSS_SOURCE_REVIEW.png')),full_page=False)
+                  page.close()
+              b.close()
+          print('PASS: 128 externally audited records viewable on PC/SP, mixed case highlighted')
+          PY
+      - name: Ensure repository and production UI files unmodified by audits
+        if: always()
+        run: git status --porcelain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V16_CROSS_SOURCE_REVIEW
+          path: |
+            /tmp/pt-v16/pc/
+            /tmp/pt-v16/server.log
+          retention-days: 30
+          if-no-files-found: warn
