@@ -1,0 +1,108 @@
+name: V17 Japanese Source Priority Evidence E2E
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  jp-source-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate latest PC and SP source audits through V17
+        run: |
+          python -m py_compile tests/guard_effect_v15.py tests/guard_effect_v16.py tests/guard_effect_v17.py
+          for target in pc sp; do
+            node tools/build-hit-state-sidecar-v13.mjs "$target.html" "/tmp/pt-v17/$target-v13"
+            node tools/audit-guard-crouch-v14.mjs "$target.html" "/tmp/pt-v17/$target-v13/v13_hit_state_review.json" "/tmp/pt-v17/$target-v14"
+            python tests/guard_effect_v15.py "/tmp/pt-v17/$target-v14/V14_GUARD_REVIEW.json" "/tmp/pt-v17/$target-v15"
+            python tests/guard_effect_v16.py "/tmp/pt-v17/$target-v15/V15_778_REVIEW.json" "/tmp/pt-v17/$target-v15/V15_REVIEW_128_DEDUPED.csv" test-data/v16-public-guard-evidence.json "/tmp/pt-v17/$target-v16"
+            python tests/guard_effect_v17.py "/tmp/pt-v17/$target-v16/V16_128_REVIEW.json" test-data/v17-japanese-source-review.json "/tmp/pt-v17/$target"
+          done
+          cp test-data/v17-jp-evidence-view.html /tmp/pt-v17/pc/index.html
+      - name: Validate Japanese-first source statuses, ID preservation and safe writing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('/tmp/pt-v17')
+          a,b=[json.loads((root/k/'V17_JAPANESE_REVIEW.json').read_text()) for k in ['pc','sp']]
+          assert a==b
+          summary=a['summary']
+          assert summary['total_priority_groups']==128
+          assert (summary['japanese_effect_supported'],summary['japanese_notation_only'],summary['japanese_frame_number_disputed'],summary['unreviewed_by_japanese_sources'])==(7,5,2,114)
+          assert summary['game_binary_verified']==summary['new_admin_icon_assignments']==summary['production_changes']==0
+          assert summary['overseas_sources_used_as_final_evidence']==0
+          ids={r['move_id']:r for r in a['records']}
+          assert len(ids)==128
+          assert ids['reina/107']['jp_status']=='jp_explicit'
+          assert ids['reina/107']['previous_overseas_status_for_history_only']=='source_disagreement'
+          assert ids['jack8/106']['jp_status']=='jp_numeric_conflict'
+          assert ids['king/106']['jp_status']=='jp_numeric_conflict'
+          assert ids['king/91']['jp_status']=='jp_explicit'
+          assert all(not r['approved_icon'] and not r['reviewed_current_version_binary'] and not r['overseas_used_for_approval'] for r in a['records'])
+          print('PASS V17: 14 Japanese-source reviews, 114 pending, 0 overseas approvals, 0 icon writes')
+          PY
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Render Japanese review on real PC and smartphone browser
+        run: |
+          (cd /tmp/pt-v17/pc && python -m http.server 8739 --bind 127.0.0.1 > /tmp/pt-v17/server.log 2>&1) &
+          python - <<'PY'
+          from pathlib import Path
+          import time,urllib.request
+          from playwright.sync_api import sync_playwright
+          url='http://127.0.0.1:8739/index.html'
+          for i in range(40):
+              try:urllib.request.urlopen(url,timeout=2);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('local test server unavailable')
+          with sync_playwright() as pw:
+              browser=pw.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for kind,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=browser.new_page(viewport=viewport)
+                  page.goto(url,wait_until='domcontentloaded')
+                  page.wait_for_function("document.body.dataset.ready === 'true'",timeout=45000)
+                  assert page.locator('tbody tr').count()==128
+                  assert page.locator('#explicit').inner_text()=='7'
+                  assert page.locator('#notation').inner_text()=='5'
+                  assert page.locator('#conflict').inner_text()=='2'
+                  assert page.locator('#remaining').inner_text()=='114'
+                  page.locator('#status').select_option('jp_explicit')
+                  assert page.locator('tbody tr').count()==7
+                  assert page.locator('tbody tr[data-id="reina/107"]').count()==1
+                  page.locator('#status').select_option('jp_numeric_conflict')
+                  assert page.locator('tbody tr').count()==2
+                  assert page.locator('tbody tr[data-id="jack8/106"] a').count()==2
+                  assert page.locator('tbody tr[data-id="king/106"] a').count()==2
+                  page.locator('#status').select_option('jp_notation_only')
+                  assert page.locator('tbody tr').count()==5
+                  page.locator('#status').select_option('')
+                  page.screenshot(path=str(Path('/tmp/pt-v17/pc')/(kind+'_V17_JAPANESE_EVIDENCE.png')),full_page=False)
+                  page.close()
+              browser.close()
+          print('PASS V17: source hierarchy, filters and Japanese evidence links in PC/mobile')
+          PY
+      - name: Check source frontend still unchanged by test tools
+        if: always()
+        run: |
+          git status --porcelain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V17_JAPANESE_EVIDENCE
+          path: |
+            /tmp/pt-v17/pc/
+            /tmp/pt-v17/server.log
+          retention-days: 30
+          if-no-files-found: warn
