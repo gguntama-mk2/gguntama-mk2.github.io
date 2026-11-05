@@ -79,6 +79,9 @@ const cases=[
  point('heihachi_7WP_hold_ground_NH',held||heihachi,'7WPホールド','ground_normal',
    {sameGroundReaction:true,floorMode:'JP_article_supported',sourceKeys:['user_observation','538 Japanese Season3 analysis'],
      caution:held?'Hold variant exists as separate site key; use it.':'Hold variant has no separate key; use base key plus HOLD modifier, never confuse with unheld normal hit.'}),
+ point('heihachi_7WP_hold_ground_CH',held||heihachi,'7WPホールド','ground_counter',
+   {sameGroundReaction:true,floorMode:'JP_article_supported_and_site_hit',sourceKeys:['PROJECT T a.counter','538 Japanese Season3 analysis'],
+     caution:'Held CH carries the same existing site hit label as held NH. Does not imply identical internal reaction IDs.'}),
  point('heihachi_7WP_unheld_ground_CH',heihachi,'7WP非ホールド','ground_counter',
    {sameGroundReaction:true,floorMode:'JP_article_supported',sourceKeys:['538 Japanese Season3 analysis'],
      caution:'Article reports unheld CH special slam. Do not mark unheld NH as equivalent.'}),
@@ -89,7 +92,7 @@ const cases=[
      caution:'Site lists airborne stage gimmick; no claim airborne reaction matches the special ground slam.'})
 ];
 const floorTrue=cases.filter(r=>r.floor_gimmick_claim!=='unknown');
-if(cases.length!==7||floorTrue.length!==7||cases.filter(r=>r.provisional_ground_reaction_family).length!==5)
+if(cases.length!==8||floorTrue.length!==8||cases.filter(r=>r.provisional_ground_reaction_family).length!==6)
  throw Error('Unexpected state-case matrix counts');
 if(new Set(cases.map(x=>x.case_id)).size!==7)throw Error('Duplicate case IDs');
 for(const c of cases){
@@ -102,7 +105,7 @@ const summary={
  source_characters:chars.length,source_moves:moves.size,
  compared_anchor_moves:3,hold_variant_site_key:heldId,hold_variant_is_separate_site_key:heldId!==heihachi.move_id,
  source_held_candidates:holds.map(x=>({move_id:x.move_id,move_name:x.move_name,command:x.command})),
- evidence_cases:cases.length,provisional_ground_reaction_cases:5,
+ evidence_cases:cases.length,provisional_ground_reaction_cases:6,
  reported_or_supported_floor_cases:floorTrue.length,bob_reported_airborne_floor:true,
  binary_reaction_id_resolved:0,game_binary_verified:0,existing_icons_written:0,production_changes:0,
  warnings:['Same observed ground reaction does not prove same binary reaction ID',
