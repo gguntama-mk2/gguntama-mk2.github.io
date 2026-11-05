@@ -1,0 +1,130 @@
+name: V21 Japanese Icon Evidence and Capture Validation
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-japanese-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate v21 from original production-mirrored PC and SP move data
+        run: |
+          python -m py_compile tests/guard_effect_v15.py tests/guard_effect_v16.py tests/guard_effect_v17.py tests/guard_effect_v18.py tests/guard_effect_v19.py tests/guard_effect_v20.py tests/guard_effect_v21.py tests/validate-game-icon-evidence-v21.py
+          for target in pc sp; do
+            node tools/build-hit-state-sidecar-v13.mjs "$target.html" "/tmp/pt-v21/$target-v13"
+            node tools/audit-guard-crouch-v14.mjs "$target.html" "/tmp/pt-v21/$target-v13/v13_hit_state_review.json" "/tmp/pt-v21/$target-v14"
+            python tests/guard_effect_v15.py "/tmp/pt-v21/$target-v14/V14_GUARD_REVIEW.json" "/tmp/pt-v21/$target-v15"
+            python tests/guard_effect_v16.py "/tmp/pt-v21/$target-v15/V15_778_REVIEW.json" "/tmp/pt-v21/$target-v15/V15_REVIEW_128_DEDUPED.csv" test-data/v16-public-guard-evidence.json "/tmp/pt-v21/$target-v16"
+            python tests/guard_effect_v17.py "/tmp/pt-v21/$target-v16/V16_128_REVIEW.json" test-data/v17-japanese-source-review.json "/tmp/pt-v21/$target-v17"
+            python tests/guard_effect_v18.py "/tmp/pt-v21/$target-v17/V17_JAPANESE_REVIEW.json" test-data/v18-japanese-evidence-batch.json "/tmp/pt-v21/$target-v18"
+            python tests/guard_effect_v19.py "/tmp/pt-v21/$target-v18/V18_JAPANESE_REVIEW.json" test-data/v19-japanese-evidence-batch.json "/tmp/pt-v21/$target-v19"
+            python tests/guard_effect_v20.py "/tmp/pt-v21/$target-v19/V19_JAPANESE_REVIEW.json" test-data/v20-japanese-evidence-batch.json "/tmp/pt-v21/$target-v20"
+            python tests/guard_effect_v21.py "/tmp/pt-v21/$target-v20/V20_JAPANESE_REVIEW.json" test-data/v21-japanese-evidence-batch.json "/tmp/pt-v21/$target"
+            python tests/validate-game-icon-evidence-v21.py "/tmp/pt-v21/$target/V21_JAPANESE_REVIEW.json" test-data/v21-game-icon-observations.json
+          done
+          cp test-data/v21-jp-evidence-view.html /tmp/pt-v21/pc/index.html
+          cp test-data/v21-game-icon-observations.json /tmp/pt-v21/pc/
+          for icon in forcedcrouch wallbreak floorgimmick; do cp "icons/$icon.webp" "/tmp/pt-v21/pc/$icon.webp"; done
+      - name: Confirm 128 IDs, 9 Japanese comparisons and empty real-game observation queue
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/pt-v21')
+          pc=json.loads((root/'pc/V21_JAPANESE_REVIEW.json').read_text())
+          sp=json.loads((root/'sp/V21_JAPANESE_REVIEW.json').read_text())
+          assert pc==sp,'PC/SP output mismatch'
+          s=pc['summary']
+          assert (s['priority_groups'],s['new_japanese_checks'],s['japanese_reviewed_total'],s['japanese_unreviewed'])==(128,9,68,60)
+          assert (s['japanese_explicit'],s['japanese_notation_only'],s['japanese_numeric_conflict'])==(23,33,7)
+          assert (s['japanese_notation_disagreement'],s['japanese_attacker_crouch_risk'],s['japanese_variant_mapping_risk'])==(3,1,1)
+          assert s['game_binary_verified']==s['approved_icon_assignments']==s['production_changes']==s['overseas_approval_evidence']==0
+          assert len(pc['records'])==len({x['move_id'] for x in pc['records']})==128
+          indexed={x['move_id']:x for x in pc['records']}
+          assert sum(x['newly_reviewed_v21'] for x in indexed.values())==9
+          for k in ('dragunov/57','feng/174','kuma/86','lidia/52'):
+              assert indexed[k]['jp_status']=='jp_explicit'
+          assert indexed['shaheen/110']['jp_status']=='jp_numeric_conflict'
+          assert indexed['azucena/65']['jp_status']=='jp_variant_mapping_risk'
+          for k in ('panda/86','bob/23','reina/205'):
+              assert indexed[k]['jp_status']=='jp_notation_only'
+          assert all(not r['approved_icon'] and not r['reviewed_current_version_binary'] for r in pc['records'])
+          actual_observations=json.loads(Path('test-data/v21-game-icon-observations.json').read_text())
+          assert actual_observations['observations']==[]
+          print('PASS V21: 9 Japanese-source checks, 60 pending; zero real captures, zero icon writes')
+          PY
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Test PC and mobile Japanese-source review frontend
+        run: |
+          (cd /tmp/pt-v21/pc && python -m http.server 8740 --bind 127.0.0.1 > /tmp/pt-v21/server.log 2>&1) &
+          python - <<'PY'
+          import time,urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          url='http://127.0.0.1:8740/index.html'
+          for _ in range(40):
+              try:urllib.request.urlopen(url,timeout=3);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('viewer not reachable')
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for name,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=browser.new_page(viewport=viewport)
+                  page.goto(url,wait_until='domcontentloaded',timeout=60000)
+                  page.wait_for_function("document.body.dataset.ready==='true'",timeout=45000)
+                  assert page.locator('tbody tr').count()==128
+                  assert page.locator('#explicit').inner_text()=='23'
+                  assert page.locator('#notation').inner_text()=='33'
+                  assert page.locator('#conflict').inner_text()=='7'
+                  assert page.locator('#notationRisk').inner_text()=='3'
+                  assert page.locator('#attacker').inner_text()=='1'
+                  assert page.locator('#remaining').inner_text()=='60'
+                  page.locator('#newonly').select_option('yes')
+                  assert page.locator('tbody tr').count()==9
+                  assert page.locator('#variant').inner_text()=='1'
+                  assert page.locator('img[alt$="参照"]').count()==3
+                  assert page.evaluate("Array.from(document.querySelectorAll('img[alt$=参照]')).every(x=>x.complete && x.naturalWidth>0)")
+                  page.locator('#status').select_option('jp_explicit')
+                  assert page.locator('tbody tr').count()==4
+                  assert page.locator('tbody tr[data-id="dragunov/57"]').count()==1
+                  assert page.locator('tbody tr[data-id="lidia/52"]').count()==1
+                  page.locator('#status').select_option('jp_numeric_conflict')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr[data-id="shaheen/110"]').count()==1
+                  page.locator('#status').select_option('jp_variant_mapping_risk')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr[data-id="azucena/65"]').count()==1
+                  page.locator('#status').select_option('jp_notation_only')
+                  assert page.locator('tbody tr').count()==3
+                  assert page.locator('tbody tr[data-id="panda/86"]').count()==1
+                  page.locator('#status').select_option('')
+                  page.screenshot(path=str(Path('/tmp/pt-v21/pc')/(name+'_V21_JAPANESE_REVIEW.png')),full_page=False)
+                  page.close()
+              browser.close()
+          print('PASS V21 PC and mobile frontend, 9 additions and variant guard and source risk filters')
+          PY
+      - name: Show diff guard (all source editing limited to test branch)
+        if: always()
+        run: git status --short
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V21_JAPANESE_EVIDENCE
+          path: |
+            /tmp/pt-v21/pc/
+            /tmp/pt-v21/server.log
+          retention-days: 30
+          if-no-files-found: warn
