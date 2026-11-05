@@ -99,6 +99,30 @@ for(const c of cases){
  if(c.game_binary_verified||c.official_icon_assignment_approved||c.internal_reaction_id!==null)
    throw Error('Accidental approval or invented numeric ID');
 }
+// Candidate discovery only: site wording does not establish the SAME binary
+// reaction as the user's Season 3 grounded floor slam.
+const wording=[
+ {id:'new_ground_slam_text',text:'新叩きつけダウン'},
+ {id:'back_slam_text',text:'叩きつけ仰向けダウン'},
+ {id:'twist_slam_text',text:'捻りダウン'}
+];
+const lexicalLeads=[];
+for(const m of moves.values()){
+ for(const state of ['hit','counter'])for(const w of wording){
+  const text=String(m[state]||'');
+  if(text.includes(w.text)){
+   lexicalLeads.push({move_id:m.move_id,character_id:m.character_id,site_k:m.site_k,
+     move_name:m.move_name,command:m.command,source_state:state,matching_label:w.text,
+     source_label_class:w.id,source_text:text,
+     same_as_s3_special_reaction:'NOT_ESTABLISHED',game_binary_verified:false,
+     automatic_icon_allowed:false});
+  }
+ }
+}
+const lexicalMoveCount=new Set(lexicalLeads.map(x=>x.move_id)).size;
+if(!lexicalLeads.some(x=>x.move_id==='alisa/227'&&x.source_state==='counter') ||
+   !lexicalLeads.some(x=>x.move_id==='heihachi/97'&&x.source_state==='counter'))
+ throw Error('Expected lexical anchors not found');
 const summary={
  schema:25,source_site_sha256:crypto.createHash('sha256').update(source).digest('hex'),
  previous_japanese_crouch_review:{total:128,pending:22,updated_in_v25:0},
@@ -107,6 +131,7 @@ const summary={
  source_held_candidates:holds.map(x=>({move_id:x.move_id,move_name:x.move_name,command:x.command})),
  evidence_cases:cases.length,provisional_ground_reaction_cases:6,
  reported_or_supported_floor_cases:floorTrue.length,bob_reported_airborne_floor:true,
+ lexical_reaction_label_cases:lexicalLeads.length,lexical_candidate_moves:lexicalMoveCount,
  binary_reaction_id_resolved:0,game_binary_verified:0,existing_icons_written:0,production_changes:0,
  warnings:['Same observed ground reaction does not prove same binary reaction ID',
    'Do not infer airborne reaction from ability to break floor in air',
@@ -115,7 +140,7 @@ const summary={
    'Alisa 7LP normal hit is NOT a new ground-slam case',
    'Bob NH/CH are not equivalent to target being grounded/airborne']
 };
-const result={summary,provenance:input,site_anchor_data:{bob,heihachi,heihachi_held_variant:held,alisa},cases,
+const result={summary,provenance:input,site_anchor_data:{bob,heihachi,heihachi_held_variant:held,alisa},cases,lexicalLeads,
  unresolved_binary_requests:[
    {kind:'effect_id_mapping',moves:['bob/184',heldId,'alisa/227'],question:'Whether exact Reaction List / Hit Condition numbers match on specific grounded hit states'},
    {kind:'air_effect_mapping',moves:['bob/184'],question:'Find the separate air-specific stage activation branch and whether reaction effect ID differs'},
@@ -125,6 +150,14 @@ const result={summary,provenance:input,site_anchor_data:{bob,heihachi,heihachi_h
 fs.mkdirSync(outDir,{recursive:true});
 fs.writeFileSync(path.join(outDir,'V25_S3_FLOOR_REACTION_MATRIX.json'),JSON.stringify(result,null,2)+'\n');
 fs.writeFileSync(path.join(outDir,'V25_S3_SUMMARY.json'),JSON.stringify(summary,null,2)+'\n');
+fs.writeFileSync(path.join(outDir,'V25_UNVERIFIED_REACTION_LABEL_LEADS.json'),
+ JSON.stringify({warning:'Similar Japanese hit-result labels are NOT evidence of a shared game-internal Reaction List ID',
+   count:lexicalLeads.length,distinct_moves:lexicalMoveCount,records:lexicalLeads},null,2)+'\n');
+const guessCsv=['move_id,character_id,site_k,move_name,command,source_state,matching_label,same_as_s3_special_reaction',
+ ...lexicalLeads.map(r=>[r.move_id,r.character_id,r.site_k,r.move_name,r.command,r.source_state,r.matching_label,r.same_as_s3_special_reaction]
+  .map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(','))];
+fs.writeFileSync(path.join(outDir,'V25_UNVERIFIED_REACTION_LABEL_LEADS.csv'),'\ufeff'+guessCsv.join('\r\n')+'\r\n');
+
 const fields=['case_id','character_id','site_move_id','site_move_name','command','variant','hit_state','provisional_ground_reaction_family','internal_reaction_id','floor_gimmick_claim','source_categories','game_binary_verified','official_icon_assignment_approved','note'];
 const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"';
 const lines=[fields.join(',')];
