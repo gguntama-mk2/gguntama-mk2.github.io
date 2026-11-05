@@ -50,6 +50,11 @@ const holds=[...moves.values()].filter(m=>m.character_id==='heihachi' &&
    (m.command.includes('ホールド')||/強/.test(m.move_name)));
 const held=holds.find(m=>m.command.includes('7WP')||m.move_name.includes('拳骨落とし(強)'))||null;
 const heldId=held?.move_id||heihachi.move_id;
+const intendedHold=input.provisional_reaction_family.anchor_members.find(r=>r.variant.includes('ホールド'));
+if(!intendedHold || heldId!==intendedHold.move_id)
+  throw Error('Heihachi hold site key differs from evidence fixture: '+heldId+' vs '+intendedHold?.move_id);
+if(!input.reported_floor_effects.some(r=>r.move_id===heldId&&r.variant.includes('ホールド')))
+  throw Error('Held floor evidence ID mismatch');
 const alias=input.provisional_reaction_family.alias;
 const point=(caseId,move,variant,hitState,{sameGroundReaction=false,floorMode='unknown',sourceKeys=[],caution=''})=>({
  case_id:caseId,
