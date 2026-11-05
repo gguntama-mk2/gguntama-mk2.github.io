@@ -27,7 +27,7 @@
         ]
       },
       {
-        "move_id": "heihachi/97",
+        "move_id": "heihachi/98",
         "variant": "7WP ホールド / 強版",
         "ground_conditions": [
           "normal"
@@ -36,7 +36,8 @@
           "user_observation",
           "japanese_guide"
         ],
-        "resolve_actual_hold_key_from_site": true
+        "resolve_actual_hold_key_from_site": false,
+        "variant_of": "heihachi/97"
       },
       {
         "move_id": "alisa/227",
@@ -67,7 +68,7 @@
       "notes": "User explicitly reports floor trigger both ground/air; Japanese H and CH indicate normal/counter, NOT target airborne status."
     },
     {
-      "move_id": "heihachi/97",
+      "move_id": "heihachi/98",
       "variant": "7WP ホールド",
       "hit_states": [
         "ground_normal"
@@ -75,7 +76,8 @@
       "evidence": [
         "japanese_guide"
       ],
-      "notes": "538 reports held move gains unheld CH's floor-gimmick slam; exact separate site key is to be resolved."
+      "notes": "538 reports held move gains unheld CH's floor-gimmick slam; exact separate site key is to be resolved.",
+      "variant_of": "heihachi/97"
     },
     {
       "move_id": "heihachi/97",
