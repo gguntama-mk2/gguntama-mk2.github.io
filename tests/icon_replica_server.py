@@ -22,7 +22,10 @@ REGISTRY = None
 def read_registry():
     if REGISTRY.exists():
         return json.loads(REGISTRY.read_text(encoding="utf-8"))
-    return {"schema": 1, "entries": {}}
+    seed = ROOT / "test-data" / "isolated-move-icons-overrides.json"
+    doc = json.loads(seed.read_text(encoding="utf-8"))
+    write_registry(doc)
+    return doc
 def write_registry(doc):
     REGISTRY.parent.mkdir(parents=True,exist_ok=True)
     fd,tmp = tempfile.mkstemp(dir=REGISTRY.parent)
