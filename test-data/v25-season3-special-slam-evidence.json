@@ -1,0 +1,131 @@
+{
+  "schema": 25,
+  "revision_date": "2026-11-05",
+  "title": "Season 3 special grounded slam reaction and floor gimmick",
+  "source_rules": {
+    "user_observation": "User's firsthand gameplay specification. Record as reported; not an extracted binary ID.",
+    "japanese_guide": "Corroboration from named Japanese sites, never silently substitute a game-version-specific internal effect.",
+    "original_site": "Existing PROJECT T move list for exact key/command/hit conditions.",
+    "allowed_publish": false,
+    "admin_icon_auto_writes": false
+  },
+  "provisional_reaction_family": {
+    "alias": "S3_SPECIAL_GROUNDED_FLOOR_SLAM_PROVISIONAL",
+    "internal_reaction_id": null,
+    "semantics": "User reports equivalent opponent knockdown reaction on specified GROUND hits only. No claim of identical MOTBIN reaction/effect numeric IDs.",
+    "anchor_members": [
+      {
+        "move_id": "bob/184",
+        "variant": "スピナーボール中",
+        "ground_conditions": [
+          "normal",
+          "counter"
+        ],
+        "evidence": [
+          "user_observation",
+          "japanese_guide"
+        ]
+      },
+      {
+        "move_id": "heihachi/97",
+        "variant": "7WP ホールド / 強版",
+        "ground_conditions": [
+          "normal"
+        ],
+        "evidence": [
+          "user_observation",
+          "japanese_guide"
+        ],
+        "resolve_actual_hold_key_from_site": true
+      },
+      {
+        "move_id": "alisa/227",
+        "variant": "7LP カウンター",
+        "ground_conditions": [
+          "counter"
+        ],
+        "evidence": [
+          "user_observation",
+          "original_site"
+        ]
+      }
+    ]
+  },
+  "reported_floor_effects": [
+    {
+      "move_id": "bob/184",
+      "variant": "スピナーボール中",
+      "hit_states": [
+        "ground_normal",
+        "ground_counter",
+        "airborne"
+      ],
+      "evidence": [
+        "user_observation",
+        "japanese_guide"
+      ],
+      "notes": "User explicitly reports floor trigger both ground/air; Japanese H and CH indicate normal/counter, NOT target airborne status."
+    },
+    {
+      "move_id": "heihachi/97",
+      "variant": "7WP ホールド",
+      "hit_states": [
+        "ground_normal"
+      ],
+      "evidence": [
+        "japanese_guide"
+      ],
+      "notes": "538 reports held move gains unheld CH's floor-gimmick slam; exact separate site key is to be resolved."
+    },
+    {
+      "move_id": "heihachi/97",
+      "variant": "7WP 非ホールド",
+      "hit_states": [
+        "ground_counter"
+      ],
+      "evidence": [
+        "japanese_guide"
+      ],
+      "notes": "538 reports unheld CH directly generates floor-gimmick slam; unheld ground normal must not be auto-tagged."
+    },
+    {
+      "move_id": "alisa/227",
+      "variant": "7LP",
+      "hit_states": [
+        "ground_counter",
+        "airborne"
+      ],
+      "evidence": [
+        "original_site"
+      ],
+      "notes": "Existing PROJECT T site lists floor-break family only for counter hit/airborne; equivalence of airborne REACTION is not asserted."
+    }
+  ],
+  "japanese_references": [
+    {
+      "url": "https://mogura-ya.net/bob_framelist/",
+      "about": "Bob Perfect Press has D^FB in H and CH columns, i.e. floor-break capable."
+    },
+    {
+      "url": "https://note.com/538_realkysg/n/nf2f2dea1414c",
+      "about": "Heihachi 7WP ground CH stage-reactive slam; hold obtains it on normal hit; article updated March 23, 2026."
+    },
+    {
+      "url": "https://tekken8.sorao.site/ja/heihachi/frame-data/s3/",
+      "about": "Heihachi Fists Drop regular/strong are distinguished in Season 3 frame data."
+    },
+    {
+      "url": "https://tekken8-en.sorao.site/ja/alisa/move-list/s3/",
+      "about": "Alisa 7LP Short Cut was added in Season 3."
+    }
+  ],
+  "safety": {
+    "no_guess_numeric_internal_effect_id": true,
+    "ground_reaction_does_not_imply_air_reaction": true,
+    "same_reaction_does_not_alone_prove_floor_trigger": true,
+    "wall_break_and_floor_break_separate": true,
+    "conditional_stage_required": true,
+    "current_game_binary_verified": false,
+    "existing_icons_modified": false
+  }
+}
