@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Generate v19 from original production-mirrored PC and SP move data
+      - name: Generate v20 from original production-mirrored PC and SP move data
         run: |
           python -m py_compile tests/guard_effect_v15.py tests/guard_effect_v16.py tests/guard_effect_v17.py tests/guard_effect_v18.py tests/guard_effect_v19.py tests/guard_effect_v20.py
           for target in pc sp; do
@@ -31,7 +31,7 @@ jobs:
             python tests/guard_effect_v20.py "/tmp/pt-v20/$target-v19/V19_JAPANESE_REVIEW.json" test-data/v20-japanese-evidence-batch.json "/tmp/pt-v20/$target"
           done
           cp test-data/v20-jp-evidence-view.html /tmp/pt-v20/pc/index.html
-      - name: Confirm 128 fixed move keys and 16 Japanese source distinctions
+      - name: Confirm 128 fixed move keys and 14 Japanese source distinctions
         run: |
           python - <<'PY'
           import json
@@ -93,15 +93,16 @@ jobs:
                   assert page.locator('tbody tr[data-id="asuka/140"] a').count()==2
                   assert page.locator('tbody tr[data-id="yoshimitsu/162"] a').count()==2
                   page.locator('#status').select_option('jp_notation_disagreement')
-                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr').count()==2
                   assert page.locator('tbody tr[data-id="jun/154"]').count()==1
+                  assert page.locator('tbody tr[data-id="jun/155"]').count()==1
                   page.locator('#status').select_option('jp_attacker_crouch_risk')
                   assert page.locator('tbody tr').count()==0
                   page.locator('#status').select_option('')
                   page.screenshot(path=str(Path('/tmp/pt-v20/pc')/(name+'_V20_JAPANESE_REVIEW.png')),full_page=False)
                   page.close()
               browser.close()
-          print('PASS V20 PC and mobile frontend, 16 additions and source risk filters')
+          print('PASS V20 PC and mobile frontend, 14 additions and source risk filters')
           PY
       - name: Show diff guard (all source editing limited to test branch)
         if: always()
