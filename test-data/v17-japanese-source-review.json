@@ -1,0 +1,250 @@
+{
+  "schema": 17,
+  "date": "2026-11-05",
+  "site_suitability": "日本語資料を優先。海外サイトは補助的参考資料に限り、確定判定には使わない。",
+  "version_policy": "最新版の日本語資料を数値照合の優先基準にし、バージョン不明/旧版との差異は履歴として保持。",
+  "approval_policy": "jp_explicit は日本語資料で効果の裏付けあり（ゲーム内部確定ではない）。jp_notation_only は要検証。jp_numeric_conflict は効果候補維持・フレーム数未確定。全項目の自動アイコン設定は禁止。",
+  "source_notes": "TekkenDocs の c 表記は今回の判定から除外。旧 v16 記録は経緯として保持し上書きしない。",
+  "reviewed": [
+    {
+      "move_id": "king/60",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-5s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "-5^{S}",
+          "notes": "ガードで強制しゃがみ"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "bryan/125",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-9s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/bryan/data.htm",
+          "guard": "-9^{S}",
+          "notes": "ガードで強制しゃがみ"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "kazuya/80",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-3s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/kazuya/data.htm",
+          "guard": "-3^{S}",
+          "notes": "ガードで強制しゃがみ"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "law/127",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "±0s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/law/frame-data/s3/",
+          "guard": "±0s",
+          "notes": "Ver.3.02.02でs表記"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "jack8/106",
+      "japanese_status": "jp_numeric_conflict",
+      "project_t_guard": "-4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jack8/frame-data/s3/",
+          "guard": "-4s",
+          "notes": "Ver.3.02.02"
+        },
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/jack8/data.htm",
+          "guard": "-8^{S}",
+          "notes": "旧データ。^{S}は相手強制しゃがみの表記"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "asuka/60",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-4s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/asuka/data.htm",
+          "guard": "-4^{S}",
+          "notes": "日本語サイトの上付きS"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/asuka/frame-data/s3/",
+          "guard": "-4s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "leo/109",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "-7s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/leo/frame-data/s3/",
+          "guard": "-7s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "eddy/83",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+4s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/eddy/frame-data/s3/",
+          "guard": "+4s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "steve/111",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-13s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/steve/data.htm",
+          "guard": "-13^{S}",
+          "notes": "ガードで強制しゃがみ"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "reina/107",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "-3s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/reina/data.htm",
+          "guard": "-3^{S}",
+          "notes": "ガードで強制しゃがみ"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/reina/frame-data/s3/",
+          "guard": "-3s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "king/91",
+      "japanese_status": "jp_explicit",
+      "project_t_guard": "+2s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "+2^{S}",
+          "notes": "ガードで強制しゃがみ"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "+2s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "king/106",
+      "japanese_status": "jp_numeric_conflict",
+      "project_t_guard": "-16s",
+      "jp_sources": [
+        {
+          "publisher": "geppopotamus",
+          "url": "https://geppopotamus.info/game/tekken8/king/data.htm",
+          "guard": "-17^{S}",
+          "notes": "ガードで強制しゃがみ。旧版"
+        },
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/king/frame-data/s3/",
+          "guard": "-16s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "jin/174",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+2s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/jin/frame-data/s3/",
+          "guard": "+2s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    },
+    {
+      "move_id": "lars/116",
+      "japanese_status": "jp_notation_only",
+      "project_t_guard": "+6s",
+      "jp_sources": [
+        {
+          "publisher": "sorao",
+          "url": "https://tekken8.sorao.site/ja/lars/frame-data/s3/",
+          "guard": "+6s",
+          "notes": "Ver.3.02.02"
+        }
+      ],
+      "game_binary_verified": false,
+      "approved_for_admin_icons": false
+    }
+  ]
+}
