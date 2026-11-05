@@ -1,0 +1,122 @@
+name: V13 Hit-State Icons and Guard Recovery E2E
+on:
+  push:
+    branches: [test/icon-auto-add-replace-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  data-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract state-model from original PC and mobile site
+        run: |
+          node --check tools/build-hit-state-sidecar-v13.mjs
+          node tools/build-hit-state-sidecar-v13.mjs pc.html /tmp/pt-v13/pc
+          node tools/build-hit-state-sidecar-v13.mjs sp.html /tmp/pt-v13/sp
+          cp test-data/v13-hit-state-viewer.html /tmp/pt-v13/pc/index.html
+          cp test-data/v13-hit-state-viewer.html /tmp/pt-v13/sp/index.html
+      - name: Validate source parity, distinct state information and no unsafe writes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/pt-v13')
+          a=json.loads((root/'pc/v13_hit_state_review.json').read_text())
+          b=json.loads((root/'sp/v13_hit_state_review.json').read_text())
+          for name in ['candidate_moves','existing_baseline_moves','new_guard_only_moves','guard_s_total','normal_hit_s_total','counter_hit_s_total']:
+              assert a['metadata'][name]==b['metadata'][name]
+          assert a['metadata']['candidate_moves']==2519
+          assert a['metadata']['existing_baseline_moves']==1741
+          assert a['metadata']['new_guard_only_moves']==778
+          assert a['metadata']['guard_s_total']==1166
+          assert len(a['moves'])==len(b['moves'])==2519
+          assert {(r['move_id'],str(r['hit_states'])) for r in a['moves']}=={(r['move_id'],str(r['hit_states'])) for r in b['moves']}
+          ids={r['move_id']:r for r in a['moves']}
+          assert len(ids)==2519
+          alisa=ids['alisa/20']['hit_states']
+          assert alisa['normal']['wall_stage_effect']['evidence_state']=='site_conditional'
+          assert alisa['air']['floor_stage_effect']['evidence_state']=='site_conditional'
+          jin=ids['jin/44']['hit_states']
+          assert jin['normal']['opponent_forced_crouch']['evidence_state']=='notation_candidate'
+          k=ids['kazuya/20']['hit_states']
+          assert k['guard']['opponent_forced_crouch']['evidence_state']=='notation_candidate'
+          special=ids['alisa/4']['hit_states']['air']['wall_stage_effect']
+          assert 'airborne_tornado_success' in special['conditions']
+          missing=[r for r in a['moves'] if r['review_origin']=='new_guard_s_only']
+          assert len(missing)==778
+          assert all(r['hit_states']['guard']['opponent_forced_crouch']['evidence_state']=='notation_candidate' for r in missing)
+          for r in a['moves']:
+              assert r['review_only'] is True
+              for st in r['hit_states'].values():
+                  for eff in st.values():
+                      assert eff['game_binary_verified'] is False and eff['approved_for_admin_api'] is False
+          print('PASS: 2519 move state models and recovered 778 guard candidates, no automatic assignment')
+          PY
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Test PC and mobile condition-switching and actual image assets
+        run: |
+          (cd /tmp/pt-v13/pc && python -m http.server 8735 --bind 127.0.0.1 >/tmp/pt-v13/server.log 2>&1) &
+          python - <<'PY'
+          import time, urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          root=Path('/tmp/pt-v13/pc')
+          for i in range(30):
+              try:urllib.request.urlopen('http://127.0.0.1:8735/index.html',timeout=3);break
+              except Exception:time.sleep(1)
+          else:raise RuntimeError('test server not ready')
+          with sync_playwright() as pw:
+              b=pw.chromium.launch(headless=True,args=['--disable-dev-shm-usage'])
+              for label,viewport in [('PC',{'width':1440,'height':900}),('SP',{'width':390,'height':844})]:
+                  page=b.new_page(viewport=viewport)
+                  page.goto('http://127.0.0.1:8735/index.html',wait_until='domcontentloaded')
+                  page.wait_for_function("document.body.dataset.ready === 'true'",timeout=60000)
+                  assert page.locator('#n').inner_text()=='2,519'
+                  assert page.locator('#added').inner_text()=='778'
+                  page.locator('#character').select_option('alisa')
+                  page.locator('#query').fill('アンインストール')
+                  page.locator('#effect').select_option('wall_stage_effect')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr img[alt="壁ギミック"]').count()==1
+                  page.locator('#hitstate').select_option('air')
+                  page.locator('#effect').select_option('floor_stage_effect')
+                  assert page.locator('tbody tr').count()==1
+                  assert page.locator('tbody tr img[alt="床ギミック"]').count()==1
+                  page.locator('#query').fill('ワンツーリフトオフ')
+                  page.locator('#effect').select_option('wall_stage_effect')
+                  assert 'トルネード時限定' in page.locator('tbody tr').first.inner_text()
+                  page.locator('#character').select_option('jin')
+                  page.locator('#hitstate').select_option('normal')
+                  page.locator('#effect').select_option('opponent_forced_crouch')
+                  page.locator('#query').fill('災禍')
+                  assert page.locator('tbody tr img[alt="強制しゃがみ"]').count()==1
+                  page.locator('#character').select_option('')
+                  page.locator('#hitstate').select_option('guard')
+                  page.locator('#query').fill('')
+                  assert '1166技' in page.locator('#count').inner_text()
+                  page.screenshot(path=str(root/(label+'_V13_CONDITIONS.png')),full_page=False)
+                  page.close()
+              b.close()
+          print('PASS PC+SP hit-state/gimmick/crouch conditional review and 778 recovered candidates')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PROJECT_T_V13_CONDITIONAL_ICON_TEST
+          path: |
+            /tmp/pt-v13/pc/
+            /tmp/pt-v13/server.log
+          if-no-files-found: warn
+          retention-days: 30
