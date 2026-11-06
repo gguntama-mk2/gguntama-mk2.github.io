@@ -21,6 +21,20 @@ try {
       await page.waitForTimeout(400);
       assert.equal(await page.evaluate(() => location.hash), '#' + slug);
     }
+    // Verify new on-demand image store, including full-resolution gallery decoding.
+    const media = await page.evaluate(async () => {
+      if (!window.PXS || typeof window.PXS.gallery !== 'function') throw Error('PXS missing');
+      await window.PXS.ready();
+      const ids = window.PXS.ids();
+      if (!ids.length || !window.PXS.has('_probe')) throw Error('PXS manifest empty');
+      const first = ids.find(x => window.PXS.has('_g_' + x)) || ids[0];
+      const bitmap = await window.PXS.gallery(first);
+      return { keys: ids.length, imageWidth: bitmap.width || bitmap.naturalWidth, imageHeight: bitmap.height || bitmap.naturalHeight, url: window.PXS.url(first) };
+    });
+    assert.equal(media.keys > 0, true);
+    assert.equal(media.imageWidth > 0 && media.imageHeight > 0, true);
+    assert.equal(media.url.startsWith('assets/pxstore/'), true);
+    console.log(device + ' PXStore media OK', JSON.stringify(media));
     if (failures.length) console.warn(device + ' page errors:', failures.slice(0, 10));
     console.log(device + ' smoke: basic DOM and navigation OK, pageerrors=' + failures.length);
     // A page error must be explicitly reviewed rather than silently treated as success.
