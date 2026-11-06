@@ -21,6 +21,28 @@ try {
       await page.waitForTimeout(400);
       assert.equal(await page.evaluate(() => location.hash), '#' + slug);
     }
+    // Character data must be fetched only when the matching character is needed.
+    await page.waitForFunction(() => !!window.PT_CHAR_DATA && window.PT_CHAR_DATA.loaded().length > 0, null, { timeout: 30000 });
+    const chars = await page.evaluate(async () => {
+      const all = CHARACTERS;
+      if (all.length < 30) throw Error('Character metadata missing');
+      const initial = window.PT_CHAR_DATA.loaded();
+      const next = all.find(c => !c.__ptLoaded && c.moves.length);
+      if (!next) throw Error('No lazy character available');
+      const before = next.moves.map((raw, index) => Number.isInteger(raw.k) ? raw.k : index);
+      const beforeOff = next.moves.map(raw => JSON.stringify(raw.off || []));
+      await window.PT_CHAR_DATA.load(next);
+      const after = next.moves.map((raw, index) => Number.isInteger(raw.k) ? raw.k : index);
+      const afterOff = next.moves.map(raw => JSON.stringify(raw.off || []));
+      if (JSON.stringify(before) !== JSON.stringify(after) || JSON.stringify(beforeOff) !== JSON.stringify(afterOff))
+        throw Error('Stable IDs or off-columns changed');
+      if (!next.moves.some(raw => typeof raw === 'object' && typeof raw.name === 'string'))
+        throw Error('Move names not loaded');
+      return { characters: all.length, initiallyLoaded: initial, tested: next.id, moves: next.moves.length };
+    });
+    assert.equal(chars.characters > 30, true);
+    assert.equal(chars.initiallyLoaded.length < chars.characters, true);
+    console.log(device + ' on-demand character data OK', JSON.stringify(chars));
     // Verify new on-demand image store, including full-resolution gallery decoding.
     const media = await page.evaluate(async () => {
       if (!window.PXS || typeof window.PXS.gallery !== 'function') throw Error('PXS missing');
