@@ -6,8 +6,8 @@ ROOT=Path.cwd()
 OUT=ROOT/'test-litev1'
 JS,CSS,MEDIA,DATA=[OUT/'assets'/p for p in ('js','css','media','data')]
 for p in (JS,CSS,MEDIA,DATA):p.mkdir(parents=True,exist_ok=True)
-SCRIPTS=re.compile(r'<script\\b[^>]*>(.*?)</script\\s*>',re.S|re.I)
-STYLES=re.compile(r'<style\\b[^>]*>(.*?)</style\\s*>',re.S|re.I)
+SCRIPTS=re.compile(r'<script\b[^>]*>(.*?)</script\s*>',re.S|re.I)
+STYLES=re.compile(r'<style\b[^>]*>(.*?)</style\s*>',re.S|re.I)
 EMBEDDED=re.compile(r'data:([a-zA-Z0-9.+/-]+);base64,([A-Za-z0-9+/=]+)')
 mediafiles=set()
 def relocate(text,css=False):
@@ -33,7 +33,7 @@ def build(device):
         text=relocate(m.group(1));(JS/name).write_text(text,'utf-8')
         scripts.append({'name':name,'bytes':len(text.encode())})
         attrs=m.group(0).split('>',1)[0]
-        id_match=re.search(r'\\bid\\s*=\\s*["\\']([^"\\']+)["\\']',attrs,re.I)
+        id_match=re.search(r'\bid\s*=\s*"([^"]+)"',attrs,re.I)
         id_attr=' id="'+id_match.group(1)+'"' if id_match else ''
         return '<script'+id_attr+' src="assets/js/'+name+'"></script>'
     html=SCRIPTS.sub(replace_script,html)
