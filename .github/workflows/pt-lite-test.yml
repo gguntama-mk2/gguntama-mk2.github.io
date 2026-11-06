@@ -75,7 +75,7 @@ jobs:
           log=pathlib.Path('/tmp/pt-lite-browser.log').read_text(errors='replace')
           report={'schema':1,'mode':'test-only','passed':os.environ.get('PT_RC')=='0','exit_code':int(os.environ['PT_RC']),'log_tail':log[-18000:]}
           dest=pathlib.Path('test-litev1/assets/data/browser-smoke-report.json')
-          dest.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\\n')
+          dest.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
           print('Browser smoke success:',report['passed'],'output bytes:',len(log))
           PY
       - name: Save files ONLY in this test branch
