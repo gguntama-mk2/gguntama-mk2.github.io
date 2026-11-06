@@ -73,6 +73,7 @@ const spGuard=[
 '    return;',
 '  }'
 ].join("\n");
+const OFF_CHARS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const registry={};
 const report={schema:3,mode:"test-only",strategy:"per-character JSON; full move data downloaded only on selection",devices:{}};
 for(const device of ["pc","sp"]){
@@ -81,15 +82,18 @@ for(const device of ["pc","sp"]){
   const chars=vm.runInNewContext("("+text.slice(start,end)+")",Object.create(null),{timeout:30000});
   if(!Array.isArray(chars)||chars.length<30)throw Error("Unexpected character count for "+device);
   const seen=new Set();
+  const offKeys=[...new Set(chars.flatMap(c=>c.moves.flatMap(raw=>raw&&typeof raw==="object"&&Array.isArray(raw.off)?raw.off:[])))].sort();
+  if(offKeys.length>OFF_CHARS.length)throw Error("Too many off-column names");
+  const offCode=new Map(offKeys.map((key,i)=>[key,OFF_CHARS[i]]));
   const skeleton=chars.map(c=>{
     if(!c||typeof c.id!=="string"||!/^[a-z0-9-]+$/.test(c.id)||seen.has(c.id)||!Array.isArray(c.moves))
       throw Error("Unexpected character ID/moves: "+String(c&&c.id));
     seen.add(c.id);
     const d=JSON.parse(JSON.stringify(c));
     d.moves=c.moves.map((raw,i)=>{
-      const r={k:raw&&typeof raw==="object"&&Number.isInteger(raw.k)?raw.k:i};
-      if(raw&&typeof raw==="object"&&Array.isArray(raw.off)&&raw.off.length)r.off=raw.off;
-      return r;
+      const k=raw&&typeof raw==="object"&&Number.isInteger(raw.k)?raw.k:i;
+      const off=raw&&typeof raw==="object"&&Array.isArray(raw.off)?raw.off:[];
+      return [k,off.map(key=>offCode.get(key)).join("")];
     });
     return d;
   });
@@ -106,7 +110,8 @@ for(const device of ["pc","sp"]){
   let next=text.slice(0,start)+meta+text.slice(end);
   const marker=start+meta.length,semi=next.indexOf(";",marker);
   if(semi<marker||semi-marker>12)throw Error("array terminator not found");
-  next=next.slice(0,semi+1)+loader+next.slice(semi+1);
+  const decoder='\nconst PT_OFF_FIELDS='+JSON.stringify(offKeys)+';\nconst PT_OFF_CHARS='+JSON.stringify(OFF_CHARS)+';\nCHARACTERS.forEach(c=>{c.moves=c.moves.map(r=>({k:r[0],off:Array.from(r[1],x=>PT_OFF_FIELDS[PT_OFF_CHARS.indexOf(x)])}));});\n';
+  next=next.slice(0,semi+1)+decoder+loader+next.slice(semi+1);
   if(device==="pc"){
     const anchor="function renderTable() {\n  const c = CHARACTERS.find(x => x.id === current);";
     if(!next.includes(anchor))throw Error("PC render anchor missing");
