@@ -13,6 +13,9 @@ on:
       - tools/pt_lite_character_lazy.cjs
       - tools/pt_lite_route_lazy.py
       - .github/workflows/pt-lite-test.yml
+concurrency:
+  group: project-t-lite-characters-test
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -33,6 +36,15 @@ jobs:
           python3 tools/pt_lite_lazy_pxstore.py
           node tools/pt_lite_character_lazy.cjs
           python3 tools/pt_lite_route_lazy.py
+      - name: Save generated assets to isolated test branch for inspection
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1
+          if ! git diff --cached --quiet; then
+            git commit -m "test: stage4 generated assets (CI validation pending)"
+            git push origin HEAD:test/lite-character-lazy-20261107
+          fi
       - name: Test HTML sizes and JavaScript syntax
         run: |
           python3 - <<'PY'
