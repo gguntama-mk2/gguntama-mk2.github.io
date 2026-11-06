@@ -1,0 +1,31 @@
+{
+  "schema": 4,
+  "mode": "test-only",
+  "routes": {
+    "combo": "06",
+    "glossary": "07",
+    "punish": "08",
+    "stage": "09",
+    "gallery": "12",
+    "login": "14",
+    "vs": "15",
+    "privacy": "16",
+    "price": "16",
+    "download": "16",
+    "guide": "16"
+  },
+  "devices": {
+    "pc": {
+      "html_bytes": 14946,
+      "deferred_script_count": 8,
+      "deferred_script_bytes": 908727,
+      "route_loader_bytes": 2445
+    },
+    "sp": {
+      "html_bytes": 17096,
+      "deferred_script_count": 8,
+      "deferred_script_bytes": 908736,
+      "route_loader_bytes": 2445
+    }
+  }
+}

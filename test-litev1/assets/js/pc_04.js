@@ -43,6 +43,7 @@ function ptLoadMoves(c){
     if(!r.ok)throw new Error("HTTP "+r.status+" "+url);
     return r.json();
   }).then(p=>{
+    if(c.__ptLoaded)return c; /* Published override wins over in-flight baseline. */
     if(!p||p.id!==c.id||!Array.isArray(p.moves)||p.moves.length!==c.moves.length)
       throw new Error("move payload mismatch: "+c.id);
     for(let i=0;i<p.moves.length;i++){
@@ -56,7 +57,7 @@ function ptLoadMoves(c){
     c.moves=p.moves;
     c.__ptLoaded=true;
     return c;
-  }).catch(e=>{c.__ptPending=null;throw e;});
+  }).catch(e=>{c.__ptPending=null;if(c.__ptLoaded)return c;throw e;});
   return c.__ptPending;
 }
 window.PT_CHAR_DATA={load:ptLoadMoves,loaded:()=>CHARACTERS.filter(c=>c.__ptLoaded).map(c=>c.id),count:()=>CHARACTERS.length};

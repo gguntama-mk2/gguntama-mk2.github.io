@@ -5,14 +5,14 @@
   "devices": {
     "pc": {
       "source_js_bytes": 3364820,
-      "new_js_bytes": 321578,
+      "new_js_bytes": 321688,
       "data_array_bytes": 3196254,
       "metadata_bytes": 150763,
       "character_count": 44
     },
     "sp": {
       "source_js_bytes": 3356960,
-      "new_js_bytes": 313848,
+      "new_js_bytes": 313958,
       "data_array_bytes": 3196254,
       "metadata_bytes": 150763,
       "character_count": 44

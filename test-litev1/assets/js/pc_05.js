@@ -35,7 +35,7 @@
     return out;
   }
   function setMoves(c, moves) {
-    c.moves = moves; c.ks = new Set();
+    c.moves = moves; c.__ptLoaded = true; c.__ptPending = Promise.resolve(c); c.ks = new Set();
     moves.forEach(function (raw, idx) { c.ks.add(typeof moveId === "function" ? moveId(raw, idx) : raw.k); });
   }
   function rerender() {
