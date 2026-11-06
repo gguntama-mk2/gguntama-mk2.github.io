@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "mode": "test-only",
+  "html_budget_bytes": 1000000,
+  "devices": {
+    "pc": {
+      "html_bytes": 15229,
+      "html_under_1mb": true,
+      "external_script_count": 20,
+      "stylesheet_count": 2,
+      "eager_local_asset_bytes": 44644885,
+      "largest_eager_assets": [
+        {
+          "path": "assets/js/pc_11.js",
+          "bytes": 39924432
+        },
+        {
+          "path": "assets/js/pc_04.js",
+          "bytes": 3364820
+        }
+      ],
+      "warning": "External scripts are eagerly fetched. HTML below 1MB does not mean a sub-1MB initial transfer."
+    },
+    "sp": {
+      "html_bytes": 17379,
+      "html_under_1mb": true,
+      "external_script_count": 20,
+      "stylesheet_count": 1,
+      "eager_local_asset_bytes": 44625966,
+      "largest_eager_assets": [
+        {
+          "path": "assets/js/sp_11.js",
+          "bytes": 39924433
+        },
+        {
+          "path": "assets/js/sp_04.js",
+          "bytes": 3356960
+        }
+      ],
+      "warning": "External scripts are eagerly fetched. HTML below 1MB does not mean a sub-1MB initial transfer."
+    }
+  }
+}
