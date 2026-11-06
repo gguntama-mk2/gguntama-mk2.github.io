@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "mode": "test-only",
+  "files": {
+    "pc": {
+      "original_bytes": 3364820,
+      "array_bytes": 3196254,
+      "code_without_array_bytes": 168568,
+      "array_head": "[\n  { id: \"jin\", en: \"Jin\", name: \"仁\", img: \"assets/media/b1146ed0ab898bb59667.webp\", moves: [\n    { k: 0, name: \"直突き\", y: \"ちょくつき\", a: {\"command\": \"LP\", \"attack\": \"上\", \"startup\": \"10F\", \"damage\": \"5\", \"guard\": \"+1\", \"hit\": \"+8\", \"counter\": \"+8\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 1, name: \"順突き\", y: \"じゅんづき\", a: {\"command\": \"LPRP\", \"attack\": \"上,上\", \"startup\": \"10F\", \"damage\": \"5,12\", \"guard\": \"-3\", \"hit\": \"+6\", \"counter\": \"+6\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 2, name: \"順突き～黒翼輪舞\", y: \"じゅんづき～こくよくりんぶ\", a: {\"command\": \"LPRPLP\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"-16\", \"hit\": \"浮\\nコンボ始動\", \"counter\": \"浮\\nコンボ始動\", \"chip\": \"6\", \"wall\": \"壁やられ(中)\"}, off: [\"homing\", \"jump\", \"crouch\", \"heat\", \"tbreak\"] },\n    { k: 3, name: \"順突き～内回し踵落とし\", y: \"じゅんづき～うちまわしかかとおとし\", a: {\"command\": \"LPRPLK\", \"ci\": \"LPRP.LK\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"±0\", \"hit\": \"叩きつけうつ伏せダウン\\n受身不可（頭向けうつ伏せ）\", \"counter\": \"叩きつけうつ伏せダウン\\n受身不可（頭向けうつ伏せ）\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 4, name: \"順突き～上段後ろ回し蹴り\", y: \"じゅんづき～じょうだんうし",
+      "array_tail": "ド\\nバルコニーブレイク\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"tracking\", \"jump\", \"crouch\", \"heat\", \"tbreak\"] }\n  ] },\n  { id: \"roger-jr\", en: \"Roger Jr.\", name: \"ロジャーjr\", img: \"assets/media/368d40d7328ff5273d86.webp\", moves: [] },\n  { id: \"yujiro-hanma\", en: \"Yujiro Hanma\", name: \"範馬勇次郎\", img: \"assets/media/db69014ee56eba319d92.webp\", moves: [] },\n]",
+      "references": [
+        {
+          "at": 1788,
+          "context": "\"recovery\" を入れ、答えの値は書かない）。\n   ============================================================ */\nconst CHARACTERS = [];\n\n/* チェック項目の列（この並び順で表示されます）\n   id    : 保存用の固有ID（変更しない）\n   label : 見出しの表示名 */\nconst HC = \"nomemo\";   // 技表の新しい2列（地上ヒット時・空中ヒット時。技名とタグの間）。そのぶん、メモの列は技表から外した（書いたメモのデータは、ブラウザに残したまま）\ndocument"
+        },
+        {
+          "at": 2835,
+          "context": "el: \"ヒートタイマー消費フレーム\", s: \"ヒート\\n消費\" },\n  { id: \"recovery\", label: \"全体硬直\" }\n];\n\n/* キャラは英語名のA〜Z順に並べる */\nCHARACTERS.sort((a, b) => a.en.localeCompare(b.en, \"en\"));\n\n/* ---------- 以下は動作部分 ---------- */\nconst STORE_KEY = \"tekken-checksheet-v1\";\nconst LAST_KEY = \"tekken-checksheet-last\";\n\nlet state = {};   "
+        },
+        {
+          "at": 3117,
+          "context": "let state = {};            // { \"char01:0:startup\": true, ... }\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n  "
+        },
+        {
+          "at": 3157,
+          "context": "0:startup\": true, ... }\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n    if (last && CHARACTERS.some(c => c.id "
+        },
+        {
+          "at": 3331,
+          "context": "Storage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n    if (last && CHARACTERS.some(c => c.id === last)) current = last;\n  } catch (e) {\n    canStore = false;\n    document.getElementById(\"warn\").style.display = \"block\";\n  }\n}\nfunction save() {\n  if (!canStore) return;"
+        },
+        {
+          "at": 3973,
+          "context": "t moveId = (raw, idx) => (raw && typeof raw === \"object\" && Number.isInteger(raw.k)) ? raw.k : idx;\nCHARACTERS.forEach(c => {\n  c.ks = new Set();\n  c.moves.forEach((raw, idx) => {\n    const k = moveId(raw, idx);\n    if (c.ks.has(k)) console.error(\"技IDが重複しています: \" + c.id + \" k=\" + k + \" \" + (raw && ra"
+        },
+        {
+          "at": 7127,
+          "context": "ol ? \"並べ替え中はジャンプリンクを使えません（並べ替えなしに戻すと使えます）\" : \"\";\n}\nfunction updateFbar(shownN, total) {\n  const c = CHARACTERS.find(x => x.id === current), n = c ? rvCount(c) : 0;\n  const rb = document.getElementById(\"rvTgl\");\n  rb.setAttribute(\"aria-pressed\", String(reviewOnly));\n  rb.classList.toggle(\"act\", revie"
+        },
+        {
+          "at": 13780,
+          "context": "}\n\nconst charBtns = {};   // キャラid → 一覧のボタン（ブックマークの数の表示を更新するため）\nfunction rvBadge(cid) {\n  const c = CHARACTERS.find(x => x.id === cid);\n  if (!c) return;\n  const n = rvCount(c);\n  [charBtns[cid], chdBtns[cid]].forEach(b => {   // 本体の一覧と、ドロワーの一覧の両方\n    if (!b) return;\n    if (n) { b.dataset.rv = n; b"
+        },
+        {
+          "at": 16311,
+          "context": "\n}\nfunction renderChars() {\n  const box = document.getElementById(\"chars\");\n  box.innerHTML = \"\";\n  CHARACTERS.forEach(c => {\n    const b = charBtnEl(c, false);\n    charBtns[c.id] = b;\n    box.appendChild(b);\n    rvBadge(c.id);\n  });\n  if (!CHD.el) chdInit(); else chdSync();   // ドロワー（最初の1回だけ作る）の選択状"
+        },
+        {
+          "at": 18751,
+          "context": "lector(\".chd-th\");\n  CHD.q = dr.querySelector(\"#chdQ\"); CHD.grid = dr.querySelector(\"#chdGrid\");\n\n  CHARACTERS.forEach(c => {\n    const b = charBtnEl(c, true);\n    b.dataset.n = chdNorm(c.name + \" \" + (c.en || \"\"));\n    chdBtns[c.id] = b; CHD.grid.appendChild(b); rvBadge(c.id);\n  });\n\n  launch.addEv"
+        },
+        {
+          "at": 20262,
+          "context": " 0;\n}\n\n/* 選んでいるキャラの表示（タブの顔・一覧の選択状態）を合わせる */\nfunction chdSync() {\n  if (!CHD.el) return;\n  const c = CHARACTERS.find(x => x.id === current);\n  Object.keys(chdBtns).forEach(id => chdBtns[id].setAttribute(\"aria-pressed\", String(id === current)));\n  if (c) {\n    CHD.th.textContent = \"\"; CHD.th.classList"
+        },
+        {
+          "at": 22424,
+          "context": "Math.max(0, window.scrollY + r.top - 8) }); }\n}\n/*CHDJS-END*/\n\nfunction renderTable() {\n  const c = CHARACTERS.find(x => x.id === current);\n  if (window.onCharChanged) window.onCharChanged();   // コンボ集も、いま選んでいるキャラに合わせる\n  document.getElementById(\"charName\").textContent = c.name;\n  document.getElement"
+        },
+        {
+          "at": 115778,
+          "context": "、埋め込み表示で黙って無視されて「何も起こらない」ことがあるため） */\ndocument.getElementById(\"reset\").onclick = () => {\n  const c = CHARACTERS.find(x => x.id === current);\n  const d = document.getElementById(\"rsDlg\");\n  document.getElementById(\"rsMsg\").textContent = c.name + \" のチェックをすべて外します。よろしいですか？\";\n  const shut = () => { if (ty"
+        },
+        {
+          "at": 122377,
+          "context": " { s = JSON.parse(raw.slice(6)); }\n  else throw new Error(\"コードの形式が正しくありません\");\n  const chars = {};\n  CHARACTERS.forEach(c => { chars[c.id] = c; });\n  const ids = new Set(Object.keys(s).concat(Object.keys(m), r ? Object.keys(r) : []).filter(id => chars[id]));\n  if (!ids.size) throw new Error(\"読み込めるキャラ"
+        },
+        {
+          "at": 125908,
+          "context": "y = !reviewOnly; applyFilter(); };\ndocument.getElementById(\"rvClear\").onclick = () => {\n  const c = CHARACTERS.find(x => x.id === current);\n  const d = document.getElementById(\"rsDlg\");\n  document.getElementById(\"rsMsg\").textContent = c.name + \" のブックマークをすべて外します。よろしいですか？（チェックは変わりません）\";\n  const shut ="
+        }
+      ],
+      "reference_count": 15,
+      "moves_mentions_outside_array": 5,
+      "selection_contexts": [
+        {
+          "context": "-v1\";\nconst LAST_KEY = \"tekken-checksheet-last\";\n\nlet state = {};            // { \"char01:0:startup\": true, ... }\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getIte"
+        },
+        {
+          "context": "        // { \"char01:0:startup\": true, ... }\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n    if (last && CHARACTERS.some(c => c.id === "
+        },
+        {
+          "context": "ocument.getElementById(\"jumpNav\").title = NF.sortCol ? \"並べ替え中はジャンプリンクを使えません（並べ替えなしに戻すと使えます）\" : \"\";\n}\nfunction updateFbar(shownN, total) {\n  const c = CHARACTERS.find(x => x.id === current), n = c ? rvCount(c) : 0;\n  const rb = document.getElementById(\"rvTgl\");\n  rb.setAttribute(\"aria-pressed\", String(reviewOnly));\n  rb.classList.togg"
+        },
+        {
+          "context": ".textContent = \"メモ\";\n    row.appendChild(mh);\n  }\n}\n\nconst charBtns = {};   // キャラid → 一覧のボタン（ブックマークの数の表示を更新するため）\nfunction rvBadge(cid) {\n  const c = CHARACTERS.find(x => x.id === cid);\n  if (!c) return;\n  const n = rvCount(c);\n  [charBtns[cid], chdBtns[cid]].forEach(b => {   // 本体の一覧と、ドロワーの一覧の両方\n    if (!b) return;\n    if (n) { b.da"
+        },
+        {
+          "context": "\n  CHD.el.querySelector(\".chd-empty\").hidden = n > 0;\n}\n\n/* 選んでいるキャラの表示（タブの顔・一覧の選択状態）を合わせる */\nfunction chdSync() {\n  if (!CHD.el) return;\n  const c = CHARACTERS.find(x => x.id === current);\n  Object.keys(chdBtns).forEach(id => chdBtns[id].setAttribute(\"aria-pressed\", String(id === current)));\n  if (c) {\n    CHD.th.textContent = \"\"; C"
+        },
+        {
+          "context": "ientRect(); if (r.top < 0) window.scrollTo({ top: Math.max(0, window.scrollY + r.top - 8) }); }\n}\n/*CHDJS-END*/\n\nfunction renderTable() {\n  const c = CHARACTERS.find(x => x.id === current);\n  if (window.onCharChanged) window.onCharChanged();   // コンボ集も、いま選んでいるキャラに合わせる\n  document.getElementById(\"charName\").textContent = c.name;\n  docu"
+        },
+        {
+          "context": "えにしない\n      }\n      if (disabled) {\n        cb.disabled = true;\n        td.classList.add(\"na\");\n        td.title = \"この項目はチェック対象外です\";\n      }\n      cb.onchange = () => {\n        if (cb.checked) state[key(c.id, i, col.id)] = true;\n        else delete state[key(c.id, i, col.id)];\n        save();\n        updateRow(tr, c.id, i, off"
+        },
+        {
+          "context": " = () => { setVal((c.val === null ? 0 : c.val) - 1); fire(); };\n    inc.onclick = () => { setVal((c.val === null ? 0 : c.val) + 1); fire(); };\n    sc.onchange = () => { c.col = sc.value; unit.textContent = unitOf(c.col); fire(); };\n    so.onchange = () => { c.op = so.value; fire(); };\n    del.onclick = () => { NF.conds.splice("
+        },
+        {
+          "context": " setVal((c.val === null ? 0 : c.val) + 1); fire(); };\n    sc.onchange = () => { c.col = sc.value; unit.textContent = unitOf(c.col); fire(); };\n    so.onchange = () => { c.op = so.value; fire(); };\n    del.onclick = () => { NF.conds.splice(NF.conds.indexOf(c), 1); render(); fire(); };\n    row.append(sc, so, val, del);\n    retur"
+        },
+        {
+          "context": "hild(o); });\n        sk.appendChild(og);\n      });\n      sk.value = c.key;\n    };\n    fill();\n    const del = btn(\"nfp-sdel\", \"×\", \"この条件を削除\");\n    sc.onchange = () => { c.col = sc.value; fill(); fire(); };\n    sk.onchange = () => { c.key = sk.value; fire(); };\n    del.onclick = () => { NF.states.splice(NF.states.indexOf(c), 1)"
+        },
+        {
+          "context": "ue = c.key;\n    };\n    fill();\n    const del = btn(\"nfp-sdel\", \"×\", \"この条件を削除\");\n    sc.onchange = () => { c.col = sc.value; fill(); fire(); };\n    sk.onchange = () => { c.key = sk.value; fire(); };\n    del.onclick = () => { NF.states.splice(NF.states.indexOf(c), 1); render(); fire(); };\n    row.append(sc, sk, del);\n    return "
+        },
+        {
+          "context": ".forEach(([v, t]) => { const o = h(\"option\", \"\", t); o.value = v; sd.appendChild(o); });\n    sd.value = NF.sortDir; sd.disabled = !NF.sortCol;\n    ss.onchange = () => { NF.sortCol = ss.value; sd.disabled = !NF.sortCol; fire(); };\n    sd.onchange = () => { NF.sortDir = sd.value; fire(); };\n    sr.append(ss, sd);\n    s2.appendCh"
+        },
+        {
+          "context": ";\n    sd.value = NF.sortDir; sd.disabled = !NF.sortCol;\n    ss.onchange = () => { NF.sortCol = ss.value; sd.disabled = !NF.sortCol; fire(); };\n    sd.onchange = () => { NF.sortDir = sd.value; fire(); };\n    sr.append(ss, sd);\n    s2.appendChild(sr);\n    host.appendChild(s2);\n    // 件数・クリア\n    const ft = h(\"div\", \"nfp-foot\");\n "
+        },
+        {
+          "context": "eduleFit);\n/* 確認はページ内のダイアログで行う（ブラウザ標準の confirm() は、埋め込み表示で黙って無視されて「何も起こらない」ことがあるため） */\ndocument.getElementById(\"reset\").onclick = () => {\n  const c = CHARACTERS.find(x => x.id === current);\n  const d = document.getElementById(\"rsDlg\");\n  document.getElementById(\"rsMsg\").textContent = c.name + \" のチェックをすべて外します。よろしいですか？\";\n  const shut ="
+        },
+        {
+          "context": "etElementById(\"rvTgl\").onclick = () => { reviewOnly = !reviewOnly; applyFilter(); };\ndocument.getElementById(\"rvClear\").onclick = () => {\n  const c = CHARACTERS.find(x => x.id === current);\n  const d = document.getElementById(\"rsDlg\");\n  document.getElementById(\"rsMsg\").textContent = c.name + \" のブックマークをすべて外します。よろしいですか？（チェックは変わりません）\";"
+        },
+        {
+          "context": " {\n  const open = nfPanelBox.hidden;\n  nfPanelBox.hidden = !open;\n  document.getElementById(\"nfTgl\").setAttribute(\"aria-expanded\", String(open));\n};\n\nload();\nrenderHead();\nrenderChars();\njumpSetup({\n  host: document.getElementById(\"jumpNav\"), collapse: true,\n  rowOf: i => document.querySelector('#body tr[data-mi=\"' + i + '\""
+        }
+      ]
+    },
+    "sp": {
+      "original_bytes": 3356960,
+      "array_bytes": 3196254,
+      "code_without_array_bytes": 160708,
+      "array_head": "[\n  { id: \"jin\", en: \"Jin\", name: \"仁\", img: \"assets/media/b1146ed0ab898bb59667.webp\", moves: [\n    { k: 0, name: \"直突き\", y: \"ちょくつき\", a: {\"command\": \"LP\", \"attack\": \"上\", \"startup\": \"10F\", \"damage\": \"5\", \"guard\": \"+1\", \"hit\": \"+8\", \"counter\": \"+8\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 1, name: \"順突き\", y: \"じゅんづき\", a: {\"command\": \"LPRP\", \"attack\": \"上,上\", \"startup\": \"10F\", \"damage\": \"5,12\", \"guard\": \"-3\", \"hit\": \"+6\", \"counter\": \"+6\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 2, name: \"順突き～黒翼輪舞\", y: \"じゅんづき～こくよくりんぶ\", a: {\"command\": \"LPRPLP\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"-16\", \"hit\": \"浮\\nコンボ始動\", \"counter\": \"浮\\nコンボ始動\", \"chip\": \"6\", \"wall\": \"壁やられ(中)\"}, off: [\"homing\", \"jump\", \"crouch\", \"heat\", \"tbreak\"] },\n    { k: 3, name: \"順突き～内回し踵落とし\", y: \"じゅんづき～うちまわしかかとおとし\", a: {\"command\": \"LPRPLK\", \"ci\": \"LPRP.LK\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"±0\", \"hit\": \"叩きつけうつ伏せダウン\\n受身不可（頭向けうつ伏せ）\", \"counter\": \"叩きつけうつ伏せダウン\\n受身不可（頭向けうつ伏せ）\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 4, name: \"順突き～上段後ろ回し蹴り\", y: \"じゅんづき～じょうだんうし",
+      "array_tail": "ド\\nバルコニーブレイク\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"tracking\", \"jump\", \"crouch\", \"heat\", \"tbreak\"] }\n  ] },\n  { id: \"roger-jr\", en: \"Roger Jr.\", name: \"ロジャーjr\", img: \"assets/media/368d40d7328ff5273d86.webp\", moves: [] },\n  { id: \"yujiro-hanma\", en: \"Yujiro Hanma\", name: \"範馬勇次郎\", img: \"assets/media/db69014ee56eba319d92.webp\", moves: [] },\n]",
+      "references": [
+        {
+          "at": 7,
+          "context": "\nconst CHARACTERS = [];\n\n\nconst COLS = [\n  { id: \"command\",  label: \"コマンド\",                 short: \"コマンド\" },\n  { id: \"attack\",   label: \"攻撃判定\",                 short: \"攻撃判定\" },\n  { id: \"startup\",  label: \"発生"
+        },
+        {
+          "at": 1466,
+          "context": " \"tbreak\", \"recovery\"]],\n  [\"性能\",     [\"chip\", \"homing\", \"tracking\", \"jump\", \"crouch\", \"heat\"]]\n];\n\nCHARACTERS.sort((a, b) => a.en.localeCompare(b.en, \"en\"));\n\n/* ---------- 保存（パソコン版と同じキーなので同じ形式） ---------- */\nconst STORE_KEY = \"tekken-checksheet-v1\";\nconst LAST_KEY = \"tekken-checksheet-last\";\nconst"
+        },
+        {
+          "at": 1779,
+          "context": "ekken-checksheet-sp-tip\";\nconst HOLD_MS = 420;\n\nlet state = {};\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\nconst $ = id => document.getElementById(id);\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    co"
+        },
+        {
+          "at": 1819,
+          "context": "= 420;\n\nlet state = {};\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\nconst $ = id => document.getElementById(id);\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY"
+        },
+        {
+          "at": 2038,
+          "context": "Storage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n    if (last && CHARACTERS.some(c => c.id === last)) current = last;\n  } catch (e) { canStore = false; $(\"warn\").style.display = \"block\"; }\n}\nfunction save() {\n  if (!canStore) return;\n  try {\n    localStorage.setIte"
+        },
+        {
+          "at": 2571,
+          "context": "t moveId = (raw, idx) => (raw && typeof raw === \"object\" && Number.isInteger(raw.k)) ? raw.k : idx;\nCHARACTERS.forEach(c => {\n  c.ks = new Set();\n  c.moves.forEach((raw, idx) => {\n    const k = moveId(raw, idx);\n    if (c.ks.has(k)) console.error(\"技IDが重複しています: \" + c.id + \" k=\" + k + \" \" + (raw && ra"
+        },
+        {
+          "at": 88284,
+          "context": "getItem(ANS_KEY) === \"1\"; } catch (_) {}\nlet openedBeforeAns = null;\n\nfunction buildMoves() {\n  C = CHARACTERS.find(x => x.id === current);\n  M = C.moves.map((raw, idx) => {\n    const i = moveId(raw, idx);\n    const o = typeof raw === \"object\" ? raw : {};\n    const off0 = o.off || [];\n    const off "
+        },
+        {
+          "at": 113530,
+          "context": "rs() {\n  const grid = $(\"chargrid\"); grid.innerHTML = \"\";\n  const q = norm($(\"cq\").value.trim());\n  CHARACTERS.forEach(c => {\n    if (q && !norm(c.name).includes(q) && !norm(c.en).includes(q)) return;\n    const { d, t } = charProgress(c);\n    const pct = t ? Math.round(d / t * 100) : 0;\n    const b "
+        },
+        {
+          "at": 119929,
+          "context": " { s = JSON.parse(raw.slice(6)); }\n  else throw new Error(\"コードの形式が正しくありません\");\n  const chars = {};\n  CHARACTERS.forEach(c => { chars[c.id] = c; });\n  const ids = new Set(Object.keys(s).concat(Object.keys(m), r ? Object.keys(r) : []).filter(id => chars[id]));\n  if (!ids.size) throw new Error(\"読み込めるキャラ"
+        }
+      ],
+      "reference_count": 9,
+      "moves_mentions_outside_array": 4,
+      "selection_contexts": [
+        {
+          "context": "KEY = \"tekken-checksheet-last\";\nconst TIP_KEY = \"tekken-checksheet-sp-tip\";\nconst HOLD_MS = 420;\n\nlet state = {};\nlet canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\nconst $ = id => document.getElementById(id);\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)"
+        },
+        {
+          "context": "let canStore = true;\nlet current = (CHARACTERS.find(c => c.moves.length) || CHARACTERS[0]).id;\nconst $ = id => document.getElementById(id);\n\nfunction load() {\n  try {\n    state = JSON.parse(localStorage.getItem(STORE_KEY)) || {};\n    const last = localStorage.getItem(LAST_KEY);\n    if (last && CHARACTERS.some(c => c.id === "
+        },
+        {
+          "context": " = () => { setVal((c.val === null ? 0 : c.val) - 1); fire(); };\n    inc.onclick = () => { setVal((c.val === null ? 0 : c.val) + 1); fire(); };\n    sc.onchange = () => { c.col = sc.value; unit.textContent = unitOf(c.col); fire(); };\n    so.onchange = () => { c.op = so.value; fire(); };\n    del.onclick = () => { NF.conds.splice("
+        },
+        {
+          "context": " setVal((c.val === null ? 0 : c.val) + 1); fire(); };\n    sc.onchange = () => { c.col = sc.value; unit.textContent = unitOf(c.col); fire(); };\n    so.onchange = () => { c.op = so.value; fire(); };\n    del.onclick = () => { NF.conds.splice(NF.conds.indexOf(c), 1); render(); fire(); };\n    row.append(sc, so, val, del);\n    retur"
+        },
+        {
+          "context": "hild(o); });\n        sk.appendChild(og);\n      });\n      sk.value = c.key;\n    };\n    fill();\n    const del = btn(\"nfp-sdel\", \"×\", \"この条件を削除\");\n    sc.onchange = () => { c.col = sc.value; fill(); fire(); };\n    sk.onchange = () => { c.key = sk.value; fire(); };\n    del.onclick = () => { NF.states.splice(NF.states.indexOf(c), 1)"
+        },
+        {
+          "context": "ue = c.key;\n    };\n    fill();\n    const del = btn(\"nfp-sdel\", \"×\", \"この条件を削除\");\n    sc.onchange = () => { c.col = sc.value; fill(); fire(); };\n    sk.onchange = () => { c.key = sk.value; fire(); };\n    del.onclick = () => { NF.states.splice(NF.states.indexOf(c), 1); render(); fire(); };\n    row.append(sc, sk, del);\n    return "
+        },
+        {
+          "context": ".forEach(([v, t]) => { const o = h(\"option\", \"\", t); o.value = v; sd.appendChild(o); });\n    sd.value = NF.sortDir; sd.disabled = !NF.sortCol;\n    ss.onchange = () => { NF.sortCol = ss.value; sd.disabled = !NF.sortCol; fire(); };\n    sd.onchange = () => { NF.sortDir = sd.value; fire(); };\n    sr.append(ss, sd);\n    s2.appendCh"
+        },
+        {
+          "context": ";\n    sd.value = NF.sortDir; sd.disabled = !NF.sortCol;\n    ss.onchange = () => { NF.sortCol = ss.value; sd.disabled = !NF.sortCol; fire(); };\n    sd.onchange = () => { NF.sortDir = sd.value; fire(); };\n    sr.append(ss, sd);\n    s2.appendChild(sr);\n    host.appendChild(s2);\n    // 件数・クリア\n    const ft = h(\"div\", \"nfp-foot\");\n "
+        },
+        {
+          "context": "let showAns = false;\ntry { showAns = localStorage.getItem(ANS_KEY) === \"1\"; } catch (_) {}\nlet openedBeforeAns = null;\n\nfunction buildMoves() {\n  C = CHARACTERS.find(x => x.id === current);\n  M = C.moves.map((raw, idx) => {\n    const i = moveId(raw, idx);\n    const o = typeof raw === \"object\" ? raw : {};\n    const off0 = o.off || [];"
+        },
+        {
+          "context": "EventListener(\"change\", e => {\n    applyTheme(e.target.value);\n    try { localStorage.setItem(THEME_KEY, e.target.value); } catch (_) {}\n  });\n})();\n\nload();\ninitTip();\nnumJumpSetup({ host: $(\"numJump\"), cellOf: () => null, refilter: () => renderList(), top: () => { const tp = document.querySelector(\".top\"); return (tp ? tp"
+        }
+      ]
+    }
+  }
+}
