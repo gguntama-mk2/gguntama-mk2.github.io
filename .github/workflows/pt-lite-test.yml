@@ -6,6 +6,7 @@ on:
     paths:
       - tools/pt_lite_split_stage1.py
       - tools/pt_lite_audit.py
+      - tools/pt_lite_browser_smoke.mjs
       - .github/workflows/pt-lite-test.yml
 permissions:
   contents: write
@@ -33,6 +34,11 @@ jobs:
           PY
           python3 tools/pt_lite_audit.py
           find test-litev1/assets/js -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Browser smoke test (desktop and mobile)
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node tools/pt_lite_browser_smoke.mjs
       - name: Save files ONLY in this test branch
         run: |
           git config user.name "github-actions[bot]"
