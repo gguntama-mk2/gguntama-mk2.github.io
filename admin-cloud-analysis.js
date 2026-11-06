@@ -128,11 +128,11 @@
       wrap.appendChild(table);
       section.appendChild(wrap);
       body.append(cards, info, section);
-      await loadAllCharacters(body);
     } catch (err) {
-      status.textContent = "取得できませんでした: " + err.message;
+      status.textContent = "ブライアン解析を取得できませんでした: " + err.message + "（全42キャラクター解析は続けて読み込みます）";
       status.setAttribute("role", "alert");
     }
+    await loadAllCharacters(body);
   }
   function mount(node) {
     root = node;
