@@ -1,0 +1,28 @@
+name: Admin cloud analysis JavaScript check
+
+on:
+  pull_request:
+    paths:
+      - "admin-cloud-analysis.js"
+      - ".github/workflows/admin-cloud-analysis-js-check.yml"
+  push:
+    branches:
+      - "feature/all-character-cloud-admin-v25"
+    paths:
+      - "admin-cloud-analysis.js"
+      - ".github/workflows/admin-cloud-analysis-js-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate syntax
+        run: node --check admin-cloud-analysis.js
