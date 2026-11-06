@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="format-detection" content="telephone=no">
+<script src="assets/js/pc_00.js"></script>
+<title>技チェックシート</title>
+<!--PTADS-START-->
+<script src="assets/js/pc_01.js"></script>
+<!--PTADS-END-->
+<!--PTICON-START-->
+<!-- PROJECT T アイコン（黒地・白の「PT」ロゴ。お客様提供のロゴ画像） -->
+<link rel="icon" type="image/svg+xml" href="assets/media/6bb65df10133812ba720.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/media/ac870848a80bb57c4889.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/media/86e5630893ff09d4c1be.png">
+<!--PTICON-END-->
+<script src="assets/js/pc_02.js"></script>
+<!-- PROJECT T 認証API（Discord / Google / YouTube ログイン）：公開した後、次の行のURLを入れる -->
+<script src="assets/js/pc_03.js"></script>
+<link rel="stylesheet" href="assets/css/pc_00.css">
+<link rel="stylesheet" href="assets/css/pc_01.css">
+</head>
+<body>
+<button type="button" class="mn-tab" id="mnTab" aria-label="メニューを開く" aria-haspopup="dialog" aria-controls="mnPanel" aria-expanded="false"><span class="mn-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="mn-tx" aria-hidden="true">MENU</span></button>
+<div class="mn" id="mn" aria-hidden="true">
+  <div class="mn-back" data-mn-close></div>
+  <aside class="mn-panel" id="mnPanel" role="dialog" aria-modal="true" aria-label="メニュー" tabindex="-1">
+    <div class="mn-body">
+      <p class="mn-ttl" aria-hidden="true">MENU</p>
+      <nav class="mn-links" aria-label="ページ一覧">
+        <button type="button" data-go="login"><span class="en">Login</span><b>ログイン</b></button>
+        <button type="button" data-go="home" aria-current="page"><span class="en">Top</span><b>トップ</b></button>
+        <button type="button" data-go="sheet"><span class="en">Move Check</span><b>技チェックシート</b></button>
+        <button type="button" data-go="combo"><span class="en">Combo List</span><b>コンボ集</b></button>
+        <button type="button" data-go="punish"><span class="en">Punish List</span><b>確定反撃表</b></button>
+        <button type="button" data-go="update"><span class="en">Update</span><b>アップデート内容</b></button>
+        <button type="button" data-go="vs"><span class="en">VS</span><b>VS</b></button>
+        <button type="button" data-go="stage"><span class="en">Stage</span><b>ステージ</b></button>
+        <button type="button" data-go="glossary"><span class="en">Glossary</span><b>用語集</b></button>
+        <button type="button" data-go="gallery"><span class="en">Gallery</span><b>ギャラリー</b></button>
+        <button type="button" data-go="download"><span class="en">Download</span><b>ダウンロード</b></button>
+        <button type="button" data-go="guide"><span class="en">Setup Guide</span><b>各種導入方法</b></button>
+        <button type="button" data-go="privacy" aria-label="プライバシーポリシー"><span class="en">Privacy</span><b>プライバシー</b></button>
+        <button type="button" data-go="price" aria-label="利用料金"><span class="en">Pricing</span><b>利用料金</b></button>
+      </nav>
+      <div class="themebox"><label for="theme">デザイン</label>
+      <select id="theme" class="themesel" aria-label="デザイン">
+<option value="gold">漆黒ゴールド（黒 × 金）</option>
+<option value="navy">ネイビー × ピンク</option>
+<option value="heat">ヒート（暖黒 × 橙）</option>
+<option value="steel">スチールブルー（鋼 × 青）</option>
+<option value="jade">ジェイド（深緑 × 翡翠）</option>
+<option value="dojo">道場ライト（和紙 × 朱）</option>
+      </select></div>
+      <div class="mn-bob" id="mnBob" aria-hidden="true"></div>
+    </div>
+    <button type="button" class="mn-close" data-mn-close aria-label="メニューを閉じる"><svg class="mn-x" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 3l10 10M13 3L3 13"/></svg><span class="mn-cl" aria-hidden="true">CLOSE</span></button>
+  </aside>
+</div>
+<div class="wrap">
+  <div class="titlebar">
+    <div class="titleleft">
+      <h1><span data-ttl="login">ログイン</span><span data-ttl="home">トップ</span><span data-ttl="sheet">技チェックシート</span><span data-ttl="combo">コンボ集</span><span data-ttl="glossary">格ゲー用語集</span><span data-ttl="punish">確定反撃表</span><span data-ttl="update">アップデート内容</span><span data-ttl="stage">ステージギミック一覧</span><span data-ttl="gallery">ギャラリー</span><span data-ttl="vs">VS</span><span data-ttl="privacy">プライバシーポリシー</span><span data-ttl="price">利用料金</span><span data-ttl="download">ダウンロード</span><span data-ttl="guide">各種導入方法</span></h1>
+    </div>
+    <nav class="pagenav" aria-label="ページへのジャンプ">
+      <button type="button" data-go="login" aria-label="PROJECT T ログイン">ログイン</button>
+      <button type="button" data-go="home" aria-label="トップ" aria-current="page">TOP</button>
+      <button type="button" data-go="sheet" aria-label="技チェックシート"><span class="lf">技チェックシート</span><span class="ls" aria-hidden="true">技チェック</span></button>
+      <button type="button" data-go="combo">コンボ集</button>
+      <button type="button" data-go="punish" aria-label="確定反撃表"><span class="lf">確定反撃表</span><span class="ls" aria-hidden="true">確定反撃</span></button>
+      <button type="button" data-go="update" aria-label="アップデート内容"><span class="lf">アップデート</span><span class="ls" aria-hidden="true">更新</span></button>
+      <button type="button" data-go="vs">VS</button>
+      <button type="button" data-go="stage">ステージ</button>
+      <button type="button" data-go="glossary">用語集</button>
+      <button type="button" data-go="gallery">ギャラリー</button>
+      <button type="button" data-go="download" aria-label="ダウンロード"><span class="nb">ダウン</span><span class="nb">ロード</span></button>
+      <button type="button" data-go="guide" aria-label="各種導入方法"><span class="lf">各種導入方法</span><span class="ls" aria-hidden="true">導入方法</span></button>
+      <button type="button" data-go="privacy" aria-label="プライバシーポリシー"><span class="lf">プライバシーポリシー</span><span class="ls" aria-hidden="true">Privacy</span></button>
+      <button type="button" data-go="price">利用料金</button>
+    </nav>
+  </div>
+  <p class="lead" data-only="login">PROJECT Tへログインし、Discord・Google・YouTubeなどの外部サービスを1つのPROJECT Tアカウントへ安全に連携します。</p>
+  <p class="lead" data-only="sheet">キャラを選んで、確認できた項目にチェックを入れていきます。チェックはこのブラウザに自動で保存されます。</p>
+  <p class="lead" data-only="combo">キャラを選んで、コンボの確認やメモができます。自作コンボの登録のほか、収録コンボの編集・並べ替え・削除もできます。分類見出しの左の「⋮⋮」をドラッグすると、分類ごと入れ替えられます。内容はこのブラウザに自動で保存されます。</p>
+  <p class="lead" data-only="glossary">用語・よみ・別名・説明から検索できます。範囲（格ゲー共通／鉄拳）やカテゴリでも絞り込めます。</p>
+  <p class="lead" data-only="punish">自キャラの確定反撃を、発生フレーム別に確認できます。相手の技から反撃の候補を逆引きすることもできます。</p>
+  <p class="lead" data-only="update">キャラを選ぶと、そのキャラの技の変更がある版が強調されます。全キャラ共通の変更・システムの変更もあわせて確認できます。</p>
+  <p class="lead" data-only="gallery">キャラを選ぶと、そのキャラの背景画像が小さく表示されます。画像をクリックすると、大きく拡大して見られます。</p>
+  <p class="lead" data-only="vs">対戦履歴、録画動画、ラウンド、対戦内容を試合ごとにまとめて確認できます。</p>
+  <p class="lead" data-only="privacy">PROJECT Tが取得・利用・保存する情報と、外部サービス連携・データ削除について確認できます。</p>
+  <p class="lead" data-only="price">PROJECT Tの利用料金と、外部サービス利用時の費用について確認できます。</p>
+  <p class="lead" data-only="download">PROJECT T Recorderのダウンロードと、Windowsへのインストール手順を案内します。</p>
+  <p class="lead" data-only="guide">PROJECT Tを使い始めるためのDiscord・Google・YouTube・TEKKEN ID・Discord Bot・OBSの導入方法をまとめています。</p>
+  <p class="lead" data-only="stage">ステージごとのギミックを一覧で確認できます。画像をクリックすると詳しい説明が開きます。</p>
+  <div class="chars" id="chars" data-only="sheet combo punish update gallery" role="group" aria-label="キャラクター選択"></div>
+
+
+  <div id="viewLogin"><div id="lgHost"></div></div>
+  <div id="viewSheet">
+  <div class="shinfo">
+    <p class="ver" data-only="sheet">ゲームバージョン：Ver.3.02.02（2026年9月10日配信）／技データ取得：2026年10月</p>
+    <p class="hint" data-only="sheet" id="hint"><span data-h="off">💡 チェック欄を<b>右クリック</b>すると、その項目の答えが表示されます。</span><span data-h="on" hidden>💡 すべての答えを<b>表示中</b>です（OFFで隠せます）。</span></p>
+  </div>
+  <div class="bar">
+    <h2 id="charName"></h2>
+    <input class="search" id="q" type="search" placeholder="技名・コマンド・数字・ワードで検索" autocomplete="off" aria-label="技名・コマンド・数字・ワードで検索">
+    <button class="reset" id="reset" type="button">このキャラをリセット</button>
+    <button class="reset" id="ioBtn" type="button" aria-haspopup="dialog">書き出し・読み込み</button>
+    <button class="cmdtgl" id="cmdTgl" type="button" aria-pressed="false"><span class="lbl" data-v="off">コマンドを表示：OFF</span><span class="lbl" data-v="on">コマンドを表示：ON</span></button>
+    <button class="cmdtgl" id="ansTgl" type="button" aria-pressed="false"><span class="lbl" data-v="off">答えを全表示：OFF</span><span class="lbl" data-v="on">答えを全表示：ON</span></button>
+  </div>
+  <nav class="njump" id="numJump" aria-label="数字から技へジャンプ" hidden></nav>
+  <div class="fbar" id="fbar">
+    <button class="cmdtgl" id="rvTgl" type="button" aria-pressed="false"><span class="lbl" data-v="off">ブックマークのみ表示：OFF</span><span class="lbl" data-v="on">ブックマークのみ表示：ON</span></button>
+    <button class="reset" id="rvClear" type="button" hidden>このキャラのブックマークをすべて外す</button>
+    <button class="cmdtgl" id="nfTgl" type="button" aria-expanded="false" aria-controls="nfPanel"><span id="nfTglT">絞り込み・並べ替え</span><span class="nfarrow" aria-hidden="true">▾</span></button>
+    <span class="fstat" id="fStat" role="status" aria-live="polite" hidden></span>
+  </div>
+  <div class="nfpanel" id="nfPanel" hidden></div>
+  <nav class="jump" id="jumpNav" aria-label="技へジャンプ（入力方向ごと）" hidden></nav>
+  <div class="infobar" id="infoChips" role="group" aria-label="技の情報の表示項目"><span class="ilbl">技の情報を表示：</span></div>
+
+  <div class="scroll">
+    <table>
+      <colgroup><col class="c-name"><col class="c-tag"></colgroup>
+      <thead>
+        <tr id="headRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+  <p class="warn" id="warn">このブラウザでは保存機能が使えないため、ページを閉じるとチェックが消えます。</p>
+  <p class="note">保存データはブラウザごとに別々です。ブラウザのデータを削除するとチェックも消えます。</p>
+  </div>
+  <div id="viewCombo"><div id="cbHost"></div></div>
+  <div id="viewGlossary"><div id="glHost"></div></div>
+  <div id="viewPunish"><div id="pnHost"></div></div>
+  <div id="viewUpdate"><div id="updHost"></div></div>
+  <div id="viewStage"><div id="sgHost"></div></div>
+  <div id="viewGallery"><div id="gaHost"></div></div>
+  <div id="viewVs"><div id="vsHost"></div></div>
+  <div id="viewPrivacy"><div id="prHost"></div></div>
+  <div id="viewPrice"><div id="pcHost"></div></div>
+  <div id="viewDownload"><div id="dlHost"></div></div>
+  <div id="viewGuide"><div id="gdHost"></div></div>
+  <div id="viewHome"><div id="hoHost"></div></div>
+</div>
+<dialog class="iodlg" id="ioDlg" aria-labelledby="ioTitle">
+  <h2 id="ioTitle">チェック・メモの書き出し／読み込み</h2>
+  <p>保存先はブラウザごとに別々です。「書き出す」でコードをコピーし、移したい側（スマホ版・パソコン版どちらでも）の「読み込む」に貼り付けてください。コードに含まれるキャラのチェックとメモは、読み込んだ側で上書きされます。</p>
+  <textarea id="ioText" spellcheck="false" placeholder="ここに書き出したコードが表示されます。読み込むときはここに貼り付けます。" aria-label="書き出し・読み込みコード"></textarea>
+  <div class="row">
+    <button type="button" class="primary" id="ioExport">書き出す（コピー）</button>
+    <button type="button" id="ioImport">読み込む</button>
+    <button type="button" id="ioClose" style="margin-left:auto">閉じる</button>
+  </div>
+  <div class="msg" id="ioMsg" role="status"></div>
+</dialog>
+<dialog class="iodlg" id="rsDlg" role="alertdialog" aria-labelledby="rsMsg">
+  <p id="rsMsg" style="color:var(--text);font-size:.9375rem;line-height:1.7;white-space:pre-line"></p>
+  <div class="row">
+    <button type="button" class="primary" id="rsOk">リセットする</button>
+    <button type="button" id="rsNo">キャンセル</button>
+  </div>
+</dialog>
+<div class="pop" id="pop" role="status" aria-live="polite"></div>
+
+<script src="assets/js/pc_04.js"></script>
+<script src="assets/js/pc_05.js"></script>
+<script src="assets/js/pc_06.js"></script>
+<script src="assets/js/pc_07.js"></script>
+<script src="assets/js/pc_08.js"></script>
+<script src="assets/js/pc_09.js"></script>
+<script src="assets/js/pc_10.js"></script>
+<script src="assets/js/pc_11.js"></script>
+<script src="assets/js/pc_12.js"></script>
+<script src="assets/js/pc_13.js"></script>
+<script src="assets/js/pc_14.js"></script>
+<script src="assets/js/pc_15.js"></script>
+<script src="assets/js/pc_16.js"></script>
+<script src="assets/js/pc_17.js"></script>
+<script src="assets/js/pc_18.js"></script>
+<script src="assets/js/pc_19.js"></script>
+</body>
+</html>

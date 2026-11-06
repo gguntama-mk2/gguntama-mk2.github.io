@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "mode": "test-only",
+  "notice": "HTML below 1MB; total initial transfer requires subsequent lazy-loading optimization.",
+  "devices": {
+    "pc": {
+      "html": 50110793,
+      "sha256": "1ea95bbfd4e4f65d8223313ac067a4049aee7c1f2311c957e0cbc283163466ec",
+      "lite_html_bytes": 15229,
+      "script_count": 20,
+      "style_count": 2,
+      "js_bytes": 44532821,
+      "css_bytes": 112064
+    },
+    "sp": {
+      "html": 50093131,
+      "sha256": "4f8376052bd832a51cd5acc20071119ca602a76b61580b1eafd76269d8c8b999",
+      "lite_html_bytes": 17379,
+      "script_count": 20,
+      "style_count": 1,
+      "js_bytes": 44524948,
+      "css_bytes": 101018
+    }
+  },
+  "media_files": 217,
+  "media_bytes": 4087823
+}
