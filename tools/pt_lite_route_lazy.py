@@ -78,8 +78,10 @@ def build(device):
     runtime=RUNTIME.replace("/*ROUTES*/",json.dumps(ROUTES,separators=(",",":"))).replace("DEVICE_",device+"_")
     dest=JS/(device+"_route-loader.js")
     dest.write_text(runtime,"utf-8")
-    if "</body>" not in html:raise ValueError("missing body close")
-    html=html.replace("</body>",'<script src="assets/js/'+device+'_route-loader.js"></script>\n</body>')
+    tag='<script src="assets/js/'+device+'_route-loader.js"></script>'
+    if "</body>" in html:html=html.replace("</body>",tag+"\n</body>",1)
+    elif "</html>" in html:html=html.replace("</html>",tag+"\n</html>",1)
+    else:html += tag
     src.write_text(html,"utf-8")
     return {"html_bytes":src.stat().st_size,"deferred_script_count":len(CODES),"deferred_script_bytes":total,"route_loader_bytes":dest.stat().st_size}
 report={"schema":4,"mode":"test-only","routes":ROUTES,"devices":{device:build(device) for device in ("pc","sp")}}
