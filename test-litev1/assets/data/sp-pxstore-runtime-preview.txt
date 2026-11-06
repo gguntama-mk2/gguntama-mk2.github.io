@@ -1,0 +1,109 @@
+
+/*PXSJS-START*/
+/* 画像の保管庫（背景画像・ギャラリーの原寸画像・メニューのボブ）
+   画像のデータは、HTMLの中に「そのままのbase64（data URI）」では置かない。
+   ・1枚ごとに、決まった乱数の列で1バイトずつ混ぜ（XOR）、さらに並べ替えた文字表で書き出した文字列にしてある（ここ `D`）。
+     そのため、HTMLを開いても、検索しても、画像の形式の目印（AVIF・WebP の先頭の並び）は見つからず、貼り付けても画像として開けない。
+   ・使う直前（画面に出すとき）に、ここで元のバイト列に戻す。CSSの背景（url()）に渡すときは「実行中に作ったデータURL」にする。
+     （ブラウザの中だけの一時的なURL（blob:）は、表示する場所の制限（CSPの img-src）で止められることがあり、背景やメニューのボブが出なくなったため、使わない。
+      データURLは、以前の版の背景と同じ形なので、同じ場所で表示できる。HTMLの文字列としては、どこにも入っていない。）
+   ・ギャラリーでは、さらにURLも使わず、画像を <canvas> に描いて見せる（右クリックの「画像を保存」などが出ない。Blob から直接描くので、URLの制限も受けない）。
+   ※ 画面に出ている絵は、スクリーンショットなど画面の撮影までは防げない。仕組みを読めば、元に戻す手順も分かる。
+     「ふつうの操作（右クリック・ドラッグ・長押し・コピー・HTMLの検索）では取り出せない」ようにするための守りで、完全な複製防止ではない。
+   ・1キャラにつき、絵は3種類ある。「ID」＝背景用（1400×788・薄く敷くだけなので軽い）／「_g_ID」＝ギャラリー用の原寸（元の絵と同じ大きさ・ほぼ無劣化の AVIF）／「_fb_ID」＝AVIF が使えない環境の代わり（WebP・幅1000px）。
+     ギャラリーに出すのは「_g_ID」だけ（PXS.gallery）。背景用の縮めた絵は、ギャラリーには使わない。
+   画像の足し方：apply_px.py の CHARS に足して実行すると、この下の D が作り直される（pxstore_gen.py）。 */
+(function () {
+  if (window.PXS) return;
+<GIANT_PAYLOAD_LINE_SKIPPED>
+  const A0 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  /* 乱数（xorshift32）。作る側（Python）と同じ手順で、同じ値が出る */
+  const fnv = s => { let h = 0x811C9DC5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i) & 255; h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; };
+  const xs = seed => { let x = (seed >>> 0) || 1; return () => { x = (x ^ (x << 13)) >>> 0; x = (x ^ (x >>> 17)) >>> 0; x = (x ^ (x << 5)) >>> 0; return x; }; };
+  let REV = null;
+  function rev() {
+    if (REV) return REV;
+    const a = A0.split(""), r = xs(fnv("tk8-alphabet"));
+    for (let i = 63; i > 0; i--) { const j = r() % (i + 1), t = a[i]; a[i] = a[j]; a[j] = t; }
+    REV = new Int16Array(128).fill(-1);
+    for (let i = 0; i < 64; i++) REV[a[i].charCodeAt(0)] = i;
+    return REV;
+  }
+  function bytes(id) {
+    const e = D[id]; if (!e) return null;
+    const s = e[1], R = rev(), n = Math.floor(s.length * 6 / 8), out = new Uint8Array(n), r = xs(fnv("tk8-img-" + id));
+    let acc = 0, bits = 0, k = 0;
+    for (let i = 0; i < s.length && k < n; i++) {
+      const v = R[s.charCodeAt(i) & 127];
+      acc = ((acc << 6) | v) & 0xFFFFFF; bits += 6;
+      if (bits >= 8) { bits -= 8; out[k++] = ((acc >> bits) & 255) ^ (r() >>> 24); }
+    }
+    return out;
+  }
+  const blobs = {}, urls = {};
+  const has = id => Object.prototype.hasOwnProperty.call(D, id);
+  /* AVIF が使えない環境（古い Safari など：iPhone は iOS 16.4 より前、Mac は macOS 13 より前）では、同じ絵の軽い WebP（キー「_fb_ID」）を使う。
+     使えるかどうかは、起動時に小さな AVIF を読み込ませて調べる（調べ終わるまでは、使えるものとして扱う）。
+     使えないと分かったら、window に「pxs-fallback」を知らせる（出ている背景を替えるため）。試験用：window.__PX_NO_AVIF = true（最初から使えない）／"late"（あとから使えないと分かる） */
+  let mode = 0;   // 0: 調べ中  1: AVIF が使える  2: 使えない
+  let readyOk; const ready = new Promise(r => { readyOk = r; });
+  function settle(m, notify) { mode = m; readyOk(); if (m === 2 && notify) { try { window.dispatchEvent(new Event("pxs-fallback")); } catch (e) {} } }
+  (function probe() {
+    const f = window.__PX_NO_AVIF;
+    if (f === true || f === 1) { settle(2, false); return; }
+    let done = false, timer = 0;
+    const fin = ok => { if (done) return; done = true; clearTimeout(timer); settle(ok ? 1 : 2, true); };
+    if (f === "late") { setTimeout(() => fin(false), 80); return; }
+    try {
+      const im = new Image();
+      im.onload = () => fin(im.naturalWidth > 0); im.onerror = () => fin(false);
+      timer = setTimeout(() => fin(true), 3000);   // 返事が来ないときは、使えるものとして進める
+      if (!has("_probe")) { fin(true); return; }
+      im.src = urlOf("_probe");   // 2×2 の小さな AVIF（ほかの絵と同じく混ぜて入れてある）
+    } catch (e) { fin(true); }
+  })();
+  const base = id => id.indexOf("_g_") === 0 ? id.slice(3) : id;   // 「_g_ID」→「ID」（代わりの絵は、どちらの種類にも同じ「_fb_ID」を使う）
+  const pick = id => (mode === 2 && has("_fb_" + base(id))) ? "_fb_" + base(id) : id;
+  function blobOf(k) {
+    if (!has(k)) return null;
+    if (!blobs[k]) blobs[k] = new Blob([bytes(k)], { type: D[k][0] });
+    return blobs[k];
+  }
+  const blob = id => blobOf(pick(id));
+  /* バイト列 → base64（大きい画像でも詰まらないよう、一定の長さずつ文字にする） */
+  function b64(u8) {
+    let s = "";
+    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  function urlOf(k) {
+    if (!has(k)) return "";
+    if (!urls[k]) urls[k] = "data:" + D[k][0] + ";base64," + b64(bytes(k));   // 実行中に作る（HTMLの文字としては入っていない）
+    return urls[k];
+  }
+  const url = id => urlOf(pick(id));
+  /* 画像を描ける形（ImageBitmap。使えない環境では読み込んだ Image）にして返す。AVIF が読めなかったら、代わりの絵で読み直す */
+  function bitmapOf(k) {
+    const b = blobOf(k);
+    if (!b) return Promise.reject(new Error("no image"));
+    const viaImg = () => new Promise((ok, ng) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ng(new Error("decode")); im.src = urlOf(k); });
+    if (typeof createImageBitmap === "function") return createImageBitmap(b).catch(viaImg);
+    return viaImg();
+  }
+  function bitmap(id) {
+    if (!has(id)) return Promise.reject(new Error("no image"));
+    return ready.then(() => bitmapOf(pick(id))).catch(err => {
+      if (pick(id) === id && has("_fb_" + base(id))) { mode = 2; return bitmapOf("_fb_" + base(id)); }   // AVIF が読めなかった：以後は代わりの絵を使う
+      throw err;
+    });
+  }
+  /* ギャラリー用の原寸の絵。原寸（「_g_ID」）が読めなかったら、同じ絵の背景用 → 代わりの絵の順に読み直す
+     （原寸だけが読めない環境のために。背景用が読めるのに全体を「AVIFなし」にしてしまわないよう、ここでは mode を変えない） */
+  function gallery(id) {
+    if (!has("_g_" + id)) return bitmap(id);
+    return ready.then(() => mode === 2 ? bitmap(id) : bitmapOf("_g_" + id).catch(() => bitmap(id)));
+  }
+  window.PXS = { has, url, blob, bitmap, gallery, ready: () => ready, fallback: () => mode === 2, ids: () => Object.keys(D).filter(k => k.charAt(0) !== "_") };
+})();
+
+/*PXSJS-END*/

@@ -116,7 +116,10 @@
           "at": 29941569,
           "preview": "<LONG_TOKEN length=1400>"
         }
-      ]
+      ],
+      "large_line_number": 18,
+      "large_line_first_180": "  const D = {\"xiaoyu\":[\"image/avif\",\"<LONG_TOKEN length=143>",
+      "large_line_last_180": "<LONG_TOKEN length=175>\"]};\n"
     },
     "sp_04.js": {
       "size": 3356960,
@@ -232,7 +235,10 @@
           "at": 29941569,
           "preview": "<LONG_TOKEN length=1400>"
         }
-      ]
+      ],
+      "large_line_number": 18,
+      "large_line_first_180": "  const D = {\"xiaoyu\":[\"image/avif\",\"<LONG_TOKEN length=143>",
+      "large_line_last_180": "<LONG_TOKEN length=175>\"]};\n"
     }
   }
 }
