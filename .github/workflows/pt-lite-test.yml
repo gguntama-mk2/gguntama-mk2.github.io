@@ -5,6 +5,7 @@ on:
       - test/lite-storage-20261106
     paths:
       - tools/pt_lite_split_stage1.py
+      - tools/pt_lite_audit.py
       - .github/workflows/pt-lite-test.yml
 permissions:
   contents: write
@@ -30,6 +31,7 @@ jobs:
               print(device, d['html'], '->', d['lite_html_bytes'], 'bytes')
           assert r['media_files'] > 0
           PY
+          python3 tools/pt_lite_audit.py
           find test-litev1/assets/js -name '*.js' -print0 | xargs -0 -n1 node --check
       - name: Save files ONLY in this test branch
         run: |
