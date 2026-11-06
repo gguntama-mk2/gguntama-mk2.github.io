@@ -66,7 +66,18 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-          node tools/pt_lite_browser_smoke.mjs
+          set +e
+          node tools/pt_lite_browser_smoke.mjs > /tmp/pt-lite-browser.log 2>&1
+          pt_rc=$?
+          set -e
+          PT_RC="$pt_rc" python3 - <<'PY'
+          import os,json,pathlib
+          log=pathlib.Path('/tmp/pt-lite-browser.log').read_text(errors='replace')
+          report={'schema':1,'mode':'test-only','passed':os.environ.get('PT_RC')=='0','exit_code':int(os.environ['PT_RC']),'log_tail':log[-18000:]}
+          dest=pathlib.Path('test-litev1/assets/data/browser-smoke-report.json')
+          dest.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\\n')
+          print('Browser smoke success:',report['passed'],'output bytes:',len(log))
+          PY
       - name: Save files ONLY in this test branch
         run: |
           git config user.name "github-actions[bot]"
@@ -76,3 +87,10 @@ jobs:
             git commit -m "test: store externalized PC SP assets (no production deployment)"
             git push origin HEAD:test/lite-character-lazy-20261107
           fi
+      - name: Fail the job if browser smoke did not pass
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          report=json.loads(pathlib.Path('test-litev1/assets/data/browser-smoke-report.json').read_text())
+          assert report['passed'], report['log_tail'][-3500:]
+          PY
