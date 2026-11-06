@@ -1,0 +1,30 @@
+{
+  "schema": 3,
+  "mode": "test-only",
+  "strategy": "per-character JSON; full move data downloaded only on selection",
+  "devices": {
+    "pc": {
+      "source_js_bytes": 3364820,
+      "new_js_bytes": 855309,
+      "data_array_bytes": 3196254,
+      "metadata_bytes": 684859,
+      "character_count": 44
+    },
+    "sp": {
+      "source_js_bytes": 3356960,
+      "new_js_bytes": 847579,
+      "data_array_bytes": 3196254,
+      "metadata_bytes": 684859,
+      "character_count": 44
+    }
+  },
+  "character_json_files": 44,
+  "character_json_bytes": 2945330,
+  "preserved": [
+    "stable move IDs",
+    "off columns",
+    "moves order",
+    "existing storage keys",
+    "bookmark/check progress"
+  ]
+}
