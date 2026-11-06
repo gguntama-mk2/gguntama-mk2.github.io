@@ -10,6 +10,7 @@ on:
       - tools/pt_lite_inspect.py
       - tools/pt_lite_lazy_pxstore.py
       - tools/pt_lite_character_inspect.py
+      - tools/pt_lite_character_lazy.cjs
       - .github/workflows/pt-lite-test.yml
 permissions:
   contents: write
@@ -29,6 +30,7 @@ jobs:
           python3 tools/pt_lite_inspect.py
           python3 tools/pt_lite_character_inspect.py
           python3 tools/pt_lite_lazy_pxstore.py
+          node tools/pt_lite_character_lazy.cjs
       - name: Test HTML sizes and JavaScript syntax
         run: |
           python3 - <<'PY'
@@ -43,6 +45,9 @@ jobs:
           assert p['distinct_image_files'] > 10
           assert p['new_pxs_script_bytes'] < 100000
           assert p['preserves']['pixel_bytes']
+          c=json.loads(pathlib.Path('test-litev1/assets/data/character-lazy-report.json').read_text())
+          assert c['character_json_files'] >= 30
+          assert all(d['new_js_bytes'] < d['source_js_bytes']/2 for d in c['devices'].values())
           PY
           python3 tools/pt_lite_audit.py
           python3 - <<'PY'
