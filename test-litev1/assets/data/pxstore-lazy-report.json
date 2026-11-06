@@ -1,0 +1,25 @@
+{
+  "schema": 2,
+  "mode": "test-only",
+  "lazy_media": true,
+  "original_pxs_bytes": {
+    "pc": 39924432,
+    "sp": 39924433
+  },
+  "new_pxs_script_bytes": 12689,
+  "image_keys": 131,
+  "distinct_image_files": 131,
+  "unpacked_bytes": 29934418,
+  "original_decoded_bytes": 29934418,
+  "mime_counts": {
+    "image/avif": 87,
+    "image/webp": 44
+  },
+  "preserves": {
+    "pixel_bytes": true,
+    "keys": true,
+    "gallery_canvas": true,
+    "avif_fallback": true
+  },
+  "note": "Public media are now direct URLs; source obfuscation is no longer a protection. Check user-visible image handling."
+}
