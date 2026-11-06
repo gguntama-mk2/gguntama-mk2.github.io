@@ -11,6 +11,7 @@ on:
       - tools/pt_lite_lazy_pxstore.py
       - tools/pt_lite_character_inspect.py
       - tools/pt_lite_character_lazy.cjs
+      - tools/pt_lite_route_lazy.py
       - .github/workflows/pt-lite-test.yml
 permissions:
   contents: write
@@ -31,6 +32,7 @@ jobs:
           python3 tools/pt_lite_character_inspect.py
           python3 tools/pt_lite_lazy_pxstore.py
           node tools/pt_lite_character_lazy.cjs
+          python3 tools/pt_lite_route_lazy.py
       - name: Test HTML sizes and JavaScript syntax
         run: |
           python3 - <<'PY'
@@ -47,6 +49,8 @@ jobs:
           assert p['preserves']['pixel_bytes']
           c=json.loads(pathlib.Path('test-litev1/assets/data/character-lazy-report.json').read_text())
           assert c['character_json_files'] >= 30
+          l=json.loads(pathlib.Path('test-litev1/assets/data/route-lazy-report.json').read_text())
+          assert all(d['deferred_script_count'] >= 8 for d in l['devices'].values())
           assert all(d['new_js_bytes'] < d['source_js_bytes']/2 for d in c['devices'].values())
           PY
           python3 tools/pt_lite_audit.py
@@ -54,7 +58,7 @@ jobs:
           import json,pathlib
           a=json.loads(pathlib.Path('test-litev1/assets/data/asset-audit.json').read_text())
           for device,d in a['devices'].items():
-              assert d['eager_local_asset_bytes'] < 6000000, (device,d['eager_local_asset_bytes'])
+              assert d['eager_local_asset_bytes'] < 1000000, (device,d['eager_local_asset_bytes'])
               print('eager',device,d['eager_local_asset_bytes'],'bytes')
           PY
           find test-litev1/assets/js -name '*.js' -print0 | xargs -0 -n1 node --check
