@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "mode": "test-only",
+  "files": {
+    "pc_04.js": {
+      "size": 3364820,
+      "sha256": "180618ea428d80ef02e868144ffecbd46e0a530f87029addead6af6690577b29",
+      "line_count": 12003,
+      "longest_lines": [
+        496,
+        479,
+        468,
+        467,
+        458
+      ],
+      "tokens": {
+        "data:image": 0,
+        "data:font": 0,
+        "data:application": 0,
+        "atob(": 0,
+        "Blob(": 0,
+        "JSON.parse(": 6,
+        "Object.assign(": 4,
+        "window.": 30,
+        "document.": 220,
+        "localStorage": 49,
+        "IndexedDB": 0,
+        "PXSTORE": 0,
+        "pxstore": 0,
+        "gallery": 2,
+        "GALLERY": 0,
+        "frame": 1,
+        "moves": 50,
+        "btoa(": 0,
+        "await ": 1,
+        "fetch(": 0,
+        "import(": 0,
+        "function ": 127,
+        "const ": 507,
+        "var ": 0,
+        "let ": 74,
+        "=>": 430
+      },
+      "leading_declarations": [
+        "CHARACTERS"
+      ],
+      "head": "\n/* ============================================================\n   ここを編集してキャラ名<NONASCII>技名を入れてください\n   ------------------------------------------------------------\n   id    : キャラごとの固有ID<NONASCII>半角英数字。一度決めたら変更しない<NONASCII>\n   en    : 並び順<NONASCII>A<NONASCII>Z<NONASCII>に使う英語名\n   name  : 表示するキャラ名\n   img   : キャラ画像のパス<NONASCII>例: \"img/alisa.png\"<NONASCII>。空のままなら仮の表示になります。\n   moves : 技名のリスト\n   技の書き方<NONASCII>\n     \"技名\"                                    <NONASCII> 答えなし\n     { k: 0, name: \"技名\", a: { command: \"LP\" } }    <NONASCII> 右クリックで答えを表示\n     { k: 1, name: \"技名\", off: [\"chip\", \"jump\"] }   <NONASCII> 指定した列をチェック不可<NONASCII>対象外<NONASCII>にする\n     k     : 技の固定ID<NONASCII>整数<NONASCII>。保存<NONASCII>メモ<NONASCII>書き出しコ<NONASCII>ドはすべて「キャラid<NONASCII>k」で管理します。\n     a の中身は列のid<NONASCII>command / startup / damage / attack / guard / hit / counter /\n     chip / homing / tracking / jump / crouch / heat / recovery<NONASCII>に対応します。\n   <NONASCII> 技を追加するとき<NONASCII>そのキャラの「いちばん大きいk<NONASCII>1」を付けてください<NONASCII>どこに差し込んでも構いません<NONASCII>。\n     一度付けたkは変更<NONASCII>再利用しない<NONASCII>技を消した場合も欠番のままにする<NONASCII>。同じキャラ内",
+      "tail": "\") d.close(); else d.removeAttribute(\"open\"); };\n  document.getElementById(\"rsNo\").onclick = shut;\n  document.getElementById(\"rsOk\").onclick = () => {\n    shut();\n    rvClearChar(c.id); rvSave(); rvBadge(c.id);\n    document.querySelectorAll(\"#body tr.rv\").forEach(tr => tr.classList.remove(\"rv\"));\n    document.querySelectorAll(\"#body .rvbtn\").forEach(b => { b.setAttribute(\"aria-pressed\", \"false\"); b.title = \"ブックマ<NONASCII>クを付ける\"; b.setAttribute(\"aria-label\", b.getAttribute(\"aria-label\").replace(\"<NONASCII>ブックマ<NONASCII>ク<NONASCII>押すと外す<NONASCII>\", \"<NONASCII>ブックマ<NONASCII>クにする\")); });\n    applyFilter();\n  };\n  if (typeof d.showModal === \"function\") d.showModal(); else d.setAttribute(\"open\", \"\");\n  document.getElementById(\"rsNo\").focus();\n};\nconst nfPanelBox = document.getElementById(\"nfPanel\");\nnfApi = nfPanel(nfPanelBox, () => applyFilter(), () => rowNums);\ndocument.getElementById(\"nfTgl\").onclick = () => {\n  const open = nfPanelBox.hidden;\n  nfPanelBox.hidden = !open;\n  document.getElementById(\"nfTgl\").setAttribute(\"aria-expanded\", String(open));\n};\n\nload();\nrenderHead();\nrenderChar",
+      "windows": [
+        {
+          "at": 662681,
+          "preview": "葉颪\", y: \"もみじおろし\", a: {\"command\": \"7WP\", \"attack\": \"中\", \"startup\": \"25F\", \"damage\": \"23\", \"guard\": \"-3\", \"hit\": \"D\", \"counter\": \"D\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 2, name: \"紅葉颪<NONASCII>しゃがみ\", y: \"もみじおろし<NONASCII>しゃがみ\", a: {\"command\": \"7WP2\", \"ci\": \"7WP2^\", \"attack\": \"中,特殊\", \"startup\": \"25F\", \"damage\": \"23\", \"guard\": \"-3\", \"hit\": \"D\", \"counter\": \"D\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 3, name: \"紅葉颪<NONASCII>キャンセル\", y: \"もみじおろし<NONASCII>キャンセル\", a: {\"command\": \"7WP4\", \"ci\": \"7WP4^\", \"attack\": \"特殊\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\", \"startup\", \"damage\", \"guard\", \"hit\", \"counter\"] },\n    { k: 108, name: \"鬼灯\", y: \"ほおずき\", a: {\"command\": \"66LP\", \"ci\": \"66^LP\", \"attack\""
+        },
+        {
+          "at": 1325363,
+          "preview": "mp\", \"wall\", \"tbreak\"] },\n    { k: 226, name: \"絶招前掃雷王拳(クリ<NONASCII>ンヒット)(3発目のみ)(閃電保有時)\", y: \"ぜっしょうぜんそうらいおうけん(クリ<NONASCII>ンヒット)(さんぱつめのみ)(せんでんほゆうじ)\", a: {\"command\": \"閃電保有時に1RKLPWP\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \"damage\": \"11,18,24\", \"guard\": \"-15\", \"hit\": \"D\", \"counter\": \"D\", \"chip\": \"8\", \"crouch\": \"あり\"}, off: [\"homing\", \"jump\", \"wall\", \"tbreak\"] },\n    { k: 60, name: \"絶招前掃雷王拳(3発目のみ)\", y: \"ぜっしょうぜんそうらいおうけん(さんぱつめのみ)\", a: {\"command\": \"1RKLPWP(ヒ<NONASCII>ト中)\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \"damage\": \"9,18,24\", \"guard\": \"-15\", \"hit\": \"D\", \"counter\": \"D\", \"chip\": \"8\", \"crouch\": \"あり\"}, off: [\"homing\", \"jump\", \"wall\", \"tbreak\"] },\n    { k: 227, name: \"絶招前掃雷王拳(3発目のみ)(閃電保有時)\", y: \"ぜっしょうぜんそうらいおうけん(さんぱつめのみ)(せんでんほゆうじ)\", a: {\"command\": \"閃電保有時に1RKLPWP\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \""
+        },
+        {
+          "at": 1988045,
+          "preview": " a: {\"command\": \"ネガチ<NONASCII>ァ中に(相手しゃがみ中)接近して2LP+LK\", \"attack\": \"下段投げ\", \"startup\": \"12F\", \"damage\": \"30\", \"tbreak\": \"投げ抜け不可\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"hit\"] },\n    { k: 207, name: \"<NONASCII>ァンガチ<NONASCII>ァ<NONASCII>フネラウ(ヒ<NONASCII>ト発動可能状態)\", y: \"<NONASCII>ァンガチ<NONASCII>ァ<NONASCII>フネラウ(ヒ<NONASCII>トはつどうかのうじょうたい)\", a: {\"command\": \"(相手しゃがみ中)接近して2RP+RK\", \"attack\": \"下段投げ\", \"startup\": \"12F\", \"damage\": \"35\", \"tbreak\": \"投げ抜け不可\"}, off: [\"guard\", \"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"recovery\"] },\n    { k: 208, name: \"<NONASCII>ァンガチ<NONASCII>ァ<NONASCII>フネラウ\", a: {\"command\": \"(相手しゃがみ中)接近して2RP+RK\", \"attack\": \"下段投げ\", \"startup\": \"12F\", \"damage\": \"35\", \"tbreak\": \"投げ抜け不可\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"jump\", \"crouch\", "
+        }
+      ]
+    },
+    "pc_11.js": {
+      "size": 39924432,
+      "sha256": "5396cf60b4e5e5c45a72bc239c376c5be38ec227eb7daea9c75f0f47611db931",
+      "line_count": 108,
+      "longest_lines": [
+        39916387,
+        167,
+        162,
+        161,
+        159
+      ],
+      "tokens": {
+        "data:image": 0,
+        "data:font": 0,
+        "data:application": 0,
+        "atob(": 0,
+        "Blob(": 1,
+        "JSON.parse(": 0,
+        "Object.assign(": 0,
+        "window.": 5,
+        "document.": 0,
+        "localStorage": 0,
+        "IndexedDB": 0,
+        "PXSTORE": 0,
+        "pxstore": 1,
+        "gallery": 3,
+        "GALLERY": 0,
+        "frame": 0,
+        "moves": 0,
+        "btoa(": 1,
+        "await ": 0,
+        "fetch(": 0,
+        "import(": 0,
+        "function ": 11,
+        "const ": 22,
+        "var ": 0,
+        "let ": 13,
+        "=>": 26
+      },
+      "leading_declarations": [],
+      "head": "\n/*PXSJS-START*/\n/* 画像の保管庫<NONASCII>背景画像<NONASCII>ギャラリ<NONASCII>の原寸画像<NONASCII>メニュ<NONASCII>のボブ<NONASCII>\n   画像のデ<NONASCII>タは、HTMLの中に「そのままのbase64<NONASCII>data URI<NONASCII>」では置かない。\n   <NONASCII>1枚ごとに、決まった乱数の列で1バイトずつ混ぜ<NONASCII>XOR<NONASCII>、さらに並べ替えた文字表で書き出した文字列にしてある<NONASCII>ここ `D`<NONASCII>。\n     そのため、HTMLを開いても、検索しても、画像の形式の目印<NONASCII>AVIF<NONASCII>WebP の先頭の並び<NONASCII>は見つからず、貼り付けても画像として開けない。\n   <NONASCII>使う直前<NONASCII>画面に出すとき<NONASCII>に、ここで元のバイト列に戻す。CSSの背景<NONASCII>url()<NONASCII>に渡すときは「実行中に作ったデ<NONASCII>タURL」にする。\n     <NONASCII>ブラウザの中だけの一時的なURL<NONASCII>blob:<NONASCII>は、表示する場所の制限<NONASCII>CSPの img-src<NONASCII>で止められることがあり、背景やメニュ<NONASCII>のボブが出なくなったため、使わない。\n      デ<NONASCII>タURLは、以前の版の背景と同じ形なので、同じ場所で表示できる。HTMLの文字列としては、どこにも入っていない。<NONASCII>\n   <NONASCII>ギャラリ<NONASCII>では、さらにURLも使わず、画像を <canvas> に描いて見せる<NONASCII>右クリックの「画像を保存」などが出ない。Blob から直接描くので、URLの制限も受けない<NONASCII>。\n   <NONASCII> 画面に出ている絵は、スクリ<NONASCII>ンショットなど画面の撮影までは防げない。仕組みを読めば、元に戻す手順も分かる。\n     「ふつうの操作<NONASCII>右クリック<NONASCII>ドラッグ<NONASCII>長押し<NONASCII>コピ<NONASCII>HTMLの検索<NONASCII>では取り出せない」ようにするための守りで、完全な複製防止ではない。\n   <NONASCII>1キ",
+      "tail": " = urlOf(\"_probe\");   // 2<NONASCII>2 の小さな AVIF<NONASCII>ほかの絵と同じく混ぜて入れてある<NONASCII>\n    } catch (e) { fin(true); }\n  })();\n  const base = id => id.indexOf(\"_g_\") === 0 ? id.slice(3) : id;   // 「_g_ID」<NONASCII>「ID」<NONASCII>代わりの絵は、どちらの種類にも同じ「_fb_ID」を使う<NONASCII>\n  const pick = id => (mode === 2 && has(\"_fb_\" + base(id))) ? \"_fb_\" + base(id) : id;\n  function blobOf(k) {\n    if (!has(k)) return null;\n    if (!blobs[k]) blobs[k] = new Blob([bytes(k)], { type: D[k][0] });\n    return blobs[k];\n  }\n  const blob = id => blobOf(pick(id));\n  /* バイト列 <NONASCII> base64<NONASCII>大きい画像でも詰まらないよう、一定の長さずつ文字にする<NONASCII> */\n  function b64(u8) {\n    let s = \"\";\n    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));\n    return btoa(s);\n  }\n  function urlOf(k) {\n    if (!has(k)) return \"\";\n    if (!urls[k]) urls[k] = \"data:\" + D[k][0] + \";base64,\" + b64(bytes(k));   // 実行中に作る<NONASCII>HTMLの文字としては入っていない<NONASCII>\n    return urls[k];\n  }\n  const url = id => urlOf(pick(id));\n  /* 画像を描ける形<NONASCII>ImageBitmap。使えない環境では読み込んだ Image<NONASCII>にして返す。AVIF ",
+      "windows": [
+        {
+          "at": 9980523,
+          "preview": "<LONG_TOKEN length=1400>"
+        },
+        {
+          "at": 19961046,
+          "preview": "<LONG_TOKEN length=1400>"
+        },
+        {
+          "at": 29941569,
+          "preview": "<LONG_TOKEN length=1400>"
+        }
+      ]
+    },
+    "sp_04.js": {
+      "size": 3356960,
+      "sha256": "c830f65ad2ee4c251ab6ebdd1e79ecb03d9bc6f6721cf7008d3bb98e10af3d37",
+      "line_count": 11931,
+      "longest_lines": [
+        496,
+        479,
+        468,
+        467,
+        458
+      ],
+      "tokens": {
+        "data:image": 0,
+        "data:font": 0,
+        "data:application": 0,
+        "atob(": 0,
+        "Blob(": 0,
+        "JSON.parse(": 6,
+        "Object.assign(": 4,
+        "window.": 32,
+        "document.": 141,
+        "localStorage": 49,
+        "IndexedDB": 0,
+        "PXSTORE": 0,
+        "pxstore": 0,
+        "gallery": 0,
+        "GALLERY": 0,
+        "frame": 1,
+        "moves": 48,
+        "btoa(": 0,
+        "await ": 1,
+        "fetch(": 0,
+        "import(": 0,
+        "function ": 133,
+        "const ": 523,
+        "var ": 0,
+        "let ": 82,
+        "=>": 446
+      },
+      "leading_declarations": [
+        "CHARACTERS"
+      ],
+      "head": "\nconst CHARACTERS = [\n  { id: \"jin\", en: \"Jin\", name: \"仁\", img: \"assets/media/b1146ed0ab898bb59667.webp\", moves: [\n    { k: 0, name: \"直突き\", y: \"ちょくつき\", a: {\"command\": \"LP\", \"attack\": \"上\", \"startup\": \"10F\", \"damage\": \"5\", \"guard\": \"+1\", \"hit\": \"+8\", \"counter\": \"+8\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 1, name: \"順突き\", y: \"じゅんづき\", a: {\"command\": \"LPRP\", \"attack\": \"上,上\", \"startup\": \"10F\", \"damage\": \"5,12\", \"guard\": \"-3\", \"hit\": \"+6\", \"counter\": \"+6\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 2, name: \"順突き<NONASCII>黒翼輪舞\", y: \"じゅんづき<NONASCII>こくよくりんぶ\", a: {\"command\": \"LPRPLP\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"-16\", \"hit\": \"浮\\nコンボ始動\", \"counter\": \"浮\\nコンボ始動\", \"chip\": \"6\", \"wall\": \"壁やられ(中)\"}, off: [\"homing\", \"jump\", \"crouch\", \"heat\", \"tbreak\"] },\n    { k: 3, name: \"順突き<NONASCII>内回し踵落とし\", y: \"じゅんづき<NONASCII>うちまわしかかとおとし\", a: {\"command\": \"LPRPLK\", \"ci\": \"LPRP.LK\", \"attack\": \"上,上,中\", \"startup\": \"10F\", \"damage\": \"5,12,20\", \"guard\": \"<NONASCII>0\", \"hit\": \"叩きつけうつ伏せダウン\\n受身不可<NONASCII>頭",
+      "tail": "保存<NONASCII> ---------- */\nconst THEME_KEY = \"tekken-checksheet-theme\";\nconst THEME_BG = { navy: \"#1a1c2c\", heat: \"#15110e\", gold: \"#0d0d10\", steel: \"#0f141a\", jade: \"#0e1815\", dojo: \"#f3efe6\" };\nfunction applyTheme(t) {\n  if (!THEME_BG[t]) t = \"gold\";\n  document.documentElement.setAttribute(\"data-theme\", t);\n  const m = document.querySelector('meta[name=\"theme-color\"]');\n  if (m) m.setAttribute(\"content\", THEME_BG[t]);\n  const sel = document.getElementById(\"theme\");\n  if (sel) sel.value = t;\n}\n(function initTheme() {\n  let t = \"gold\";\n  try { t = localStorage.getItem(THEME_KEY) || \"gold\"; } catch (_) {}\n  applyTheme(t);\n  document.getElementById(\"theme\").addEventListener(\"change\", e => {\n    applyTheme(e.target.value);\n    try { localStorage.setItem(THEME_KEY, e.target.value); } catch (_) {}\n  });\n})();\n\nload();\ninitTip();\nnumJumpSetup({ host: $(\"numJump\"), cellOf: () => null, refilter: () => renderList(), top: () => { const tp = document.querySelector(\".top\"); return (tp ? tp.offsetHeight : 0) + sqStuckH(); } });\nsqSetup({ input: $(\"q\"), top: () => { const tp = document.querySelect",
+      "windows": [
+        {
+          "at": 661686,
+          "preview": "\", \"damage\": \"27\", \"guard\": \"+5\", \"hit\": \"+14s\", \"counter\": \"+14s\", \"chip\": \"8\"}, off: [\"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 109, name: \"日矛鏡(1)\", y: \"ひぼこのかがみ(1)\", a: {\"command\": \"66RP\", \"ci\": \"66^RP\", \"attack\": \"中\", \"startup\": \"15F\", \"damage\": \"16\", \"guard\": \"-9\", \"hit\": \"+2\", \"counter\": \"+2\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 110, name: \"日矛鏡(1)<NONASCII>しゃがみ\", y: \"ひぼこのかがみ(1)<NONASCII>しゃがみ\", a: {\"command\": \"66RP2\", \"ci\": \"66^RP2^\", \"attack\": \"中\", \"startup\": \"15F\", \"damage\": \"16\", \"guard\": \"-9\", \"hit\": \"+2\", \"counter\": \"+2\"}, off: [\"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"tbreak\"] },\n    { k: 111, name: \"日矛鏡(ヒ<NONASCII>ト発動可能状態)\", y: \"ひぼこのかがみ(ヒ<NONASCII>トはつどうかのうじょうたい)\", a: {\"command\": \"ヒ<NONASCII>ト発動可能状態で"
+        },
+        {
+          "at": 1323372,
+          "preview": "いおうけん(クリ<NONASCII>ンヒット)(さんぱつめのみ)\", a: {\"command\": \"1RKLPWP(ヒ<NONASCII>ト中)\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \"damage\": \"11,18,24\", \"guard\": \"-15\", \"hit\": \"D\", \"counter\": \"D\", \"chip\": \"8\", \"crouch\": \"あり\"}, off: [\"homing\", \"jump\", \"wall\", \"tbreak\"] },\n    { k: 226, name: \"絶招前掃雷王拳(クリ<NONASCII>ンヒット)(3発目のみ)(閃電保有時)\", y: \"ぜっしょうぜんそうらいおうけん(クリ<NONASCII>ンヒット)(さんぱつめのみ)(せんでんほゆうじ)\", a: {\"command\": \"閃電保有時に1RKLPWP\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \"damage\": \"11,18,24\", \"guard\": \"-15\", \"hit\": \"D\", \"counter\": \"D\", \"chip\": \"8\", \"crouch\": \"あり\"}, off: [\"homing\", \"jump\", \"wall\", \"tbreak\"] },\n    { k: 60, name: \"絶招前掃雷王拳(3発目のみ)\", y: \"ぜっしょうぜんそうらいおうけん(さんぱつめのみ)\", a: {\"command\": \"1RKLPWP(ヒ<NONASCII>ト中)\", \"attack\": \"下,中,中\", \"startup\": \"67F\", \"damage\": \"9,18,24\", \"guard\": \"-15\", \"hit\": \"D\", \"counter\": \"D\", \"ch"
+        },
+        {
+          "at": 1985058,
+          "preview": "ge\": \"40(45)\", \"tbreak\": \"WP\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"hit\"] },\n    { k: 196, name: \"バトゥカ<NONASCII>ダ<NONASCII>ネガチ<NONASCII>ァ\", a: {\"command\": \"バナネイラ中に接近してLP+LK(orRP+RK)\", \"attack\": \"上段投げ,特殊\", \"startup\": \"23F\", \"damage\": \"26\", \"tbreak\": \"投げ抜け不可\", \"crouch\": \"あり\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"jump\", \"heat\", \"wall\", \"hit\"] },\n    { k: 197, name: \"<NONASCII>ィラ<NONASCII>ル\", a: {\"command\": \"ネガチ<NONASCII>ァ中に接近して9WP\", \"attack\": \"上段投げ\", \"startup\": \"17F\", \"damage\": \"40\", \"tbreak\": \"WP\"}, off: [\"guard\", \"counter\", \"chip\", \"homing\", \"jump\", \"crouch\", \"heat\", \"wall\", \"hit\"] },\n    { k: 198, name: \"<NONASCII>ァンガチ<NONASCII>ァ<NONASCII>ザンガ(ヒ<NONASCII>ト発動可能状態)\", y: \"<NONASCII>ァンガチ<NONASCII>ァ<NONASCII>ザンガ(ヒ<NONASCII>トはつどうかのうじょうたい)\", a: {"
+        }
+      ]
+    },
+    "sp_11.js": {
+      "size": 39924433,
+      "sha256": "c33db06d0d4be9f73f94759e205bffbce8574340b5a027be71825973fcd5fe06",
+      "line_count": 109,
+      "longest_lines": [
+        39916387,
+        167,
+        162,
+        161,
+        159
+      ],
+      "tokens": {
+        "data:image": 0,
+        "data:font": 0,
+        "data:application": 0,
+        "atob(": 0,
+        "Blob(": 1,
+        "JSON.parse(": 0,
+        "Object.assign(": 0,
+        "window.": 5,
+        "document.": 0,
+        "localStorage": 0,
+        "IndexedDB": 0,
+        "PXSTORE": 0,
+        "pxstore": 1,
+        "gallery": 3,
+        "GALLERY": 0,
+        "frame": 0,
+        "moves": 0,
+        "btoa(": 1,
+        "await ": 0,
+        "fetch(": 0,
+        "import(": 0,
+        "function ": 11,
+        "const ": 22,
+        "var ": 0,
+        "let ": 13,
+        "=>": 26
+      },
+      "leading_declarations": [],
+      "head": "\n/*PXSJS-START*/\n/* 画像の保管庫<NONASCII>背景画像<NONASCII>ギャラリ<NONASCII>の原寸画像<NONASCII>メニュ<NONASCII>のボブ<NONASCII>\n   画像のデ<NONASCII>タは、HTMLの中に「そのままのbase64<NONASCII>data URI<NONASCII>」では置かない。\n   <NONASCII>1枚ごとに、決まった乱数の列で1バイトずつ混ぜ<NONASCII>XOR<NONASCII>、さらに並べ替えた文字表で書き出した文字列にしてある<NONASCII>ここ `D`<NONASCII>。\n     そのため、HTMLを開いても、検索しても、画像の形式の目印<NONASCII>AVIF<NONASCII>WebP の先頭の並び<NONASCII>は見つからず、貼り付けても画像として開けない。\n   <NONASCII>使う直前<NONASCII>画面に出すとき<NONASCII>に、ここで元のバイト列に戻す。CSSの背景<NONASCII>url()<NONASCII>に渡すときは「実行中に作ったデ<NONASCII>タURL」にする。\n     <NONASCII>ブラウザの中だけの一時的なURL<NONASCII>blob:<NONASCII>は、表示する場所の制限<NONASCII>CSPの img-src<NONASCII>で止められることがあり、背景やメニュ<NONASCII>のボブが出なくなったため、使わない。\n      デ<NONASCII>タURLは、以前の版の背景と同じ形なので、同じ場所で表示できる。HTMLの文字列としては、どこにも入っていない。<NONASCII>\n   <NONASCII>ギャラリ<NONASCII>では、さらにURLも使わず、画像を <canvas> に描いて見せる<NONASCII>右クリックの「画像を保存」などが出ない。Blob から直接描くので、URLの制限も受けない<NONASCII>。\n   <NONASCII> 画面に出ている絵は、スクリ<NONASCII>ンショットなど画面の撮影までは防げない。仕組みを読めば、元に戻す手順も分かる。\n     「ふつうの操作<NONASCII>右クリック<NONASCII>ドラッグ<NONASCII>長押し<NONASCII>コピ<NONASCII>HTMLの検索<NONASCII>では取り出せない」ようにするための守りで、完全な複製防止ではない。\n   <NONASCII>1キ",
+      "tail": "= urlOf(\"_probe\");   // 2<NONASCII>2 の小さな AVIF<NONASCII>ほかの絵と同じく混ぜて入れてある<NONASCII>\n    } catch (e) { fin(true); }\n  })();\n  const base = id => id.indexOf(\"_g_\") === 0 ? id.slice(3) : id;   // 「_g_ID」<NONASCII>「ID」<NONASCII>代わりの絵は、どちらの種類にも同じ「_fb_ID」を使う<NONASCII>\n  const pick = id => (mode === 2 && has(\"_fb_\" + base(id))) ? \"_fb_\" + base(id) : id;\n  function blobOf(k) {\n    if (!has(k)) return null;\n    if (!blobs[k]) blobs[k] = new Blob([bytes(k)], { type: D[k][0] });\n    return blobs[k];\n  }\n  const blob = id => blobOf(pick(id));\n  /* バイト列 <NONASCII> base64<NONASCII>大きい画像でも詰まらないよう、一定の長さずつ文字にする<NONASCII> */\n  function b64(u8) {\n    let s = \"\";\n    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));\n    return btoa(s);\n  }\n  function urlOf(k) {\n    if (!has(k)) return \"\";\n    if (!urls[k]) urls[k] = \"data:\" + D[k][0] + \";base64,\" + b64(bytes(k));   // 実行中に作る<NONASCII>HTMLの文字としては入っていない<NONASCII>\n    return urls[k];\n  }\n  const url = id => urlOf(pick(id));\n  /* 画像を描ける形<NONASCII>ImageBitmap。使えない環境では読み込んだ Image<NONASCII>にして返す。AVIF が",
+      "windows": [
+        {
+          "at": 9980523,
+          "preview": "<LONG_TOKEN length=1400>"
+        },
+        {
+          "at": 19961046,
+          "preview": "<LONG_TOKEN length=1400>"
+        },
+        {
+          "at": 29941569,
+          "preview": "<LONG_TOKEN length=1400>"
+        }
+      ]
+    }
+  }
+}
