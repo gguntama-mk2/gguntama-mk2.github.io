@@ -33,6 +33,7 @@ function ptLoadMoves(c){
     if(!r.ok)throw new Error("HTTP "+r.status+" "+url);
     return r.json();
   }).then(p=>{
+    if(c.__ptLoaded)return c; /* Published override wins over in-flight baseline. */
     if(!p||p.id!==c.id||!Array.isArray(p.moves)||p.moves.length!==c.moves.length)
       throw new Error("move payload mismatch: "+c.id);
     for(let i=0;i<p.moves.length;i++){
@@ -46,7 +47,7 @@ function ptLoadMoves(c){
     c.moves=p.moves;
     c.__ptLoaded=true;
     return c;
-  }).catch(e=>{c.__ptPending=null;throw e;});
+  }).catch(e=>{c.__ptPending=null;if(c.__ptLoaded)return c;throw e;});
   return c.__ptPending;
 }
 const loader="\n/* PTC-LAZY-START */\n"+ptLoadMoves.toString()+
@@ -128,6 +129,12 @@ for(const device of ["pc","sp"]){
     next=next.replace(top,top+'  if(C && !C.__ptLoaded){ const el=document.getElementById("barNum"); if(el)el.textContent="技データを読み込み中…"; }\n');
   }
   fs.writeFileSync(file,next,"utf8");
+  /* Admin preview / published override moves take priority even while baseline loading. */
+  const ovPath=path.join(jsdir,device+"_05.js");
+  const ov=fs.readFileSync(ovPath,"utf8");
+  const ovAnchor='c.moves = moves; c.ks = new Set();';
+  if(!ov.includes(ovAnchor))throw Error("Override hook changed");
+  fs.writeFileSync(ovPath,ov.replace(ovAnchor,'c.moves = moves; c.__ptLoaded = true; c.__ptPending = Promise.resolve(c); c.ks = new Set();'),"utf8");
   report.devices[device]={source_js_bytes:Buffer.byteLength(text),new_js_bytes:Buffer.byteLength(next),data_array_bytes:Buffer.byteLength(text.slice(start,end)),metadata_bytes:Buffer.byteLength(meta),character_count:chars.length};
 }
 const files=fs.readdirSync(out).filter(x=>x.endsWith(".json"));
