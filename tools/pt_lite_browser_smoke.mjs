@@ -35,6 +35,21 @@ try {
     assert.equal(media.imageWidth > 0 && media.imageHeight > 0, true);
     assert.equal(media.url.startsWith('assets/pxstore/'), true);
     console.log(device + ' PXStore media OK', JSON.stringify(media));
+    const characterData = await page.evaluate(async () => {
+      if (!window.PT_LOAD_CHAR || typeof CHARACTERS === 'undefined') throw Error('PT_LOAD_CHAR missing');
+      const count = CHARACTERS.length;
+      const chosen = current;
+      const selected = await PT_LOAD_CHAR(chosen);
+      const bryan = CHARACTERS.find(c => c.id === 'bryan');
+      const wasDeferred = chosen !== 'bryan' && !bryan.__ptLoaded && bryan.moves.length === 0;
+      const b = await PT_LOAD_CHAR('bryan');
+      return { count, chosen, selectedMoves: selected.moves.length, bryanMoves: b.moves.length, wasDeferred };
+    });
+    console.log(device + ' lazy CHARACTERS', JSON.stringify(characterData));
+    assert.equal(characterData.count, 44);
+    assert.equal(characterData.selectedMoves > 10, true);
+    assert.equal(characterData.bryanMoves > 10, true);
+    assert.equal(characterData.wasDeferred, true);
     if (failures.length) console.warn(device + ' page errors:', failures.slice(0, 10));
     console.log(device + ' smoke: basic DOM and navigation OK, pageerrors=' + failures.length);
     // A page error must be explicitly reviewed rather than silently treated as success.
