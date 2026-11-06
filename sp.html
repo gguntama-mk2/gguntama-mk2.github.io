@@ -1199,6 +1199,10 @@ html .rowact button { border-radius: 14px; }
     <button type="button" class="cmdtgl" id="rvTgl" aria-pressed="false">ブックマークのみ：OFF（0）</button>
     <button type="button" class="cmdtgl" id="nfTgl" aria-haspopup="dialog">絞り込み・並べ替え</button>
   </div>
+  <div class="tgls">
+    <button type="button" class="cmdtgl" id="expAllB" aria-label="表示中の技の詳細をすべて開く">すべて開く ▽</button>
+    <button type="button" class="cmdtgl" id="colAllB" aria-label="開いている技の詳細をすべて閉じる">すべて閉じる △</button>
+  </div>
   <p class="fstat" id="fStat" role="status" aria-live="polite" hidden></p>
   <nav class="jump" id="jumpNav" aria-label="技へジャンプ（入力方向ごと）" hidden></nav>
   <div class="infochips" id="infoChips" role="group" aria-label="技の情報の表示項目"><span class="ilbl">技の情報を表示</span></div>
@@ -13092,6 +13096,8 @@ $("expandAll").onclick = () => {
   toast("表示中の技を開きました");
 };
 $("collapseAll").onclick = () => { opened.clear(); closeSheets(); renderList(true); };
+$("expAllB").onclick = () => $("expandAll").onclick();   /* 技表の上にも、同じ「すべて開く／閉じる」を置く */
+$("colAllB").onclick = () => { $("collapseAll").onclick(); toast("技を閉じました"); };
 let cfAct = null;   // 確認シートで「はい」を押したときにすること（null ならチェックのリセット）
 $("resetBtn").onclick = () => {
   closeSheets();
