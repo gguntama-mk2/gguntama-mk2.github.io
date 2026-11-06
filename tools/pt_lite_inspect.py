@@ -32,5 +32,15 @@ for file in sorted(JS.glob("*.js")):
         "head":preview(data[:2200]),"tail":preview(data[-2200:]),
         "windows":[{"at":i,"preview":preview(data[max(0,i-200):i+1200])[:800]} for i in pos[1:-1]]
     }
+
+for device in ("pc","sp"):
+    full=(JS/(device+"_11.js")).read_text("utf-8")
+    lines=full.splitlines(keepends=True)
+    heavy=max(range(len(lines)),key=lambda j:len(lines[j]))
+    report["files"][device+"_11.js"]["large_line_number"]=heavy+1
+    report["files"][device+"_11.js"]["large_line_first_180"]=preview(lines[heavy][:180])
+    report["files"][device+"_11.js"]["large_line_last_180"]=preview(lines[heavy][-180:])
+    parts=["".join(lines[:heavy]),"<GIANT_PAYLOAD_LINE_SKIPPED>\n","".join(lines[heavy+1:])]
+    (OUT.parent/(device+"-pxstore-runtime-preview.txt")).write_text("".join(parts),"utf-8")
 OUT.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n","utf-8")
 print("Inspection report written",OUT,"files",len(report["files"]))
