@@ -17,14 +17,14 @@ try {
     assert.equal(await page.locator('[data-go="sheet"]').count() > 0, true);
     assert.equal(await page.locator('#viewSheet').count(), 1);
     for (const slug of ['home','sheet','vs']) {
-      await page.evaluate(s => { location.hash = '#' + s; }, slug);
+      await page.evaluate(s => { window.setPage(s); }, slug);
       await page.waitForTimeout(400);
-      assert.equal(await page.evaluate(() => location.hash), '#' + slug);
+      assert.equal(await page.evaluate(() => window.pageNow()), slug);
     }
     // All feature modules must start after navigation, not during initial home load.
     assert.equal(await page.evaluate(() => !!window.PT_ROUTE_ASSETS), true);
     for (const [slug, code] of Object.entries({ combo:'06', glossary:'07', punish:'08', stage:'09', gallery:'12', login:'14', vs:'15', privacy:'16' })) {
-      await page.evaluate(s => { location.hash = '#' + s; }, slug);
+      await page.evaluate(s => { window.setPage(s); }, slug);
       await page.waitForFunction(c => !!window.PT_ROUTE_ASSETS && window.PT_ROUTE_ASSETS.loaded().includes(c), code, {timeout:60000});
       console.log(device + ' module loaded on navigation: ' + slug + ' -> ' + code);
     }
