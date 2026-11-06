@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "mode": "test-only",
+  "passed": false,
+  "exit_code": 1,
+  "log_tail": "pc module loaded on navigation: combo -> 06\npc module loaded on navigation: glossary -> 07\npc module loaded on navigation: punish -> 08\npc module loaded on navigation: stage -> 09\npc module loaded on navigation: gallery -> 12\npc module loaded on navigation: login -> 14\npc module loaded on navigation: vs -> 15\npc module loaded on navigation: privacy -> 16\nnode:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\npage.evaluate: Error: No lazy character available\n    at eval (eval at evaluate (:370:30), <anonymous>:6:24)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at /home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_browser_smoke.mjs:33:30 {\n  log: []\n}\n\nNode.js v24.22.2\n"
+}
