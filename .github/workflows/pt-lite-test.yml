@@ -2,19 +2,20 @@ name: PROJECT T Lite (isolated test only)
 on:
   push:
     branches:
-      - test/lite-storage-20261106
+      - test/lite-character-lazy-20261107
     paths:
       - tools/pt_lite_split_stage1.py
       - tools/pt_lite_audit.py
       - tools/pt_lite_browser_smoke.mjs
       - tools/pt_lite_inspect.py
       - tools/pt_lite_lazy_pxstore.py
+      - tools/pt_lite_character_inspect.py
       - .github/workflows/pt-lite-test.yml
 permissions:
   contents: write
 jobs:
   build-test-files:
-    if: github.ref == 'refs/heads/test/lite-storage-20261106'
+    if: github.ref == 'refs/heads/test/lite-character-lazy-20261107'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -26,6 +27,7 @@ jobs:
       - name: Extract per-image assets from legacy PXStore
         run: |
           python3 tools/pt_lite_inspect.py
+          python3 tools/pt_lite_character_inspect.py
           python3 tools/pt_lite_lazy_pxstore.py
       - name: Test HTML sizes and JavaScript syntax
         run: |
@@ -63,5 +65,5 @@ jobs:
           git add test-litev1
           if ! git diff --cached --quiet; then
             git commit -m "test: store externalized PC SP assets (no production deployment)"
-            git push origin HEAD:test/lite-storage-20261106
+            git push origin HEAD:test/lite-character-lazy-20261107
           fi
