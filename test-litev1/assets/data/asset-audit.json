@@ -8,13 +8,8 @@
       "html_under_1mb": true,
       "external_script_count": 20,
       "stylesheet_count": 2,
-      "eager_local_asset_bytes": 4733142,
-      "largest_eager_assets": [
-        {
-          "path": "assets/js/pc_04.js",
-          "bytes": 3364820
-        }
-      ],
+      "eager_local_asset_bytes": 1542954,
+      "largest_eager_assets": [],
       "warning": "External scripts are eagerly fetched. HTML below 1MB does not mean a sub-1MB initial transfer."
     },
     "sp": {
@@ -22,13 +17,8 @@
       "html_under_1mb": true,
       "external_script_count": 20,
       "stylesheet_count": 1,
-      "eager_local_asset_bytes": 4714222,
-      "largest_eager_assets": [
-        {
-          "path": "assets/js/sp_04.js",
-          "bytes": 3356960
-        }
-      ],
+      "eager_local_asset_bytes": 1524058,
+      "largest_eager_assets": [],
       "warning": "External scripts are eagerly fetched. HTML below 1MB does not mean a sub-1MB initial transfer."
     }
   }

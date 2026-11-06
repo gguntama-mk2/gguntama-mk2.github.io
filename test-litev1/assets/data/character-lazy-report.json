@@ -1,0 +1,192 @@
+{
+  "schema": 3,
+  "mode": "test-only",
+  "pc": {
+    "code_bytes": 174632,
+    "characters": 44
+  },
+  "sp": {
+    "code_bytes": 166796,
+    "characters": 44
+  },
+  "character_count": 44,
+  "characters": {
+    "jin": {
+      "moves": 197,
+      "bytes": 60009
+    },
+    "kazuya": {
+      "moves": 172,
+      "bytes": 48959
+    },
+    "jun": {
+      "moves": 251,
+      "bytes": 76266
+    },
+    "paul": {
+      "moves": 225,
+      "bytes": 73159
+    },
+    "law": {
+      "moves": 234,
+      "bytes": 69685
+    },
+    "king": {
+      "moves": 307,
+      "bytes": 98938
+    },
+    "lars": {
+      "moves": 188,
+      "bytes": 53754
+    },
+    "xiaoyu": {
+      "moves": 279,
+      "bytes": 85591
+    },
+    "jack8": {
+      "moves": 300,
+      "bytes": 91481
+    },
+    "nina": {
+      "moves": 270,
+      "bytes": 79390
+    },
+    "asuka": {
+      "moves": 201,
+      "bytes": 60162
+    },
+    "leroy": {
+      "moves": 197,
+      "bytes": 59091
+    },
+    "lili": {
+      "moves": 206,
+      "bytes": 63209
+    },
+    "hwoarang": {
+      "moves": 262,
+      "bytes": 73806
+    },
+    "bryan": {
+      "moves": 218,
+      "bytes": 65129
+    },
+    "claudio": {
+      "moves": 151,
+      "bytes": 43679
+    },
+    "azucena": {
+      "moves": 187,
+      "bytes": 56383
+    },
+    "raven": {
+      "moves": 231,
+      "bytes": 71913
+    },
+    "yoshimitsu": {
+      "moves": 439,
+      "bytes": 137601
+    },
+    "steve": {
+      "moves": 280,
+      "bytes": 84249
+    },
+    "dragunov": {
+      "moves": 217,
+      "bytes": 66030
+    },
+    "leo": {
+      "moves": 235,
+      "bytes": 66978
+    },
+    "shaheen": {
+      "moves": 146,
+      "bytes": 42491
+    },
+    "kuma": {
+      "moves": 225,
+      "bytes": 71176
+    },
+    "feng": {
+      "moves": 215,
+      "bytes": 66502
+    },
+    "panda": {
+      "moves": 206,
+      "bytes": 59474
+    },
+    "zafina": {
+      "moves": 243,
+      "bytes": 71859
+    },
+    "lee": {
+      "moves": 264,
+      "bytes": 75468
+    },
+    "alisa": {
+      "moves": 228,
+      "bytes": 86736
+    },
+    "devil-jin": {
+      "moves": 188,
+      "bytes": 56813
+    },
+    "victor": {
+      "moves": 177,
+      "bytes": 51841
+    },
+    "reina": {
+      "moves": 247,
+      "bytes": 75487
+    },
+    "eddy": {
+      "moves": 210,
+      "bytes": 63201
+    },
+    "lidia": {
+      "moves": 281,
+      "bytes": 93036
+    },
+    "heihachi": {
+      "moves": 222,
+      "bytes": 71736
+    },
+    "clive": {
+      "moves": 208,
+      "bytes": 64497
+    },
+    "anna": {
+      "moves": 199,
+      "bytes": 77680
+    },
+    "fahkumram": {
+      "moves": 218,
+      "bytes": 70120
+    },
+    "armorking": {
+      "moves": 232,
+      "bytes": 86240
+    },
+    "miary": {
+      "moves": 194,
+      "bytes": 61703
+    },
+    "kunimitsu": {
+      "moves": 204,
+      "bytes": 55953
+    },
+    "bob": {
+      "moves": 215,
+      "bytes": 56766
+    },
+    "roger-jr": {
+      "moves": 0,
+      "bytes": 2
+    },
+    "yujiro-hanma": {
+      "moves": 0,
+      "bytes": 2
+    }
+  },
+  "note": "Experimental. Cross-character consumers require verification."
+}
