@@ -12,7 +12,8 @@ try {
     const page = await browser.newPage({ viewport: device === 'pc' ? {width: 1366, height: 768} : {width: 390, height: 844}, isMobile: device === 'sp' });
     const failures = [];
     page.on('pageerror', e => failures.push(e.message));
-    const response = await page.goto('http://127.0.0.1:8765/test-litev1/' + device + '.html', { waitUntil: 'load', timeout: 120000 });
+    console.log('BEGIN '+device+' page open');
+    const response = await page.goto('http://127.0.0.1:8765/test-litev1/' + device + '.html', { waitUntil: 'load', timeout: 15000 });
     assert.equal(response.status(), 200);
     assert.equal(await page.locator('[data-go="sheet"]').count() > 0, true);
     assert.equal(await page.locator('#viewSheet').count(), 1);
@@ -21,6 +22,7 @@ try {
       await page.waitForTimeout(400);
       assert.equal(await page.evaluate(() => window.pageNow()), slug);
     }
+    console.log(device+' basic navigation passed');
     // Character data must be fetched only when the matching character is needed.
     await page.waitForFunction(() => !!window.PT_CHAR_DATA && window.PT_CHAR_DATA.loaded().length > 0, null, { timeout: 30000 });
     const chars = await page.evaluate(async () => {
@@ -43,6 +45,7 @@ try {
     assert.equal(chars.characters > 30, true);
     assert.equal(chars.initiallyLoaded.length < chars.characters, true);
     console.log(device + ' on-demand character data OK', JSON.stringify(chars));
+    console.log(device+' character data passed');
     // All feature modules must start after navigation, not during initial home load.
     assert.equal(await page.evaluate(() => !!window.PT_ROUTE_ASSETS), true);
     for (const [slug, code] of Object.entries({ combo:'06', glossary:'07', punish:'08', stage:'09', gallery:'12', login:'14', vs:'15', privacy:'16' })) {
@@ -50,6 +53,7 @@ try {
       await page.waitForFunction(c => !!window.PT_ROUTE_ASSETS && window.PT_ROUTE_ASSETS.loaded().includes(c), code, {timeout:60000});
       console.log(device + ' module loaded on navigation: ' + slug + ' -> ' + code);
     }
+    console.log(device+' route tests passed');
     // Verify new on-demand image store, including full-resolution gallery decoding.
     const media = await page.evaluate(async () => {
       if (!window.PXS || typeof window.PXS.gallery !== 'function') throw Error('PXS missing');
