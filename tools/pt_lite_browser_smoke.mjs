@@ -21,6 +21,13 @@ try {
       await page.waitForTimeout(400);
       assert.equal(await page.evaluate(() => location.hash), '#' + slug);
     }
+    // All feature modules must start after navigation, not during initial home load.
+    assert.equal(await page.evaluate(() => !!window.PT_ROUTE_ASSETS), true);
+    for (const [slug, code] of Object.entries({ combo:'06', glossary:'07', punish:'08', stage:'09', gallery:'12', login:'14', vs:'15', privacy:'16' })) {
+      await page.evaluate(s => { location.hash = '#' + s; }, slug);
+      await page.waitForFunction(c => !!window.PT_ROUTE_ASSETS && window.PT_ROUTE_ASSETS.loaded().includes(c), code, {timeout:60000});
+      console.log(device + ' module loaded on navigation: ' + slug + ' -> ' + code);
+    }
     // Character data must be fetched only when the matching character is needed.
     await page.waitForFunction(() => !!window.PT_CHAR_DATA && window.PT_CHAR_DATA.loaded().length > 0, null, { timeout: 30000 });
     const chars = await page.evaluate(async () => {
