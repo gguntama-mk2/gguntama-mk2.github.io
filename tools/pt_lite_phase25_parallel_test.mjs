@@ -59,6 +59,7 @@ try{
     },event);
     await page.waitForFunction(()=>window.PT_SHEET_RUNTIME.state().loaded,{timeout:30000});
     await page.evaluate(()=>window.PT19_FONT_READY);
+    await page.evaluate(()=>window.PT_SHEET_RUNTIME.fontPrewarm());
     const current=await page.evaluate(()=>({
      page:document.documentElement.dataset.page,
      icons:!!window.PTIcons,media:!!window.PTMoveMedia,
@@ -71,6 +72,7 @@ try{
     const spread=Math.max(...events.map(e=>e.at))-Math.min(...events.map(e=>e.at));
     if(spread>220)throw Error(dev+' script requests remained sequential; spread='+spread+'ms '+JSON.stringify(events));
     if(current.fontCssCount!==1)throw Error(dev+' fonts CSS not fetched once');
+    if(!(await page.evaluate(()=>document.fonts.check('400 16px "MaruGoKawa"',"技表発生"))))throw Error(dev+' selected Japanese glyphs not prewarmed');
     if(jsonRequests.length!==1)throw Error(dev+' character JSON not prewarmed once on '+event+' '+JSON.stringify(jsonRequests));
     const jsonStartDelta=Math.abs(jsonRequests[0].at-Math.min(...events.map(e=>e.at)));
     if(jsonStartDelta>220)throw Error(dev+' character JSON did not start alongside sheet runtime '+jsonStartDelta+'ms');
