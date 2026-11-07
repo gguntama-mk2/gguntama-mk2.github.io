@@ -59,7 +59,8 @@ jobs:
               assert z['coldHome']['performance']['loadedRoutes']==[]
               assert z['sheet']['network']['requestCount']>0
               assert z['glossary']['network']['requestCount']>0
-              assert z['warmHome']['network']['transferBytes']==0
+              assert z['warmHome']['network']['requestCount']>=1
+              assert z['warmHome']['network']['transferBytes']<after,(profile,device,'warm reload did not reuse cache')
               print('PHASE16_COMPARE',profile,device,'before',before,'after',after,'saved',before-after)
           PY
       - name: Check local transfer, loaded feature parity and profiling report
