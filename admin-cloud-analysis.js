@@ -102,15 +102,28 @@
     const char=Array.isArray(characters)?characters.find(c=>c.id===move.source_character_id):null;
     const siteMoves=Array.isArray(char?.moves)?char.moves:[];
     const entries=(move.command_list_entries||[]).filter(e=>e.kind==="move"||e.kind==="key_move");
+    const reviews=(move.site_checksheet_review_candidates||[]).filter(e=>
+      e.review_status==="unverified"&&e.checklist_binding_verified===false);
     const candidates=[];
     for(const m of siteMoves){
       const name=normalized(m.name),cmd=normalized(m.a?.command);
       if(!name||!cmd)continue;
-      if(entries.some(e=>normalized(e.name_ja)===name&&normalized(e.command_plain)===cmd)){
-        if(!candidates.some(x=>x.k===m.k))candidates.push({k:m.k,name:m.name,command:m.a?.command});
+      // Command-list terminology and site notation differ (1+22 vs WPRP).
+      // Accept a review candidate only if all THREE current site fields agree:
+      // site_k + Japanese name + site command. The review itself is unverified.
+      const strictReview=reviews.find(e=>Number(m.k)===e.site_k &&
+        normalized(e.site_name)===name && normalized(e.site_command)===cmd);
+      const directText=entries.some(e=>normalized(e.name_ja)===name &&
+        normalized(e.command_plain)===cmd);
+      if((directText||strictReview)&&!candidates.some(x=>String(x.k)===String(m.k))){
+        candidates.push({
+          k:m.k,name:m.name,command:m.a?.command,
+          method:strictReview?"review_k_name_command":"source_name_command",
+          verified:false
+        });
       }
     }
-    // Text equality is a *candidate*. Never declare the site k ↔ MOTBIN ID verified.
+    // An exact review triple is still NOT a confirmed MOTBIN-to-site k mapping.
     return candidates.slice(0,8);
   }
   function options(select,items,current){
@@ -448,10 +461,14 @@
         const site=checklistCandidates(m);
         if(site.length){
           item.append(note("技チェックシートの技名＋コマンドが一致する候補："+
-            site.map(v=>"#"+v.k+" "+v.name).join("、")+
-            "。一致しても内部IDとチェックシートkの対応確定ではありません。","pt-cloud-small"));
+            site.map(v=>"#"+v.k+" "+v.name+
+              (v.method==="review_k_name_command"?"（レビュー記録のk・技名・コマンド3点一致）":
+                "（元技名・コマンド一致）")).join("、")+
+            "。レビュー記録は未検証であり、内部IDとチェックシートkの対応確定ではありません。","pt-cloud-small"));
         }else{
-          item.append(note("技チェックシートkとの直接対応：未確認（完全一致なし、または元データ未読込）","pt-cloud-small"));
+          item.append(note((m.site_checksheet_review_candidates||[]).length?
+            "過去のレビュー資料にはサイトkの候補がありますが、現在のチェックシート上のk・技名・コマンドが完全一致せず、照合未成立です。":
+            "技チェックシートkとの直接対応：未確認（厳密な照合情報なし、または元データ未読込）","pt-cloud-small"));
         }
         grid.append(item);
       }
