@@ -148,11 +148,12 @@
       var cmd = (mv.a && mv.a.command) || "";
       return !q || (String(kOf(mv, i)) + " " + mv.name + " " + cmd).normalize("NFKC").toLowerCase().indexOf(q) >= 0;
     }).length;
-    var table = make("table", undefined, "pt-mi-list"), head = make("tr");
+    var table = make("table", undefined, "pt-mi-list"), thead = make("thead"), tbody = make("tbody"), head = make("tr");
     ["k", "技名", "コマンド", "いまの表示", "設定", "", ""].forEach(function (t) { head.appendChild(make("th", t)); });
     var allTh = head.lastChild, allCb = make("input"); allCb.type = "checkbox"; allCb.title = "表示中の技をすべてチェック／解除"; allCb.setAttribute("aria-label", "表示中の技をすべてチェック"); allTh.appendChild(allCb);
     var visible = [];
-    table.appendChild(head);
+    thead.appendChild(head);
+    table.append(thead, tbody);
     c.moves.forEach(function (mv, i) {
       if (shown >= limit) return;
       var k = kOf(mv, i), cmd = (mv.a && mv.a.command) || "";
@@ -172,7 +173,7 @@
       cb.addEventListener("change", function () { if (cb.checked) checked[key] = entry; else delete checked[key]; syncAll(); onCheckChange(); });
       visible.push({ cb: cb, key: key, entry: entry });
       ck.appendChild(cb); tr.appendChild(ck);
-      table.appendChild(tr);
+      tbody.appendChild(tr);
     });
     function syncAll() { var n = visible.filter(function (v) { return checked[v.key]; }).length; allCb.checked = visible.length > 0 && n === visible.length; allCb.indeterminate = n > 0 && n < visible.length; }
     allCb.addEventListener("change", function () { visible.forEach(function (v) { v.cb.checked = allCb.checked; if (allCb.checked) checked[v.key] = v.entry; else delete checked[v.key]; }); syncAll(); onCheckChange(); });
