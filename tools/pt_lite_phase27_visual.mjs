@@ -88,7 +88,7 @@ async function capture(port,dev,route){
     title:document.title,maruReady:document.fonts.check('16px "MaruGoKawa"')
    };
   });
-  assert.equal(metric.route,route==='home-art'?'home':route==='sheet-bottom'?'sheet':route);
+  assert.equal(metric.route,route==='home-art'?'home':route==='sheet-middle'||route==='sheet-bottom'?'sheet':route);
   assert.equal(errors.length,0,errors.join(';'));
   const shot=await page.screenshot({animations:'disabled',fullPage:false});
   return {metric,shot};
