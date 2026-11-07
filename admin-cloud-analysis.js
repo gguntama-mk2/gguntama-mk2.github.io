@@ -259,6 +259,107 @@
       container.append(more);
     }
   }
+  function focusResearchPanel(){
+    const research=payload?.linkage?.research;
+    if(!research?.priority_requirements?.length)return null;
+    const section=node("section","pt-cloud-focus");
+    section.append(el("h3","重点調査 ID（すべて構造候補・未検証）"),
+      note("候補技インデックスの頻度や他のRequirements IDとの共起を調査できます。技の効果・raw遷移先・チェックシートkの確定ではありません。"));
+    const cards=node("div","pt-cloud-focus-cards");
+    for(const focus of research.priority_requirements){
+      const card=node("article","pt-cloud-focus-card");
+      const title=node("div","pt-cloud-focus-card-head");
+      title.append(el("strong","ID "+focus.requirement_id),
+        el("span","実機未検証","pt-cloud-source-tag pt-cloud-source-tag-uncertain"));
+      card.append(title,metrics([["候補キャンセル行",focus.candidate_cancel_rows],
+        ["異なるインデックス",focus.distinct_source_indexes]]));
+      const main=(focus.top_raw_destinations||[])[0];
+      card.append(note("最頻の遷移先raw："+(main?main.raw_id+"（"+main.occurrences+"件）":"未取得")));
+      const btn=el("button","ID "+focus.requirement_id+" の根拠を確認","btn");
+      btn.type="button";
+      btn.addEventListener("click",()=>{
+        const source=sourceRows("bryan").find(x=>rowId("bryan",x)===focus.requirement_id);
+        if(source)openDetail("bryan",source);
+      });
+      card.append(btn);cards.append(card);
+    }
+    section.append(cards);
+    const csv=el("button","重点3 IDの候補インデックスCSV","btn");
+    csv.type="button";
+    csv.addEventListener("click",()=>{
+      const rows=[["Requirements ID","技インデックス候補","候補キャンセル行への登場回数",
+        "例示キャンセル行","遷移先raw例","照合状態"]];
+      for(const item of research.priority_requirements)for(const edge of item.candidate_indexes||[])
+        rows.push([item.requirement_id,edge.source_move_index,edge.edge_occurrences,
+          edge.example_cancel_index,edge.example_dest_move_id_raw,"未検証・技名未確定"]);
+      downloadCsv("project-t-bryan-focus-unverified.csv",rows);
+    });
+    section.append(csv);
+    const coverage=research.coverage||{};
+    const details=node("details","pt-cloud-research-coverage");
+    details.append(el("summary","MOTBIN・MVL・ANMBINの資料充足度"));
+    details.append(metrics([["MOTBIN全技の総数（資料記載）",coverage.anmbin_declared_movelist_total],
+      ["現在の技名資料",coverage.named_master_records],
+      ["MVLエントリ",coverage.mvl_entries_total],
+      ["MVL内部候補付き",coverage.mvl_candidates_with_move_index],
+      ["ANMBIN確認済み",research.anmbin_reference_candidates?.length||0]]));
+    details.append(note("2304件はANMBINの資料上の総数です。2304技それぞれのMOTBINレコード本体は取得できていないため、未照合技の名称やコマンドを推測して補完しません。","pt-cloud-evidence-warning"));
+    const entries=research.mvl_unresolved_entries||[];
+    if(entries.length){
+      const extra=node("details","pt-cloud-mvl-unknown");
+      extra.append(el("summary","技インデックス未対応のMVL日本語エントリ "+entries.length+"件"));
+      extra.append(note("一覧は技名資料の未解決エントリです。Requirements IDとの個別対応は確認できていません。"));
+      const list=node("div","pt-cloud-mvl-list");
+      for(const entry of entries){
+        const item=node("div","pt-cloud-mvl-item");
+        item.append(el("strong","MVL #"+entry.source_entry_index+" "+entry.name_ja),
+          el("span",entry.command,"pt-cloud-small"));
+        list.append(item);
+      }
+      extra.append(list);details.append(extra);
+    }
+    section.append(details);
+    return section;
+  }
+  function focusResearchDetail(reqId){
+    const focus=payload?.linkage?.research?.priority_requirements?.find(x=>x.requirement_id===reqId);
+    if(!focus)return null;
+    const section=node("section","pt-cloud-focus-detail");
+    section.append(el("h4","重点調査：ID "+reqId+" の遷移候補と共起"),
+      note("以下は未検証のキャンセル行に由来する構造指標です。要求条件の意味や技の挙動は確定していません。"));
+    const raw=node("details","pt-cloud-graph-details");
+    raw.append(el("summary","遷移先rawの分布（"+(focus.top_raw_destinations||[]).length+"種類）"));
+    const rawList=node("div","pt-cloud-graph-grid");
+    for(const dest of focus.top_raw_destinations||[]){
+      const item=node("div","pt-cloud-graph-edge");
+      item.append(el("strong","raw "+dest.raw_id),note(dest.occurrences+"件の候補キャンセル行","pt-cloud-small"));
+      rawList.append(item);
+    }
+    raw.append(rawList);section.append(raw);
+    const peers=node("details","pt-cloud-graph-details");
+    peers.append(el("summary","技インデックスの共起ID（上位"+(focus.related_requirements||[]).length+"件）"));
+    peers.append(note("Jaccardは候補インデックス集合の重複率です。共通のRequirements効果を証明しません。"));
+    const peerList=node("div","pt-cloud-graph-grid");
+    for(const p of focus.related_requirements||[]){
+      const item=node("div","pt-cloud-graph-edge");
+      item.append(el("strong","Requirements "+p.requirement_id),
+        note("共通インデックス "+p.shared_source_indexes+"種類 ／ Jaccard "+(p.jaccard*100).toFixed(2)+"%","pt-cloud-small"));
+      peerList.append(item);
+    }
+    peers.append(peerList);section.append(peers);
+    const candidates=node("details","pt-cloud-graph-details pt-cloud-focus-indexes");
+    candidates.append(el("summary","候補インデックス全"+(focus.candidate_indexes||[]).length+"件（技名未確定）"));
+    const list=node("div","pt-cloud-graph-grid");
+    for(const c of focus.candidate_indexes||[]){
+      const card=node("div","pt-cloud-graph-edge");
+      card.append(el("strong","インデックス "+c.source_move_index),
+        note("候補キャンセル行に"+c.edge_occurrences+"回登場","pt-cloud-small"),
+        note("根拠行例 "+c.example_cancel_index+" ／ 遷移先raw例 "+c.example_dest_move_id_raw,"pt-cloud-small"));
+      list.append(card);
+    }
+    candidates.append(list);section.append(candidates);
+    return section;
+  }
   function listPanel(scope){
     if(!payload?.reports?.[scope])return [note(payload?.errors?.[scope]||"解析データを取得できませんでした。","pt-cloud-error")];
     const outer=node("div","pt-cloud-worklist");
@@ -277,6 +378,7 @@
         ["実機検証済み紐付け",stats.gameplay_verified_links]]));
       outer.append(note("すべて未検証。遷移候補はMOTBINキャンセルリストの境界推定であり、ゲーム内の確定情報ではありません。","pt-cloud-evidence-warning"));
     }
+    if(scope==="bryan"){const focus=focusResearchPanel();if(focus)outer.append(focus);}
     outer.append(filtersUI(scope));
     const counter=el("p",filtered(scope).length+" / "+sourceRows(scope).length+"件","pt-cloud-filter-count");
     const buttons=node("div","pt-cloud-list-actions");
@@ -413,6 +515,7 @@
       ]));
       section.append(note("遷移グラフはキャンセルリスト境界の推定です。「遷移先 raw ID」と実際の内部 move_id の同一性も未確認です。","pt-cloud-evidence-warning"));
     }
+    const focused=focusResearchDetail(reqId);if(focused)section.append(focused);
     const samples=node("div","pt-cloud-index-list");
     samples.append(el("strong","技インデックスのサンプル"));
     samples.append(el("code",(proof.example_move_indexes||[]).join("、")||"なし"));
