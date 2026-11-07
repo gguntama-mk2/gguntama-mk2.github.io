@@ -311,6 +311,69 @@
     #secIcons .pt-mi-grid { grid-template-columns:minmax(0,1fr); }
     #secSheet .pt-sheet-primary-actions { grid-template-columns:minmax(0,1fr); }
   }
+
+  /* Cloud analysis: compact, accessible accordions for every data group. */
+  #secCloud .pt-cloud-header h2 { margin:0 0 5px; font-size:18px; }
+  #secCloud .pt-cloud-header { padding:15px 16px; }
+  #secCloud .pt-cloud-header .pt-cloud-note { margin:0 0 12px; }
+  #secCloud .pt-cloud-controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  #secCloud .pt-cloud-controls .btn { min-height:40px; white-space:nowrap; }
+  #secCloud .pt-cloud-sections { display:grid; gap:10px; min-width:0; }
+  #secCloud .pt-cloud-section { min-width:0; border:1px solid var(--line); border-radius:12px; background:var(--panel); overflow:hidden; }
+  #secCloud .pt-cloud-section[open] { border-color:#555b82; }
+  #secCloud .pt-cloud-summary { list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:65px; padding:13px 16px; cursor:pointer; user-select:none; }
+  #secCloud .pt-cloud-summary::-webkit-details-marker { display:none; }
+  #secCloud .pt-cloud-summary::marker { content:""; }
+  #secCloud .pt-cloud-summary:hover { background:rgba(255,255,255,.035); }
+  #secCloud .pt-cloud-summary:focus-visible { outline:2px solid var(--accent); outline-offset:-3px; border-radius:10px; }
+  #secCloud .pt-cloud-summary-main { display:grid; gap:3px; min-width:0; }
+  #secCloud .pt-cloud-summary-title { font-size:15px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-summary-hint { color:var(--sub); font-size:12px; line-height:1.4; }
+  #secCloud .pt-cloud-summary-right { display:flex; align-items:center; gap:13px; flex:none; }
+  #secCloud .pt-cloud-count { color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:2px 8px; white-space:nowrap; font-size:12px; }
+  #secCloud .pt-cloud-chevron { display:inline-block; width:9px; height:9px; border-right:2px solid var(--sub); border-bottom:2px solid var(--sub); transform:rotate(45deg); transition:transform .15s ease; margin-right:4px; margin-top:-4px; flex:none; }
+  #secCloud .pt-cloud-section[open] .pt-cloud-chevron { transform:rotate(225deg); margin-top:4px; }
+  #secCloud .pt-cloud-content { padding:14px 16px 18px; border-top:1px solid var(--line); min-width:0; }
+  #secCloud .pt-cloud-content > :first-child { margin-top:0; }
+  #secCloud .pt-cloud-content > :last-child { margin-bottom:0; }
+  #secCloud .pt-cloud-note { color:var(--sub); font-size:12px; line-height:1.6; margin:8px 0; overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-loading { margin:4px 0; color:var(--sub); }
+  #secCloud .pt-cloud-error { margin:4px 0; color:var(--ng); overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-empty { margin:8px 0; color:var(--sub); text-align:center; padding:16px 8px; }
+  #secCloud .pt-cloud-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:10px 0 13px; }
+  #secCloud .pt-cloud-metric { display:grid; align-content:space-between; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:11px 12px; min-width:0; }
+  #secCloud .pt-cloud-metric-label { color:var(--sub); font-size:12px; overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-metric-value { color:var(--text); font-size:21px; line-height:1.3; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-table-wrap { width:100%; }
+  #secCloud .pt-cloud-table { width:100%; border-collapse:collapse; }
+  #secCloud .pt-cloud-table th, #secCloud .pt-cloud-table td { padding:10px; font-variant-numeric:tabular-nums; }
+  #secCloud .pt-cloud-table th { white-space:normal; }
+  @media (max-width:800px) {
+    #secCloud .pt-cloud-header { padding:13px; }
+    #secCloud .pt-cloud-header h2 { font-size:17px; }
+    #secCloud .pt-cloud-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    #secCloud .pt-cloud-controls .btn { min-height:44px; width:100%; padding:8px 6px; }
+    #secCloud .pt-cloud-controls .btn.primary { grid-column:1/-1; }
+    #secCloud .pt-cloud-summary { padding:13px 11px; gap:6px; min-height:64px; }
+    #secCloud .pt-cloud-summary-title { font-size:14px; }
+    #secCloud .pt-cloud-summary-hint { font-size:11px; }
+    #secCloud .pt-cloud-summary-right { gap:7px; }
+    #secCloud .pt-cloud-count { font-size:11px; padding:2px 6px; }
+    #secCloud .pt-cloud-content { padding:12px 10px 15px; }
+    #secCloud .pt-cloud-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    #secCloud .pt-cloud-metric { padding:10px; gap:4px; }
+    #secCloud .pt-cloud-metric-label { font-size:11px; }
+    #secCloud .pt-cloud-metric-value { font-size:19px; }
+    #secCloud .pt-cloud-table-wrap { overflow:visible; }
+    #secCloud .pt-cloud-table tbody td { font-size:12px; }
+  }
+  @media (max-width:350px) {
+    #secCloud .pt-cloud-metrics { grid-template-columns:minmax(0,1fr); }
+    #secCloud .pt-cloud-count { font-size:10px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    #secCloud .pt-cloud-chevron { transition:none; }
+  }
   @media (max-width:860px) { .editor { grid-template-columns:1fr; } .editor > .mleft { position:static; height:auto; min-height:0; } #mlist { max-height:30vh; flex:none; } .grid { grid-template-columns:100px 1fr; } .grid .off { grid-column:2; } #pvSP { width:100%; } }
 </style>
 </head>
