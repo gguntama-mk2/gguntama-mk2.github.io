@@ -1,0 +1,82 @@
+name: PROJECT T Stage9 production versus Vercel parity (READ ONLY)
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - tools/pt_lite_phase9_comparison.mjs
+      - .github/workflows/pt-lite-phase9-parity.yml
+concurrency:
+  group: pt-lite-phase9-parity
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  production-parity:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm source targets and no production push
+        run: |
+          test "$(git branch --show-current)" = "project-t-preview-20261107"
+          python3 - <<'PY'
+          import urllib.request
+          paths=['https://www.project-t-god.com/pc.html','https://www.project-t-god.com/sp.html','https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/pc.html','https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/sp.html']
+          for p in paths:
+              req=urllib.request.Request(p,method='HEAD',headers={'User-Agent':'PT-Parity-Audit/1'})
+              try:
+                  with urllib.request.urlopen(req,timeout=30) as r:
+                      print('URL',r.status,r.headers.get('Content-Type'),r.headers.get('Content-Length'),p)
+              except Exception as e: print('URL_HEAD_WARNING',p,type(e).__name__,str(e)[:180])
+          PY
+      - name: Install Chromium and image comparison tools
+        run: |
+          npm install --no-save playwright pngjs pixelmatch
+          npx playwright install --with-deps chromium
+          node --check tools/pt_lite_phase9_comparison.mjs
+      - name: Compare production and Vercel in isolated browsers
+        run: |
+          set +e
+          node tools/pt_lite_phase9_comparison.mjs > /tmp/pt-phase9-comparison.log 2>&1
+          rc=$?
+          set -e
+          tail -c 17000 /tmp/pt-phase9-comparison.log
+          echo "Browser parity process exit: $rc"
+          test -s test-litev1/assets/data/phase9-production-vs-preview.json
+      - name: Archive screenshots and diff images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase9-production-preview-diffs
+          path: phase9-compare-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Save comparison report only to test branch
+        if: always()
+        run: |
+          if test -f test-litev1/assets/data/phase9-production-vs-preview.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add test-litev1/assets/data/phase9-production-vs-preview.json
+            if ! git diff --cached --quiet; then
+              git commit -m "test: phase9 production/preview UI comparison report"
+              git fetch origin project-t-preview-20261107
+              git rebase origin/project-t-preview-20261107
+              git push origin HEAD:project-t-preview-20261107
+            fi
+          fi
+      - name: Require identical functional counts and no preview load errors
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('test-litev1/assets/data/phase9-production-vs-preview.json').read_text('utf-8'))
+          for device,item in j['devices'].items():
+            p,q=item['production'],item['preview']
+            print(device,'production',p.get('httpStatus'),'preview',q.get('httpStatus'),'issues',item['comparison']['issues'])
+            print(' Navigation',p.get('timings',{}).get('homeNavigationMs'),q.get('timings',{}).get('homeNavigationMs'))
+          assert j['passed'],json.dumps(j['failures'],ensure_ascii=False)
+          print('Phase9 parity PASS')
+          PY
