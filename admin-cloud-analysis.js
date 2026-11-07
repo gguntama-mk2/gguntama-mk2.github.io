@@ -156,7 +156,7 @@
       fields.forEach(([key,label],i)=>{
         const td=el("td");td.dataset.label=label;
         if(i===0){
-          const btn=el("button",fmt(row[key]),"pt-cloud-id-button");
+          const btn=el("button",String(row[key]),"pt-cloud-id-button");
           btn.type="button";btn.title="詳細・調査状況を開く";btn.addEventListener("click",()=>openDetail(scope,row));
           td.appendChild(btn);
         }else td.textContent=fmt(row[key]);
