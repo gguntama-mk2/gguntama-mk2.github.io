@@ -14,6 +14,7 @@ const chars = Array.from({length:35}, (_,i) => ({
     a: {command:k===0 ? "LP" : "LP LP WP DF+"+k}
   }))
 }));
+chars[1].moves[0] = { k:0, name:"スネークピット", a:{command:"1+22"} };
 const preview = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
 var CHARACTERS = ${JSON.stringify(chars)};
 var COLS = [{id:"command",label:"コマンド"},{id:"hit",label:"ヒット時"}];
@@ -53,9 +54,25 @@ const fixtures = (u) => {
       requirements_unique_ids_global:200,ids_in_all_analyzed_characters:10,ids_in_exactly_one_character:20,
       bryan_unlabeled_found_in_overview:15,top_priority_ids:[
         {req_id:1021,characters_present:35,records_all_characters:100,parameter_variants:5,investigation_score_heuristic:72},
-        {req_id:439,characters_present:1,records_all_characters:8,parameter_variants:2,investigation_score_heuristic:90}
+        {req_id:439,characters_present:1,records_all_characters:8,parameter_variants:2,investigation_score_heuristic:90},
+        {req_id:509,characters_present:4,records_all_characters:31,parameter_variants:1,investigation_score_heuristic:50}
       ]};
-    return {reports:{bryan,cross},reviews:[...savedReviews.values()],errors:{},history:{
+    const linkage={
+      schema_version:1,source_character_id:"bryan",gameplay_verified:false,
+      requirements:[
+        {requirement_id:1021,source_character_id:"bryan",example_move_indexes:[74,75],
+          matched_master_indexes:[],candidate_move_count_reported:79,parameter_samples:[{values:[10,0,0,0],count:65}]},
+        {requirement_id:439,source_character_id:"bryan",example_move_indexes:[74,75],
+          matched_master_indexes:[],candidate_move_count_reported:92,parameter_samples:[]},
+        {requirement_id:509,source_character_id:"bryan",example_move_indexes:[1550,1571],
+          matched_master_indexes:[1550],raw_occurrences:3,candidate_move_count_reported:31,priority_score:50,
+          parameter_samples:[{values:[11,0,0,0],count:31}]}
+      ],
+      indexed_moves:{"1550":{motbin_move_index:1550,motbin_move_id:1489449424,source_character_id:"bryan",
+        animation_reference_verified:true,command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22"}],
+        gameplay_verified:false,site_move_key:null}}
+    };
+    return {reports:{bryan,cross},linkage,reviews:[...savedReviews.values()],errors:{},history:{
       bryan:{snapshots:[
         {generated_utc:"2026-11-07",data:{summary:{moves_count:250},ids:bryan.top_unknown_ids}},
         {generated_utc:"2026-11-06",data:{summary:{moves_count:249},ids:[{id:1021,raw_occurrences:99,candidate_moves:25,priority_score:69}]}}
@@ -150,13 +167,28 @@ const fixtures = (u) => {
           const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
-          assert.equal(await priority.locator(".pt-cloud-id-button").count(),2,"Research IDs visible");
+          assert.equal(await priority.locator(".pt-cloud-id-button").count(),3,"Research IDs visible");
           const search=priority.locator('input[type="search"]');
           await search.fill("1021");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===1);
           assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
           await search.fill("");
-          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===2);
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===3);
+          // Character evidence filter distinguishes sourced candidates from confirmed IDs.
+          const charSelect=priority.locator(".pt-cloud-filter-label select").last();
+          await charSelect.selectOption("bryan_named");
+          assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Named Bryan candidate filter");
+          await priority.locator(".pt-cloud-id-button").first().click();
+          const namedModal=page.locator(".pt-cloud-dialog");
+          await namedModal.waitFor({state:"visible"});
+          const namedText=await namedModal.innerText();
+          assert(namedText.includes("MOTBIN技インデックス 1550"),"Source move index exposed");
+          assert(namedText.includes("内部move_id：1489449424"),"Internal move ID preserved exactly");
+          assert(namedText.includes("スネークピット"),"Source Japanese move name exposed");
+          assert(namedText.includes("チェックシートの技名＋コマンドが一致する候補"),"Strict checklist comparison visible");
+          assert(namedText.includes("実機未検証"),"Evidence clearly labelled unverified");
+          await page.keyboard.press("Escape");
+          await charSelect.selectOption("all");
           await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
           assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
           await priority.locator(".pt-cloud-id-button").first().click();
@@ -204,7 +236,7 @@ const fixtures = (u) => {
           assert(await cross.evaluate(node=>node.open),"Individual section opens independently");
           assert(!(await priority.evaluate(node=>node.open)),"Other section stays collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"再読み込み"}).click();
-          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="2件");
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="3件");
           assert(await cross.evaluate(node=>node.open),"Reload preserves opened sections");
           assert(!(await priority.evaluate(node=>node.open)),"Reload preserves closed sections");
         }
