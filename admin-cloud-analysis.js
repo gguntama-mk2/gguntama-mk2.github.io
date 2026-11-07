@@ -172,6 +172,12 @@
     }).sort((a,b)=>{
       const cmp=(k)=>Number(b[k]||0)-Number(a[k]||0);
       if(f.sort==="id")return rowId(scope,a)-rowId(scope,b);
+      if(scope==="bryan"&&f.sort==="graph_rows")
+        return (linkInfo(rowId(scope,b))?.graph_candidate_edge_count_total||0)-
+               (linkInfo(rowId(scope,a))?.graph_candidate_edge_count_total||0);
+      if(scope==="bryan"&&f.sort==="unmatched_count")
+        return (linkInfo(rowId(scope,b))?.graph_unmatched_source_index_count||0)-
+               (linkInfo(rowId(scope,a))?.graph_unmatched_source_index_count||0);
       if(f.sort==="occurrences")return cmp(scope==="bryan"?"raw_occurrences":"records_all_characters");
       if(f.sort==="characters")return cmp("characters_present");
       return cmp(scope==="bryan"?"priority_score":"investigation_score_heuristic");
@@ -194,7 +200,9 @@
     }
     control("並べ替え","sort",scope==="cross"
       ?[["priority","調査スコア順"],["occurrences","出現レコード順"],["characters","対象キャラ数順"],["id","ID順"]]
-      :[["priority","優先度順"],["occurrences","出現数順"],["id","ID順"]]);
+      :[["priority","優先度順"],["occurrences","出現数順"],
+        ["graph_rows","候補キャンセル行が多い順"],
+        ["unmatched_count","未照合インデックスが多い順"],["id","ID順"]]);
     control("調査状況","status",[["all","すべて"],...Object.keys(STATUS).map(k=>[k,STATUS[k]])]);
     if(scope==="cross")control("出現範囲","coverage",[["all","すべて"],["all42","全42キャラ共通"],
       ["multi","2～41キャラ"],["single","1キャラ"],["bryan","ブライアン上位候補と共通"]]);
@@ -375,6 +383,7 @@
         ["CSV＋遷移候補の照合ID",stats.requirements_with_any_master_overlap],
         ["遷移候補レコード",stats.graph_candidate_edge_records],
         ["技名未照合・遷移ありID",stats.graph_requirement_ids_with_only_unmatched_sources],
+        ["共起関係を確認できたID",stats.raw_candidate_peer_coverage_ids],
         ["実機検証済み紐付け",stats.gameplay_verified_links]]));
       outer.append(note("すべて未検証。遷移候補はMOTBINキャンセルリストの境界推定であり、ゲーム内の確定情報ではありません。","pt-cloud-evidence-warning"));
     }
@@ -470,7 +479,8 @@
   function exportRows(scope){
     const cols=FIELDS[scope],head=[...cols.map(x=>x[1]),"調査状況","調査メモ",
       "資料上の出現候補","照合できたMOTBINインデックス","CSVサンプル照合件数","遷移推定レコード数",
-      "技名未照合インデックス総数","グラフ条件行総数","検証状態"];
+      "技名未照合インデックス総数","グラフ条件行総数",
+      "主な遷移先raw候補","共通インデックスのあるRequirements ID","検証状態"];
     const rows=filtered(scope).map(row=>{
       const id=rowId(scope,row),rev=getReview(scope,id);
       const proof=linkInfo(id),matches=matchesFor(id);
@@ -479,7 +489,10 @@
         proof?.matched_sample_indexes?.length??proof?.matched_master_indexes?.length??0,
         proof?.graph_edge_evidence?.length??0,
         proof?.graph_unmatched_source_index_count??0,
-        proof?.graph_candidate_edge_count_total??0,"実機未検証"];
+        proof?.graph_candidate_edge_count_total??0,
+        (proof?.graph_main_raw_destinations||[]).map(x=>x.raw_id+"("+x.occurrences+")").join(" "),
+        (proof?.graph_peer_requirement_examples||[]).map(x=>x.requirement_id).join(" "),
+        "実機未検証"];
     });
     downloadCsv("project-t-"+scope+"-research.csv",[head,...rows]);
   }
@@ -491,6 +504,34 @@
       ["変更ID","",d.changed.join(" "),""]]);
   }
 
+  function genericGraphCooccurrence(reqId,proof){
+    const peers=proof?.graph_peer_requirement_examples||[];
+    const destinations=proof?.graph_main_raw_destinations||[];
+    if(!destinations.length&&!peers.length)return null;
+    const section=node("section","pt-cloud-cooccurrence");
+    section.append(el("h4","技名未照合の条件ID：共通インデックスとraw遷移先"),
+      note("インデックス集合の共起はグラフ上の推定です。効果・条件が同じことは確認されていません。"));
+    const details=node("details","pt-cloud-graph-details");
+    details.append(el("summary","raw遷移先の内訳（上位"+destinations.length+"件）"));
+    const list=node("div","pt-cloud-graph-grid");
+    for(const d of destinations){
+      const cell=node("div","pt-cloud-graph-edge");
+      cell.append(el("strong","raw "+d.raw_id),note("候補キャンセル行 "+d.occurrences+"件","pt-cloud-small"));
+      list.append(cell);
+    }
+    details.append(list);section.append(details);
+    const related=node("details","pt-cloud-graph-details");
+    related.append(el("summary","共通インデックスを持つ条件ID（上位"+peers.length+"件）"));
+    const peerList=node("div","pt-cloud-graph-grid");
+    for(const p of peers){
+      const cell=node("div","pt-cloud-graph-edge");
+      cell.append(el("strong","Requirements "+p.requirement_id),
+        note("共通インデックス "+p.shared_indexes+"件 ／ Jaccard "+(p.jaccard*100).toFixed(2)+"%","pt-cloud-small"));
+      peerList.append(cell);
+    }
+    related.append(peerList);section.append(related);
+    return section;
+  }
   function buildLinkEvidence(reqId){
     const section=node("section","pt-cloud-evidence");
     section.append(el("h4","キャラクター × 内部技の照合根拠"));
@@ -515,7 +556,9 @@
       ]));
       section.append(note("遷移グラフはキャンセルリスト境界の推定です。「遷移先 raw ID」と実際の内部 move_id の同一性も未確認です。","pt-cloud-evidence-warning"));
     }
-    const focused=focusResearchDetail(reqId);if(focused)section.append(focused);
+    const focused=focusResearchDetail(reqId);
+    if(focused)section.append(focused);
+    else{const co=genericGraphCooccurrence(reqId,proof);if(co)section.append(co);}
     const samples=node("div","pt-cloud-index-list");
     samples.append(el("strong","技インデックスのサンプル"));
     samples.append(el("code",(proof.example_move_indexes||[]).join("、")||"なし"));
