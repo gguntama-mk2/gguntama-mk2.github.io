@@ -24,6 +24,7 @@ jobs:
           node --check tools/pt_lite_phase18_glyphs.mjs
           node --check tools/pt_lite_phase18_avif.mjs
           node --check tools/pt_lite_phase18_visual.mjs
+          node --check tools/pt_lite_phase18_perf.mjs
           python3 -m py_compile tools/pt_lite_phase18_font_split.py
           node --check admin.js
           node --check tests/admin-all-tabs-mobile.cjs
@@ -58,9 +59,9 @@ jobs:
       - name: Attempt visually validated AVIF conversion with WebP fallback
         run: node tools/pt_lite_phase18_avif.mjs
       - name: Compare Phase17 baseline network, cold/warm and lazy routes
-        run: node tools/pt_lite_phase16_perf.mjs --site=phase18-performance/baseline-site --out=phase18-performance/baseline-network.json
+        run: node tools/pt_lite_phase18_perf.mjs --site=phase18-performance/baseline-site --out=phase18-performance/baseline-network.json
       - name: Compare Phase18 font/AVIF network, cold/warm and lazy routes
-        run: node tools/pt_lite_phase16_perf.mjs --site=phase18-performance/optimized-site --out=phase18-performance/optimized-network.json
+        run: node tools/pt_lite_phase18_perf.mjs --site=phase18-performance/optimized-site --out=phase18-performance/optimized-network.json
       - name: Check measured transfer regressions and data-file SHA parity
         run: |
           python3 - <<'PY'
@@ -92,7 +93,8 @@ jobs:
               sheet0=before['sheet']['network']['transferBytes']
               sheet1=after['sheet']['network']['transferBytes']
               assert cold1<=cold0+15000,(profile,dev,'cold',cold0,cold1)
-              assert sheet1<=sheet0*1.15,(profile,dev,'sheet',sheet0,sheet1)
+              assert sheet1<sheet0,(profile,dev,'sheet transfer not lower',sheet0,sheet1)
+              assert sheet0-sheet1>=40000,(profile,dev,'font split savings too small',sheet0,sheet1)
               assert after['coldHome']['performance']['loadedCharacters']==[]
               assert after['coldHome']['performance']['loadedRoutes']==[]
               assert after['warmHome']['network']['transferBytes']<=1500
