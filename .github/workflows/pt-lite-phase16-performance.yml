@@ -1,7 +1,5 @@
 name: PROJECT T Lite Phase16 - Performance and Regression (TEST ONLY)
 on:
-  push:
-    branches: [test/pt-lite-phase16-performance-20261107]
   pull_request:
     branches: [test/pt-lite-phase15-main-sync-20261107]
 permissions:
