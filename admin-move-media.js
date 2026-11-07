@@ -5,7 +5,7 @@
   const API=location.hostname==="www.project-t-god.com"?"https://api.project-t-god.com":"";
   const make=(tag,text)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;return x;};
   const CHAR_RE=/^[a-z0-9][a-z0-9-]{0,47}$/;
-  let host, csrf, characters=[], character, move, file, hit, notice, listing, uploadButton, resolveCharacter, resolutionSeq=0;
+  let host, csrf, characters=[], character, move, file, hit, notice, listing, uploadButton, resolveCharacter, resolutionSeq=0, hydratedCharacterId=null;
   function message(s,state){notice.textContent=s;notice.dataset.state=state||"neutral";}
   async function request(path,init={}){
     const headers={...(init.headers||{})};
@@ -25,7 +25,7 @@
     hydrateCurrent();
   }
   async function hydrateCurrent(){
-    const id=character.value,token=++resolutionSeq,previousK=move.value;
+    const id=character.value,token=++resolutionSeq,previousK=hydratedCharacterId===character.value?move.value:null;
     if(!id)return;
     // 過去の元データを一瞬でも選択・送信しないように、取得完了まで無効化する。
     move.replaceChildren(make("option","技チェックシートの編集内容を取得中…"));
@@ -37,6 +37,7 @@
       if(!resolved||resolved.id!==id||!Array.isArray(resolved.moves))throw Error("技データの照合に失敗しました");
       characters=characters.map(c=>c.id===id?resolved:c);
       setMoves(previousK);
+      hydratedCharacterId=id;
       move.disabled=false;
     }catch(e){
       if(token!==resolutionSeq)return;
