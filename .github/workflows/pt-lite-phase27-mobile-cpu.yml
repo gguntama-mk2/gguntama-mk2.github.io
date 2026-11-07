@@ -308,7 +308,7 @@ jobs:
           (root/'cpu-layout-compare.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
           print('PHASE27_CPU_LAYOUT_COMPARE',json.dumps(out,ensure_ascii=False))
           PY
-      - name: Compare unchanged full rendered UI including bottom of 228 mobile cards
+      - name: Compare unchanged top, middle and bottom of 228 mobile cards
         run: node tools/pt_lite_phase27_visual.mjs
       - name: Verify all 44 characters and all 9569 stable move keys on PC and smartphone
         run: node tools/pt_lite_phase27_characters.mjs
@@ -335,7 +335,7 @@ jobs:
           import json
           from pathlib import Path
           reports=(
-            'phase27-performance/render-build.json',
+            'phase27-performance/cpu-build.json',
             'phase27-performance/paired-repeat-report.json',
             'phase27-performance/visual-report.json',
             'phase27-performance/44-character-audit.json',
