@@ -41,6 +41,7 @@ jobs:
           node --check tools/pt_lite_phase23_intent.mjs
           node --check tools/pt_lite_phase23_modules.mjs
           node --check tools/pt_lite_phase23_pages_smoke.mjs
+          node --check tools/pt_lite_phase23_api_mock_smoke.mjs
           node --check tools/pt_lite_phase20_perf.mjs
           node --check tools/pt_lite_phase20_visual.mjs
           node --check tools/pt_lite_phase20_characters.mjs
@@ -224,7 +225,7 @@ jobs:
           mkdir -p phase11-pages-package phase12-release-audit
           ln -s ../phase23-performance/optimized-site phase11-pages-package/site
           node tools/pt_lite_phase23_pages_smoke.mjs
-          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tools/pt_lite_phase23_api_mock_smoke.mjs
           node tests/admin-mobile-layout.cjs
           node tests/admin-all-tabs-mobile.cjs
       - name: Final gate - all reports green, no deployment
