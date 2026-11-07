@@ -30,6 +30,16 @@ async function test(device){
   const ctx=await browser.newContext({viewport:device==='pc'?{width:1440,height:900}:{width:390,height:844},
     isMobile:device==='sp',deviceScaleFactor:1,serviceWorkers:'block'});
   const page=await ctx.newPage(),bad=[],errors=[],resourceUrls=[];
+  // Phase15: never leave the isolated localhost test, call live OAuth,
+  // or perform any POST/PATCH/PUT/DELETE (including APIs).
+  await ctx.route('**/*', async route => {
+    const request=route.request(),url=new URL(request.url());
+    if(url.origin!==new URL(ROOT).origin || !['GET','HEAD','OPTIONS'].includes(request.method()))
+      return route.abort('blockedbyclient');
+    if(url.pathname.startsWith('/api/'))
+      return route.fulfill({status:401,contentType:'application/json',body:'{"detail":"test_only"}'});
+    return route.continue();
+  });
   page.on('pageerror',e=>errors.push(String(e)));
   page.on('request',req=>resourceUrls.push(req.url()));
   page.on('response',r=>{
