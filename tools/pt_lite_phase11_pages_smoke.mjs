@@ -69,6 +69,11 @@ async function test(device){
   const routes={};
   await page.evaluate(()=>window.setPage('sheet'));
   await page.waitForFunction(d=>d==='pc'?document.querySelectorAll('#body tr[data-k]').length>0:document.querySelectorAll('#list .card[data-i]').length>0,device,{timeout:40000});
+  // Mobile intentionally renders card batches through requestAnimationFrame:
+  // wait for the final batch instead of mistaking an intermediate 180/228 for data loss.
+  await page.waitForFunction(d=>d==='pc'
+     ?document.querySelectorAll('#body tr[data-k]').length===228
+     :document.querySelectorAll('#list .card[data-i]').length===228,device,{timeout:35000});
   routes.sheet=await page.evaluate(d=>({rows:d==='pc'?document.querySelectorAll('#body tr[data-k]').length:document.querySelectorAll('#list .card[data-i]').length,
     loaded:PT_CHAR_DATA.loaded(),background:getComputedStyle(document.querySelector('.pxbg'),'::before').backgroundImage,
     movieColumn:document.querySelectorAll('#headRow th.pt-mv').length}),device);
