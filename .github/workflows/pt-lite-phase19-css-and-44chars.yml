@@ -1,0 +1,167 @@
+name: PROJECT T Lite Phase19 - Deferred Font CSS and 44 Character Regression (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase18-font-avif-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase19-test-only
+  cancel-in-progress: true
+jobs:
+  font-css-characters:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout only test branch, no write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify isolation and script syntax
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html && test -f admin.html
+          node --check tools/pt_lite_phase19_css.mjs
+          node --check tools/pt_lite_phase19_characters.mjs
+          node --check tools/pt_lite_phase19_avif_portraits.mjs
+          node --check tools/pt_lite_phase19_visual.mjs
+          node --check tools/pt_lite_phase19_perf.mjs
+          python3 -m py_compile tools/pt_lite_phase18_font_split.py
+          node --check tests/admin-all-tabs-mobile.cjs
+      - name: Install isolated Chromium and image / font tooling
+        run: |
+          npm install --no-save playwright terser sharp
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Reproduce exact Phase18 passing baseline in disposable workspace
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance phase18-performance phase19-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          cp -a phase17-performance/optimized-site phase18-performance/baseline-site
+          cp -a phase17-performance/optimized-site phase18-performance/optimized-site
+          node tools/pt_lite_phase18_glyphs.mjs
+          python3 tools/pt_lite_phase18_font_split.py
+          node tools/pt_lite_phase18_avif.mjs
+          cp -a phase18-performance/optimized-site phase19-performance/baseline-site
+          cp -a phase18-performance/optimized-site phase19-performance/optimized-site
+      - name: Defer Japanese font declarations on homepage, retain identical WOFF2
+        run: |
+          node tools/pt_lite_phase19_css.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('phase19-performance/css-deferred.json').read_text())
+          assert j['passed'] and j['stylesIdentical'],j
+          assert j['cssSavingsSameBoth'] and j['bytesDeferred']>3000,j
+          print('PHASE19_CSS_GENERATION_PASS',j['bytesDeferred'])
+          PY
+      - name: Reaudit 18 largest portrait WebPs as fidelity-gated AVIF candidates
+        run: node tools/pt_lite_phase19_avif_portraits.mjs
+      - name: Measure Phase18 baseline desktop / mobile / 4G network
+        run: node tools/pt_lite_phase19_perf.mjs --site=phase19-performance/baseline-site --out=phase19-performance/baseline-network.json
+      - name: Measure Phase19 optimized desktop / mobile / 4G network
+        run: node tools/pt_lite_phase19_perf.mjs --site=phase19-performance/optimized-site --out=phase19-performance/optimized-network.json
+      - name: Verify actual home CSS bytes saved, route fonts and JSON identity
+        run: |
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('phase19-performance')
+          a=json.loads((p/'baseline-network.json').read_text())
+          b=json.loads((p/'optimized-network.json').read_text())
+          c=json.loads((p/'css-deferred.json').read_text())
+          avif=json.loads((p/'portrait-avif-audit.json').read_text())
+          assert a['passed'] and b['passed'] and c['passed'] and avif['passed']
+          assert c['bytesDeferred']>=5000,c
+          old=p/'baseline-site/assets/data'
+          new=p/'optimized-site/assets/data'
+          files=list(old.rglob('*.json'))
+          assert len(files)==44,len(files)
+          for f in files:
+            v=new/f.relative_to(old)
+            assert v.is_file() and hashlib.sha256(f.read_bytes()).digest()==hashlib.sha256(v.read_bytes()).digest(),f
+          # All original WebP media remains unchanged and every new CSS rule is
+          # an exact copy of Phase18's verified unicode-range declarations.
+          for f in (p/'baseline-site/assets/media').rglob('*.webp'):
+            v=p/'optimized-site/assets/media'/f.name
+            assert v.is_file() and f.read_bytes()==v.read_bytes(),str(f)
+          report={}
+          for profile in a['devices']:
+            for dev in ['pc','sp']:
+              prior=a['devices'][profile][dev];now=b['devices'][profile][dev]
+              cb=prior['coldHome']['network']['transferBytes']
+              cn=now['coldHome']['network']['transferBytes']
+              sb=prior['sheet']['network']['transferBytes']
+              sn=now['sheet']['network']['transferBytes']
+              assert cn<cb,(profile,dev,'home must transfer less',cb,cn)
+              assert cb-cn>=6000,(profile,dev,'CSS improvement too small',cb,cn)
+              assert sn<=sb+14000,(profile,dev,'sheet request regression',sb,sn)
+              assert now['coldHome']['performance']['loadedCharacters']==[]
+              assert now['coldHome']['performance']['loadedRoutes']==[]
+              assert now['warmHome']['network']['transferBytes']<=1500
+              report[profile+'-'+dev]={
+                'homeBeforeBytes':cb,'homeAfterBytes':cn,'homeSavedBytes':cb-cn,
+                'sheetBeforeBytes':sb,'sheetAfterBytes':sn,
+                'homeBeforeMs':prior['coldHome']['elapsedMs'],
+                'homeAfterMs':now['coldHome']['elapsedMs'],
+                'sheetBeforeMs':prior['sheet']['elapsedMs'],
+                'sheetAfterMs':now['sheet']['elapsedMs'],
+                'warmBytes':now['warmHome']['network']['transferBytes']}
+          (p/'network-compare.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE19_NETWORK_COMPARE',json.dumps(report))
+          print('PHASE19_DATA_EXACT',len(files))
+          PY
+      - name: Verify exact settled PC/mobile home, sheet and art visual parity
+        run: node tools/pt_lite_phase19_visual.mjs
+      - name: Switch through all 44 character sheets and validate font and image loading
+        run: node tools/pt_lite_phase19_characters.mjs
+      - name: Regression tests for PC/SP technique data, localStorage, OAuth/video and admin
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase19-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
+      - name: Assert all test reports and never merge/deploy
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          reports=['phase19-performance/css-deferred.json',
+                   'phase19-performance/portrait-avif-audit.json',
+                   'phase19-performance/visual-report.json',
+                   'phase19-performance/44-character-audit.json',
+                   'phase11-pages-package/browser-report.json',
+                   'phase12-release-audit/phase12-api-mock-browser.json']
+          for p in reports:
+            r=json.loads(Path(p).read_text())
+            assert r['passed'],(p,r.get('errors'),r.get('failures'))
+          print('PHASE19_ALL_TESTS_PASS_TEST_ONLY')
+          PY
+      - name: Save isolated CSS / data / visual benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase19-performance-and-44chars
+          path: |
+            phase19-performance/*.json
+            phase19-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Save fully optimized test static website without deployment
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase19-optimized-site-test-only
+          path: phase19-performance/optimized-site/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
