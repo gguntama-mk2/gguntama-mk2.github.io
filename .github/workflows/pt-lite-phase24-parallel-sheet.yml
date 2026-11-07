@@ -178,7 +178,7 @@ jobs:
           for d in ('pc','sp'):
             x=rpt['devices'][d]
             assert x['passed'] and x['scriptRequestsStartInParallel'] and x['iconVideoRuntimeLoadedInOrder'],x
-            assert x['loaderDeltaBytes']<=500,x
+            assert x['minifiedLoader'] and x['loaderDeltaBytes']<0,x
           print('PHASE24_ONLY_TWO_TEST_LOADERS_CHANGED',sorted(changed),'totalOtherFiles',len(base_files)-2)
           PY
       - name: Benchmark Phase23 reference (PC, smartphone and 4G)
@@ -224,7 +224,7 @@ jobs:
               n_sheet=after['sheet']['network']['transferBytes']
               typ0=before['sheet']['network']['bytesByType']
               typ1=after['sheet']['network']['bytesByType']
-              assert n_home<=b_home+512,(profile,dev,'home startup bytes regression',b_home,n_home)
+              assert n_home<b_home,(profile,dev,'home startup bytes did not improve',b_home,n_home)
               assert after['coldHome']['performance']['loadedCharacters']==[],(profile,dev,'eager character JSON')
               assert after['coldHome']['performance']['loadedRoutes']==[],(profile,dev,'eager feature')
               assert after['warmHome']['network']['transferBytes']<=1500,(profile,dev,'cache regression')
