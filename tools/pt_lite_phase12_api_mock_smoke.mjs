@@ -16,9 +16,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+cQkQAAAAASUVORK5CYII=','base64');
 const video={schema:1,characters:{alisa:{'0':{
  move_name:'リードジャブ',
- thumbnail:'/api/v1/move-media/asset/alisa/0/thumb.jpg',
- lightbox:'/api/v1/move-media/asset/alisa/0/poster.jpg',
- video:'/api/v1/move-media/asset/alisa/0/video.mp4',
+ thumbnail:'/api/v1/move-media/asset/alisa/0/thumb.jpg?v=1',
+ lightbox:'/api/v1/move-media/asset/alisa/0/poster.jpg?v=1',
+ video:'/api/v1/move-media/asset/alisa/0/video.mp4?v=1',
  fps:60
 }}}};
 const icons={schema:1,characters:{}};
@@ -129,7 +129,7 @@ async function run(device){
         frameBtns:[...document.querySelectorAll('.pt-lb-ctl button')].map(e=>e.textContent.trim())};
     });
     check(!lightbox.muted&&!lightbox.defaultMuted&&lightbox.volume===0.5,device,'volume defaults incorrect',lightbox);
-    check(lightbox.source===MOCK+'/api/v1/move-media/asset/alisa/0/video.mp4',device,'video API path changed',lightbox.source);
+    check(lightbox.source===MOCK+'/api/v1/move-media/asset/alisa/0/video.mp4?v=1',device,'video API path changed',lightbox.source);
     check(lightbox.frameBtns.some(x=>x.includes('1コマ')),device,'frame advance controls missing',lightbox);
     await page.keyboard.press('Escape');
     check(await page.locator('.pt-lb').count()===0,device,'lightbox Escape close broken');
