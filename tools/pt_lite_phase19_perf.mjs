@@ -36,17 +36,20 @@ async function serve(){
 }
 function summariseNetwork(events){
   const items=events.filter(e=>e.origin==='local'&&!e.api);
-  const requestCounts={};
+  const requestCounts={},bytesByType={};
   for(const x of items){
     let kind=x.type||'Other';
     requestCounts[kind]=(requestCounts[kind]||0)+1;
+    bytesByType[kind]=(bytesByType[kind]||0)+(x.bytes||0);
   }
+  for(const key in bytesByType)bytesByType[key]=Math.round(bytesByType[key]);
   return {
     requestCount:items.length,
     transferBytes:Math.round(items.reduce((a,x)=>a+(x.bytes||0),0)),
     cachedCount:items.filter(x=>x.fromCache||x.fromDiskCache).length,
     response304:items.filter(x=>x.status===304).length,
     byType:requestCounts,
+    bytesByType,
     topByTransfer:[...items].sort((a,b)=>(b.bytes||0)-(a.bytes||0)).slice(0,8).map(x=>({
       path:x.path,bytes:Math.round(x.bytes||0),type:x.type,status:x.status
     }))
