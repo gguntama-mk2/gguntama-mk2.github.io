@@ -496,6 +496,23 @@
     #secCloud .pt-cloud-focus-card .pt-cloud-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .pt-cloud-focus-detail .pt-cloud-graph-grid { grid-template-columns:minmax(0,1fr); }
   }
+
+  /* Read-only 2304 MOTBIN source coverage: never visually imply gameplay verification. */
+  #secCloud .pt-motbin-coverage { min-width:0; display:grid; gap:12px; }
+  #secCloud .pt-motbin-coverage .pt-cloud-metrics { margin:4px 0; }
+  #secCloud .pt-motbin-progress { display:block; width:100%; height:14px; accent-color:var(--accent); }
+  #secCloud .pt-motbin-index-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:7px; padding-top:10px; }
+  #secCloud .pt-motbin-index { display:flex; gap:10px; align-items:center; min-width:0; padding:9px;
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; font-size:12px; }
+  #secCloud .pt-motbin-index code { white-space:nowrap; min-width:36px; color:var(--accent); }
+  #secCloud .pt-motbin-index span { min-width:0; overflow-wrap:anywhere; }
+  #secCloud .pt-motbin-coverage > .btn { min-height:44px; justify-self:start; max-width:100%; white-space:normal; }
+  @media (max-width:800px) {
+    #secCloud .pt-motbin-index-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+    #secCloud .pt-motbin-index { padding:8px 6px; flex-wrap:wrap; }
+    #secCloud .pt-motbin-coverage > .btn { width:100%; justify-self:stretch; }
+  }
+  @media (max-width:340px) { #secCloud .pt-motbin-index-grid { grid-template-columns:minmax(0,1fr); } }
 </style>
 </head>
 <body>
