@@ -118,7 +118,8 @@ const fixtures = (u) => {
         mvl_unresolved_entries:[{source_entry_index:2,name_ja:"ヒート中にできること２ (共通)",command:"説明のみ"}],
         anmbin_reference_candidates:[{motbin_move_index:238,animation_reference_verified:true,display_move_identity_confirmed:false}]},
       indexed_moves:{"1550":{motbin_move_index:1550,motbin_move_id:1489449424,source_character_id:"bryan",
-        animation_reference_verified:true,command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22"}],
+        animation_reference_verified:true,anmbin_body_index_raw:1550,anmbin_fullbody_hash32:1877659877,
+        command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22",entry_index:77}],
         site_checksheet_review_candidates:[
           {site_k:37,site_name:"スネークピット",site_command:"WPRP",review_group:"repeat_mvl_entry_same_move",review_status:"unverified",checklist_binding_verified:false},
           {site_k:0,site_name:"スネークピット",site_command:"WPRP",review_group:"single_candidate",review_status:"unverified",checklist_binding_verified:false}
@@ -269,6 +270,17 @@ const fixtures = (u) => {
           await search.fill("1021");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===1);
           assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
+          for(const [q,want] of [["index:1473","1021"],["raw:2165","1021"],
+            ["moveid:1489449424","509"],["cancel:8730","439"],
+            ["anmbin:1550","509"],["mvl:77","509"],["sitek:37","509"]]){
+            await search.fill(q);
+            await page.waitForFunction((wanted)=>{
+              const rows=document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button');
+              return rows.length===1 && rows[0].textContent.trim()===wanted;
+            },want);
+            assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),want,
+              "Namespaced search "+q+" should find Requirements "+want);
+          }
           await search.fill("");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===5);
           // Character evidence filter distinguishes sourced candidates from confirmed IDs.
@@ -281,6 +293,7 @@ const fixtures = (u) => {
           const namedText=await namedModal.innerText();
           assert(namedText.includes("MOTBIN技インデックス 1550"),"Source move index exposed");
           assert(namedText.includes("内部move_id：1489449424"),"Internal move ID preserved exactly");
+          assert(namedText.includes("ANMBIN body index 1550"),"Independent ANMBIN body index visible");
           assert(namedText.includes("スネークピット"),"Source Japanese move name exposed");
           assert(namedText.includes("チェックシートの技名＋コマンドが一致する候補"),"Strict checklist comparison visible");
           assert(namedText.includes("#37 スネークピット"),"Exact site-k/name/command review candidate appears");
@@ -369,6 +382,12 @@ const fixtures = (u) => {
             assert(csvText.includes("技名未照合インデックス総数"),"Unnamed research leads exported");
             assert(csvText.includes("主な遷移先raw候補"),"CSV includes raw destination provenance");
             assert(csvText.includes("共通インデックスのあるRequirements ID"),"CSV includes shared ID provenance");
+            assert(csvText.includes("MOTBIN内部move_id（別ID）"),"CSV labels raw move_id separately");
+            assert(csvText.includes("MVL entry index（別ID）"),"CSV labels MVL separately");
+            assert(csvText.includes("ANMBIN body index（別ID）"),"CSV labels animation body separately");
+            assert(csvText.includes("レビューsite_k（未検証・別ID）"),"CSV separates site k candidate");
+            assert(csvText.includes("1489449424"),"CSV includes sourced move ID");
+            assert(csvText.includes("1550"),"CSV includes independent ANMBIN body ID");
             assert(csvText.includes("実機未検証"),"CSV marks inferred data unverified");
           }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
