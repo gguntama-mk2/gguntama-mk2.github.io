@@ -28,10 +28,40 @@ jobs:
           node --check tests/admin-mobile-layout.cjs
       - name: Install isolated Chromium
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright terser
           npx playwright install --with-deps chromium
       - name: Run cold / warm / route network measurement (localhost only)
         run: node tools/pt_lite_phase16_perf.mjs
+      - name: Generate optimized TEST COPY with formatting-only JS minification
+        run: node tools/pt_lite_phase16_optimize.mjs
+      - name: Measure optimized PC and mobile cold/warm transfers
+        run: |
+          node tools/pt_lite_phase16_perf.mjs --site=phase16-performance/optimized-site --out=phase16-performance/optimized.json
+      - name: Compare original and optimized transfer counts
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('phase16-performance')
+          b=json.loads((root/'baseline.json').read_text())
+          o=json.loads((root/'optimized.json').read_text())
+          m=json.loads((root/'optimization.json').read_text())
+          assert b['passed'] and o['passed'] and m['passed'],(b.get('failures'),o.get('failures'),m.get('errors'))
+          assert m['totalSaved'] >= 10000,m['totalSaved']
+          for profile in b['devices']:
+            for device in ('pc','sp'):
+              a=b['devices'][profile][device]
+              z=o['devices'][profile][device]
+              before=a['coldHome']['network']['transferBytes']
+              after=z['coldHome']['network']['transferBytes']
+              assert after<before,(profile,device,before,after)
+              assert z['coldHome']['performance']['loadedCharacters']==[]
+              assert z['coldHome']['performance']['loadedRoutes']==[]
+              assert z['sheet']['network']['requestCount']>0
+              assert z['glossary']['network']['requestCount']>0
+              assert z['warmHome']['network']['transferBytes']==0
+              print('PHASE16_COMPARE',profile,device,'before',before,'after',after,'saved',before-after)
+          PY
       - name: Check local transfer, loaded feature parity and profiling report
         run: |
           python3 - <<'PY'
@@ -55,7 +85,7 @@ jobs:
       - name: Recheck Phase15 functional parity (same origin)
         run: |
           mkdir -p phase11-pages-package phase12-release-audit
-          ln -s .. phase11-pages-package/site
+          ln -s ../phase16-performance/optimized-site phase11-pages-package/site
           node tools/pt_lite_phase11_pages_smoke.mjs
           node tools/pt_lite_phase12_api_mock_smoke.mjs
           node tests/admin-mobile-layout.cjs
