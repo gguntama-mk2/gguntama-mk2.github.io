@@ -80,7 +80,9 @@ async function stateCompatibility(){
   };
   await page.evaluate(values=>{for(const [k,v] of Object.entries(values))localStorage.setItem(k,v);},legacy);
   async function validate(device){
-    await page.goto(base+device+'.html#sheet',{waitUntil:'load',timeout:45000});
+    const target=base+device+'.html#sheet';
+    if(page.url()===target)await page.reload({waitUntil:'load',timeout:45000});
+    else await page.goto(target,{waitUntil:'load',timeout:45000});
     await page.waitForFunction(()=>window.PT_CHAR_DATA&&window.PT_CHAR_DATA.loaded().includes('alisa'),{timeout:30000});
     await page.waitForFunction(({device,k})=>device==='pc'
       ? !!document.querySelector('#body tr[data-k="'+k+'"] input[type="checkbox"]')
