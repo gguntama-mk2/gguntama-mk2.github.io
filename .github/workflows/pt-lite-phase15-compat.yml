@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - test/pt-lite-phase15-main-sync-20261107
+  pull_request:
+    branches:
+      - release/pt-lite-html-phase13
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   audit-and-browser:
-    if: github.ref == 'refs/heads/test/pt-lite-phase15-main-sync-20261107'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/test/pt-lite-phase15-main-sync-20261107'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
