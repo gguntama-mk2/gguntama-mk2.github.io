@@ -1,22 +1,22 @@
 {
   "phase": 10,
-  "at": "2026-11-07T04:01:50.926Z",
+  "at": "2026-11-07T04:20:25.177Z",
   "base": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/",
   "passed": true,
   "network": {
     "pc": {
-      "firstNavMs": 778,
-      "reloadMs": 920,
+      "firstNavMs": 1833,
+      "reloadMs": 947,
       "cold": {
-        "totalBytes": 403057,
+        "totalBytes": 402927,
         "requestCount": 27,
         "groups": {
-          "html": 5284,
-          "js": 138242,
-          "css": 30104,
-          "media": 211060,
-          "images": 17917,
-          "api": 450
+          "html": 5285,
+          "js": 138480,
+          "css": 29824,
+          "media": 210925,
+          "images": 17964,
+          "api": 449
         },
         "cacheHits": 0,
         "errors": [],
@@ -25,7 +25,7 @@
             "path": "/pc.html",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 5284,
+            "bytes": 5285,
             "kind": "html",
             "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\"",
@@ -37,9 +37,9 @@
             "path": "/assets/js/pc_04.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 78767,
+            "bytes": 78729,
             "kind": "js",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"2428eb72fc1fe4dd4cf58ed36a344a96b7de7be961eef237277211365ba0b1d2\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -49,9 +49,9 @@
             "path": "/assets/css/pc_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 28426,
+            "bytes": 28118,
             "kind": "css",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -61,7 +61,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/356e885b36a307552b9b.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 62918,
+            "bytes": 62567,
             "kind": "media",
             "cacheControl": "max-age=300",
             "etag": "W/\"962cb5ef0a2ad96605fbaa62922a38e10acda703afca1f9bc184afeecbfc0a23\"",
@@ -73,10 +73,268 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 17424,
+            "bytes": 17425,
             "kind": "images",
             "cacheControl": "max-age=300",
             "etag": "W/\"066fe07090c0e5ff86aff42da9913e5ae282897a9fe3ec493db368c7792347cf\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          "api": {
+            "path": "/api/time/current/zone",
+            "origin": "https://timeapi.io",
+            "status": 200,
+            "bytes": 449,
+            "kind": "api",
+            "cacheControl": "",
+            "etag": "",
+            "contentEncoding": "gzip",
+            "hit": false,
+            "failed": null
+          }
+        },
+        "largest": [
+          {
+            "path": "/assets/js/pc_04.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 78729,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"2428eb72fc1fe4dd4cf58ed36a344a96b7de7be961eef237277211365ba0b1d2\"",
+            "contentEncoding": "gzip",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/356e885b36a307552b9b.webp",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 62567,
+            "kind": "media",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"962cb5ef0a2ad96605fbaa62922a38e10acda703afca1f9bc184afeecbfc0a23\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/6bdfaa0c26f6f7e4588c.webp",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 54583,
+            "kind": "media",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"33c8359c65ede9964db38d74210a98de3d1a8918f058284269f6410a30b6c652\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/media/7e5616b661cc3e3a14c6.woff",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 30647,
+            "kind": "media",
+            "cacheControl": "max-age=14400, s-maxage=300",
+            "etag": "W/\"7b2bde7aad19aae04d85156cd91b0f0c43ac2cbee18337d3e90042314b1eb875\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/css/pc_00.css",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 28118,
+            "kind": "css",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\"",
+            "contentEncoding": "gzip",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/media/590d76a38d297080c723.woff2",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 24537,
+            "kind": "media",
+            "cacheControl": "max-age=14400, s-maxage=300",
+            "etag": "W/\"390746a403c8f99cb12c4423b8b12918c9c3916d21ef444843302a244adf4520\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/media/8188ad9e81eac5cc98cb.woff2",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 22668,
+            "kind": "media",
+            "cacheControl": "max-age=14400, s-maxage=300",
+            "etag": "W/\"a485e315375b9a08afa7df303651f7e023ed47a63dc0090291c1cbc83d5be32e\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 17425,
+            "kind": "images",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"066fe07090c0e5ff86aff42da9913e5ae282897a9fe3ec493db368c7792347cf\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_10.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 12590,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"69961ca6224c7f7ecf00a7aa52e1d69f8b9fa8ad20bdf5601df0a89c64724948\"",
+            "contentEncoding": "gzip",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_17.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 12108,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"e2e147b3dead0aaeea372b856a92a5959f12635ec3689e071074d837354fd17b\"",
+            "contentEncoding": "gzip",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/media/54a666f059de32829fa2.woff",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 8583,
+            "kind": "media",
+            "cacheControl": "max-age=14400, s-maxage=300",
+            "etag": "W/\"535dd81f436809a404b6a1c6da1ac60be7f8480f99fd193db275d084ec5402d8\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/441acd27a4840c16574b.webp",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 6591,
+            "kind": "media",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"0f342dd9a084f9348846d364af9448bd110ef87797c461cf6aa54e737cce11b4\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/move-media-preview.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 6504,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"953259ec032ba89301274fc5b0762e37\"",
+            "contentEncoding": "br",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/move-icons.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 6078,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
+            "contentEncoding": "br",
+            "hit": false,
+            "failed": null
+          }
+        ]
+      },
+      "warm": {
+        "totalBytes": 1581,
+        "requestCount": 27,
+        "groups": {
+          "html": 171,
+          "js": 837,
+          "css": 123,
+          "media": 0,
+          "images": 0,
+          "api": 450
+        },
+        "cacheHits": 0,
+        "errors": [],
+        "headers": {
+          "html": {
+            "path": "/pc.html",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 171,
+            "kind": "html",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\"",
+            "contentEncoding": "br",
+            "hit": false,
+            "failed": null
+          },
+          "js": {
+            "path": "/assets/js/pt-preview-guard.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 81,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          "css": {
+            "path": "/assets/css/pc_00.css",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 64,
+            "kind": "css",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          "media": {
+            "path": "/assets/media/8188ad9e81eac5cc98cb.woff2",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 0,
+            "kind": "media",
+            "cacheControl": "max-age=14400, s-maxage=300",
+            "etag": "W/\"a485e315375b9a08afa7df303651f7e023ed47a63dc0090291c1cbc83d5be32e\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          "images": {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/48481f1229888c33fc382ec0.avif",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 0,
+            "kind": "images",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"2c25e856efeac70b47da2a8f4de9e640af8d4b8a7c6ee167b7b987ae7e03cca9\"",
             "contentEncoding": "",
             "hit": false,
             "failed": null
@@ -96,268 +354,10 @@
         },
         "largest": [
           {
-            "path": "/assets/js/pc_04.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 78767,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"2428eb72fc1fe4dd4cf58ed36a344a96b7de7be961eef237277211365ba0b1d2\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/356e885b36a307552b9b.webp",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 62918,
-            "kind": "media",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"962cb5ef0a2ad96605fbaa62922a38e10acda703afca1f9bc184afeecbfc0a23\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/6bdfaa0c26f6f7e4588c.webp",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 54277,
-            "kind": "media",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"33c8359c65ede9964db38d74210a98de3d1a8918f058284269f6410a30b6c652\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/media/7e5616b661cc3e3a14c6.woff",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 30787,
-            "kind": "media",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"7b2bde7aad19aae04d85156cd91b0f0c43ac2cbee18337d3e90042314b1eb875\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/css/pc_00.css",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 28426,
-            "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/media/590d76a38d297080c723.woff2",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 24491,
-            "kind": "media",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"390746a403c8f99cb12c4423b8b12918c9c3916d21ef444843302a244adf4520\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/media/8188ad9e81eac5cc98cb.woff2",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 22899,
-            "kind": "media",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a485e315375b9a08afa7df303651f7e023ed47a63dc0090291c1cbc83d5be32e\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 17424,
-            "kind": "images",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"066fe07090c0e5ff86aff42da9913e5ae282897a9fe3ec493db368c7792347cf\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/pc_10.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 12462,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"69961ca6224c7f7ecf00a7aa52e1d69f8b9fa8ad20bdf5601df0a89c64724948\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/pc_17.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 11769,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"e2e147b3dead0aaeea372b856a92a5959f12635ec3689e071074d837354fd17b\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/media/54a666f059de32829fa2.woff",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 8323,
-            "kind": "media",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"535dd81f436809a404b6a1c6da1ac60be7f8480f99fd193db275d084ec5402d8\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/441acd27a4840c16574b.webp",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 6590,
-            "kind": "media",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"0f342dd9a084f9348846d364af9448bd110ef87797c461cf6aa54e737cce11b4\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/move-media-preview.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 6504,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "W/\"953259ec032ba89301274fc5b0762e37\"",
-            "contentEncoding": "br",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/move-icons.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 6101,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "W/\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
-            "contentEncoding": "br",
-            "hit": false,
-            "failed": null
-          }
-        ]
-      },
-      "warm": {
-        "totalBytes": 861,
-        "requestCount": 27,
-        "groups": {
-          "js": 247,
-          "css": 0,
-          "html": 165,
-          "media": 0,
-          "images": 0,
-          "api": 449
-        },
-        "cacheHits": 0,
-        "errors": [],
-        "headers": {
-          "js": {
-            "path": "/assets/js/pt-preview-guard.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 304,
-            "bytes": 86,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          "css": {
-            "path": "/assets/css/pc_00.css",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          "html": {
-            "path": "/pc.html",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 165,
-            "kind": "html",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\"",
-            "contentEncoding": "br",
-            "hit": false,
-            "failed": null
-          },
-          "media": {
-            "path": "/assets/media/8188ad9e81eac5cc98cb.woff2",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "media",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a485e315375b9a08afa7df303651f7e023ed47a63dc0090291c1cbc83d5be32e\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          "images": {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/48481f1229888c33fc382ec0.avif",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 0,
-            "kind": "images",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"2c25e856efeac70b47da2a8f4de9e640af8d4b8a7c6ee167b7b987ae7e03cca9\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          "api": {
             "path": "/api/time/current/zone",
             "origin": "https://timeapi.io",
             "status": 200,
-            "bytes": 449,
-            "kind": "api",
-            "cacheControl": "",
-            "etag": "",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          }
-        },
-        "largest": [
-          {
-            "path": "/api/time/current/zone",
-            "origin": "https://timeapi.io",
-            "status": 200,
-            "bytes": 449,
+            "bytes": 450,
             "kind": "api",
             "cacheControl": "",
             "etag": "",
@@ -369,7 +369,7 @@
             "path": "/pc.html",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 165,
+            "bytes": 171,
             "kind": "html",
             "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\"",
@@ -379,24 +379,12 @@
           },
           {
             "path": "/assets/js/pt-preview-guard.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 304,
-            "bytes": 86,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/move-icons.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 304,
             "bytes": 81,
             "kind": "js",
             "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
+            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
             "contentEncoding": "",
             "hit": false,
             "failed": null
@@ -414,110 +402,122 @@
             "failed": null
           },
           {
-            "path": "/assets/js/pc_00.js",
+            "path": "/move-icons.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 80,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"bbd36d635ab29de61ea1468085c45fefbbfb7c85ffbbe55781e4f2bd63dff6e4\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/pc_03.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"99547216b8e41516a50833964e30ab992f2c046284130acf67a2c745491c3f22\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/css/pc_00.css",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/css/pc_01.css",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"e4bb2fa294f868472475cd2861dcd69ac732a7199231b09dc7e9ab999bcdd7e1\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/pc_04.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"2428eb72fc1fe4dd4cf58ed36a344a96b7de7be961eef237277211365ba0b1d2\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/js/pc_05.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 66,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"dc26a1261b618826e6bbb47337f877c6ce623fcea3c4e03dd60b25358fdf0d7e\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
-            "path": "/assets/js/pc_10.js",
+            "path": "/assets/css/pc_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 64,
+            "kind": "css",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_04.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"69961ca6224c7f7ecf00a7aa52e1d69f8b9fa8ad20bdf5601df0a89c64724948\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_03.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/css/pc_01.css",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "css",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_17.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_route-loader.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pc_00.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/js/pc_11.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 59,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"7a59e8c46254b3f12129e39318d968cb8116c97f7ddfa66790c12b9606d9db72\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/pc_13.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"8cfeb17ad2a79883b9930c70da442f52269847e4ffdfb1b65610c8be0b4f3b80\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           }
@@ -532,18 +532,18 @@
       }
     },
     "sp": {
-      "firstNavMs": 358,
-      "reloadMs": 908,
+      "firstNavMs": 897,
+      "reloadMs": 965,
       "cold": {
-        "totalBytes": 394667,
+        "totalBytes": 394911,
         "requestCount": 25,
         "groups": {
-          "html": 5573,
-          "js": 135216,
-          "css": 25193,
-          "media": 209991,
-          "images": 18245,
-          "api": 449
+          "html": 5574,
+          "js": 135281,
+          "css": 25206,
+          "media": 210487,
+          "images": 17915,
+          "api": 448
         },
         "cacheHits": 0,
         "errors": [],
@@ -552,7 +552,7 @@
             "path": "/sp.html",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 5573,
+            "bytes": 5574,
             "kind": "html",
             "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\"",
@@ -564,9 +564,9 @@
             "path": "/assets/js/sp_04.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 75478,
+            "bytes": 75500,
             "kind": "js",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"e3a6f3f595642edcc078cdf16196b45a6afb0d7638f527f63b50a32b4cef10c5\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -576,9 +576,9 @@
             "path": "/assets/css/sp_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 25193,
+            "bytes": 25206,
             "kind": "css",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -588,7 +588,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/356e885b36a307552b9b.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 62565,
+            "bytes": 62948,
             "kind": "media",
             "cacheControl": "max-age=300",
             "etag": "W/\"962cb5ef0a2ad96605fbaa62922a38e10acda703afca1f9bc184afeecbfc0a23\"",
@@ -600,7 +600,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 17775,
+            "bytes": 17423,
             "kind": "images",
             "cacheControl": "max-age=300",
             "etag": "W/\"066fe07090c0e5ff86aff42da9913e5ae282897a9fe3ec493db368c7792347cf\"",
@@ -612,7 +612,7 @@
             "path": "/api/time/current/zone",
             "origin": "https://timeapi.io",
             "status": 200,
-            "bytes": 449,
+            "bytes": 448,
             "kind": "api",
             "cacheControl": "",
             "etag": "",
@@ -626,9 +626,9 @@
             "path": "/assets/js/sp_04.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 75478,
+            "bytes": 75500,
             "kind": "js",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"e3a6f3f595642edcc078cdf16196b45a6afb0d7638f527f63b50a32b4cef10c5\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -638,7 +638,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/356e885b36a307552b9b.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 62565,
+            "bytes": 62948,
             "kind": "media",
             "cacheControl": "max-age=300",
             "etag": "W/\"962cb5ef0a2ad96605fbaa62922a38e10acda703afca1f9bc184afeecbfc0a23\"",
@@ -650,7 +650,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/6bdfaa0c26f6f7e4588c.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 54662,
+            "bytes": 54281,
             "kind": "media",
             "cacheControl": "max-age=300",
             "etag": "W/\"33c8359c65ede9964db38d74210a98de3d1a8918f058284269f6410a30b6c652\"",
@@ -662,7 +662,7 @@
             "path": "/assets/media/7e5616b661cc3e3a14c6.woff",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 30742,
+            "bytes": 30672,
             "kind": "media",
             "cacheControl": "max-age=14400",
             "etag": "W/\"7b2bde7aad19aae04d85156cd91b0f0c43ac2cbee18337d3e90042314b1eb875\"",
@@ -674,9 +674,9 @@
             "path": "/assets/css/sp_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 25193,
+            "bytes": 25206,
             "kind": "css",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -686,7 +686,7 @@
             "path": "/assets/media/590d76a38d297080c723.woff2",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 24521,
+            "bytes": 24784,
             "kind": "media",
             "cacheControl": "max-age=14400",
             "etag": "W/\"390746a403c8f99cb12c4423b8b12918c9c3916d21ef444843302a244adf4520\"",
@@ -698,7 +698,7 @@
             "path": "/assets/media/8188ad9e81eac5cc98cb.woff2",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 22891,
+            "bytes": 22650,
             "kind": "media",
             "cacheControl": "max-age=14400",
             "etag": "W/\"a485e315375b9a08afa7df303651f7e023ed47a63dc0090291c1cbc83d5be32e\"",
@@ -710,7 +710,7 @@
             "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
             "origin": "https://raw.githubusercontent.com",
             "status": 200,
-            "bytes": 17775,
+            "bytes": 17423,
             "kind": "images",
             "cacheControl": "max-age=300",
             "etag": "W/\"066fe07090c0e5ff86aff42da9913e5ae282897a9fe3ec493db368c7792347cf\"",
@@ -722,9 +722,9 @@
             "path": "/assets/js/sp_10.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 12564,
+            "bytes": 12459,
             "kind": "js",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"51be17b4354c08f9eeeefa5e245e34c1ca4bf51f70a01f9107b4b8e316e90226\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -734,9 +734,9 @@
             "path": "/assets/js/sp_17.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 11773,
+            "bytes": 12094,
             "kind": "js",
-            "cacheControl": "max-age=14400",
+            "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"20ecfee94af2765422b3848741db203ba17da3f0975ff8e22f305a631c8194d8\"",
             "contentEncoding": "gzip",
             "hit": false,
@@ -746,10 +746,22 @@
             "path": "/assets/media/54a666f059de32829fa2.woff",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 8403,
+            "bytes": 8603,
             "kind": "media",
             "cacheControl": "max-age=14400",
             "etag": "W/\"535dd81f436809a404b6a1c6da1ac60be7f8480f99fd193db275d084ec5402d8\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/441acd27a4840c16574b.webp",
+            "origin": "https://raw.githubusercontent.com",
+            "status": 200,
+            "bytes": 6549,
+            "kind": "media",
+            "cacheControl": "max-age=300",
+            "etag": "W/\"0f342dd9a084f9348846d364af9448bd110ef87797c461cf6aa54e737cce11b4\"",
             "contentEncoding": "",
             "hit": false,
             "failed": null
@@ -767,22 +779,10 @@
             "failed": null
           },
           {
-            "path": "/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/media/441acd27a4840c16574b.webp",
-            "origin": "https://raw.githubusercontent.com",
-            "status": 200,
-            "bytes": 6207,
-            "kind": "media",
-            "cacheControl": "max-age=300",
-            "etag": "W/\"0f342dd9a084f9348846d364af9448bd110ef87797c461cf6aa54e737cce11b4\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
             "path": "/move-icons.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 6051,
+            "bytes": 6052,
             "kind": "js",
             "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
@@ -793,12 +793,12 @@
         ]
       },
       "warm": {
-        "totalBytes": 855,
+        "totalBytes": 1533,
         "requestCount": 25,
         "groups": {
-          "js": 241,
-          "css": 0,
-          "html": 165,
+          "html": 166,
+          "js": 859,
+          "css": 59,
           "media": 0,
           "images": 0,
           "api": 449
@@ -806,14 +806,26 @@
         "cacheHits": 0,
         "errors": [],
         "headers": {
+          "html": {
+            "path": "/sp.html",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 200,
+            "bytes": 166,
+            "kind": "html",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\"",
+            "contentEncoding": "br",
+            "hit": false,
+            "failed": null
+          },
           "js": {
-            "path": "/move-icons.js",
+            "path": "/assets/js/sp_00.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 304,
-            "bytes": 81,
+            "bytes": 89,
             "kind": "js",
             "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"a601ba3e31d57cbb9945b8ec1b040f0e\"",
+            "etag": "",
             "contentEncoding": "",
             "hit": false,
             "failed": null
@@ -821,24 +833,12 @@
           "css": {
             "path": "/assets/css/sp_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 59,
             "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          "html": {
-            "path": "/sp.html",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 165,
-            "kind": "html",
             "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\"",
-            "contentEncoding": "br",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
@@ -896,11 +896,47 @@
             "path": "/sp.html",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
             "status": 200,
-            "bytes": 165,
+            "bytes": 166,
             "kind": "html",
             "cacheControl": "public, max-age=0, must-revalidate",
             "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\"",
             "contentEncoding": "br",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/sp_00.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 89,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/move-media-preview.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 81,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "\"953259ec032ba89301274fc5b0762e37\"",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/pt-preview-guard.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 81,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
@@ -917,134 +953,98 @@
             "failed": null
           },
           {
-            "path": "/assets/js/pt-preview-guard.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 304,
-            "bytes": 80,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"1f14ab138a103f84d5d145f9a2fa60df\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/move-media-preview.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 304,
-            "bytes": 80,
-            "kind": "js",
-            "cacheControl": "public, max-age=0, must-revalidate",
-            "etag": "\"953259ec032ba89301274fc5b0762e37\"",
-            "contentEncoding": "",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/sp_00.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"99547216b8e41516a50833964e30ab992f2c046284130acf67a2c745491c3f22\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
             "path": "/assets/js/sp_01.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 60,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"bbd36d635ab29de61ea1468085c45fefbbfb7c85ffbbe55781e4f2bd63dff6e4\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/css/sp_00.css",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 59,
             "kind": "css",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/sp_04.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"e3a6f3f595642edcc078cdf16196b45a6afb0d7638f527f63b50a32b4cef10c5\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/js/sp_05.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 59,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"dc26a1261b618826e6bbb47337f877c6ce623fcea3c4e03dd60b25358fdf0d7e\"",
-            "contentEncoding": "gzip",
-            "hit": false,
-            "failed": null
-          },
-          {
-            "path": "/assets/js/sp_10.js",
-            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
-            "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"51be17b4354c08f9eeeefa5e245e34c1ca4bf51f70a01f9107b4b8e316e90226\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/js/sp_11.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 59,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"7a59e8c46254b3f12129e39318d968cb8116c97f7ddfa66790c12b9606d9db72\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/sp_10.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 59,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
+            "hit": false,
+            "failed": null
+          },
+          {
+            "path": "/assets/js/sp_04.js",
+            "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
+            "status": 304,
+            "bytes": 58,
+            "kind": "js",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
             "path": "/assets/js/sp_13.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 58,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"b9093ab0b739537b948878a9336c4b70484849d8732c105cb628846e9530ac8d\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           },
           {
-            "path": "/assets/js/sp_17.js",
+            "path": "/assets/js/sp_18.js",
             "origin": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app",
-            "status": 200,
-            "bytes": 0,
+            "status": 304,
+            "bytes": 58,
             "kind": "js",
-            "cacheControl": "max-age=14400",
-            "etag": "W/\"20ecfee94af2765422b3848741db203ba17da3f0975ff8e22f305a631c8194d8\"",
-            "contentEncoding": "gzip",
+            "cacheControl": "public, max-age=0, must-revalidate",
+            "etag": "",
+            "contentEncoding": "",
             "hit": false,
             "failed": null
           }
@@ -1119,14 +1119,14 @@
       "name": "pc first 2.5s <1MB",
       "passed": true,
       "info": {
-        "bytes": 403057,
+        "bytes": 402927,
         "groups": {
-          "html": 5284,
-          "js": 138242,
-          "css": 30104,
-          "media": 211060,
-          "images": 17917,
-          "api": 450
+          "html": 5285,
+          "js": 138480,
+          "css": 29824,
+          "media": 210925,
+          "images": 17964,
+          "api": 449
         }
       }
     },
@@ -1168,8 +1168,8 @@
       "name": "pc refresh traffic <=120% cold",
       "passed": true,
       "info": {
-        "cold": 403057,
-        "warm": 861,
+        "cold": 402927,
+        "warm": 1581,
         "hits": 0
       }
     },
@@ -1184,14 +1184,14 @@
       "name": "sp first 2.5s <1MB",
       "passed": true,
       "info": {
-        "bytes": 394667,
+        "bytes": 394911,
         "groups": {
-          "html": 5573,
-          "js": 135216,
-          "css": 25193,
-          "media": 209991,
-          "images": 18245,
-          "api": 449
+          "html": 5574,
+          "js": 135281,
+          "css": 25206,
+          "media": 210487,
+          "images": 17915,
+          "api": 448
         }
       }
     },
@@ -1233,8 +1233,8 @@
       "name": "sp refresh traffic <=120% cold",
       "passed": true,
       "info": {
-        "cold": 394667,
-        "warm": 855,
+        "cold": 394911,
+        "warm": 1533,
         "hits": 0
       }
     },
@@ -1330,6 +1330,222 @@
       "info": {
         "isEmpty": true
       }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation pc.html",
+      "passed": true,
+      "info": {
+        "path": "pc.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\""
+      }
+    },
+    {
+      "name": "stage10 noindex header pc.html",
+      "passed": true,
+      "info": {
+        "path": "pc.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation sp.html",
+      "passed": true,
+      "info": {
+        "path": "sp.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\""
+      }
+    },
+    {
+      "name": "stage10 noindex header sp.html",
+      "passed": true,
+      "info": {
+        "path": "sp.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation assets/js/pc_17.js",
+      "passed": true,
+      "info": {
+        "path": "assets/js/pc_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"e2e147b3dead0aaeea372b856a92a5959f12635ec3689e071074d837354fd17b\""
+      }
+    },
+    {
+      "name": "stage10 noindex header assets/js/pc_17.js",
+      "passed": true,
+      "info": {
+        "path": "assets/js/pc_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"e2e147b3dead0aaeea372b856a92a5959f12635ec3689e071074d837354fd17b\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation assets/js/sp_17.js",
+      "passed": true,
+      "info": {
+        "path": "assets/js/sp_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"20ecfee94af2765422b3848741db203ba17da3f0975ff8e22f305a631c8194d8\""
+      }
+    },
+    {
+      "name": "stage10 noindex header assets/js/sp_17.js",
+      "passed": true,
+      "info": {
+        "path": "assets/js/sp_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"20ecfee94af2765422b3848741db203ba17da3f0975ff8e22f305a631c8194d8\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation assets/css/pc_00.css",
+      "passed": true,
+      "info": {
+        "path": "assets/css/pc_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\""
+      }
+    },
+    {
+      "name": "stage10 noindex header assets/css/pc_00.css",
+      "passed": true,
+      "info": {
+        "path": "assets/css/pc_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation assets/css/sp_00.css",
+      "passed": true,
+      "info": {
+        "path": "assets/css/sp_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\""
+      }
+    },
+    {
+      "name": "stage10 noindex header assets/css/sp_00.css",
+      "passed": true,
+      "info": {
+        "path": "assets/css/sp_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation assets/data/characters/alisa.json",
+      "passed": true,
+      "info": {
+        "path": "assets/data/characters/alisa.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json;charset=utf-8",
+        "etag": "W/\"671872bde993b2bf0e1b3c6f19448347d6ba01b231c7038f0b680a94284c725c\""
+      }
+    },
+    {
+      "name": "stage10 noindex header assets/data/characters/alisa.json",
+      "passed": true,
+      "info": {
+        "path": "assets/data/characters/alisa.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json;charset=utf-8",
+        "etag": "W/\"671872bde993b2bf0e1b3c6f19448347d6ba01b231c7038f0b680a94284c725c\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation icons/homing.webp",
+      "passed": true,
+      "info": {
+        "path": "icons/homing.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "image/webp",
+        "etag": "\"0c017f62d9b882040105525981a56263\""
+      }
+    },
+    {
+      "name": "stage10 noindex header icons/homing.webp",
+      "passed": true,
+      "info": {
+        "path": "icons/homing.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "image/webp",
+        "etag": "\"0c017f62d9b882040105525981a56263\""
+      }
+    },
+    {
+      "name": "stage10 HTTP cache revalidation combos-live.json",
+      "passed": true,
+      "info": {
+        "path": "combos-live.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json; charset=utf-8",
+        "etag": "W/\"6467cc772c14cd70472f39e0b4af0c61\""
+      }
+    },
+    {
+      "name": "stage10 noindex header combos-live.json",
+      "passed": true,
+      "info": {
+        "path": "combos-live.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json; charset=utf-8",
+        "etag": "W/\"6467cc772c14cd70472f39e0b4af0c61\""
+      }
     }
   ],
   "failures": [],
@@ -1338,5 +1554,82 @@
     "The preview has no live account back-end. Real login, upload, and authenticated API endpoints are not tested.",
     "Production and Vercel use different origins; browser storage is only shared across PC and SP paths on the same origin.",
     "Cache performance varies by browser/CDN/region; report raw headers and repeat navigation without assuming immutable assets."
-  ]
+  ],
+  "cacheAudit": {
+    "tested": [
+      {
+        "path": "pc.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"682f75b4c80e55d4030357b25d44cbaf\""
+      },
+      {
+        "path": "sp.html",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/html; charset=utf-8",
+        "etag": "W/\"ed9ea88a279af5184e70b4d2bf2344f9\""
+      },
+      {
+        "path": "assets/js/pc_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"e2e147b3dead0aaeea372b856a92a5959f12635ec3689e071074d837354fd17b\""
+      },
+      {
+        "path": "assets/js/sp_17.js",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/javascript;charset=utf-8",
+        "etag": "W/\"20ecfee94af2765422b3848741db203ba17da3f0975ff8e22f305a631c8194d8\""
+      },
+      {
+        "path": "assets/css/pc_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a58777aaf9e9ef3b4178626d10926e5253fb6497641cc72ae864b258b863b912\""
+      },
+      {
+        "path": "assets/css/sp_00.css",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "text/css;charset=utf-8",
+        "etag": "W/\"a5c9902a5eceee80cb916721e0232af1cb234516cade985038415cf81ba55aed\""
+      },
+      {
+        "path": "assets/data/characters/alisa.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json;charset=utf-8",
+        "etag": "W/\"671872bde993b2bf0e1b3c6f19448347d6ba01b231c7038f0b680a94284c725c\""
+      },
+      {
+        "path": "icons/homing.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "image/webp",
+        "etag": "\"0c017f62d9b882040105525981a56263\""
+      },
+      {
+        "path": "combos-live.json",
+        "status": 200,
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "robots": "noindex, nofollow, noarchive",
+        "mime": "application/json; charset=utf-8",
+        "etag": "W/\"6467cc772c14cd70472f39e0b4af0c61\""
+      }
+    ],
+    "policy": "short revalidation for current unversioned code and data"
+  }
 }
