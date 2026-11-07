@@ -1,0 +1,57 @@
+name: PROJECT T Lite Phase 5 (isolated regression)
+on:
+  push:
+    branches:
+      - test/lite-regression-20261107
+    paths:
+      - tools/pt_lite_phase5_regression.mjs
+      - .github/workflows/pt-lite-phase5.yml
+concurrency:
+  group: project-t-lite-phase5
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/test/lite-regression-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run phase 5 network and persistence tests
+        run: |
+          set +e
+          node tools/pt_lite_phase5_regression.mjs > /tmp/pt-lite-phase5.log 2>&1
+          rc=$?
+          set -e
+          cat /tmp/pt-lite-phase5.log | tail -c 15000
+          test -f test-litev1/assets/data/phase5-regression-report.json
+          echo "Browser test exit status: $rc"
+      - name: Commit test report to isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/assets/data/phase5-regression-report.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: phase5 first-load and persistence regression report"
+            git push origin HEAD:test/lite-regression-20261107
+          fi
+      - name: Gate on browser compatibility
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path("test-litev1/assets/data/phase5-regression-report.json").read_text())
+          assert r["passed"], r["errors"]
+          assert set(r["network"])=={"pc","sp"}
+          assert r["storage"]["clickedAndPersisted"]
+          print("Phase5 verified. Initial transfer bytes:")
+          for device,data in r["network"].items():
+              print(device,data["total_local_bytes"],"under1mb",data["under_1mb"])
+          PY
