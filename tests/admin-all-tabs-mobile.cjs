@@ -72,6 +72,16 @@ const fixtures = (u) => {
           graph_unmatched_source_examples:[{source_move_index:1473,edge_occurrences:2,
             example_cancel_index:8286,example_dest_move_id_raw:2165,gameplay_verified:false}],
           parameter_samples:[{values:[10,0,0,0],count:65}]},
+        {requirement_id:88,source_character_id:"bryan",example_move_indexes:[],
+          matched_master_indexes:[],matched_sample_indexes:[],matched_graph_indexes:[],
+          graph_candidate_edge_count_total:269,graph_distinct_source_index_count:21,
+          graph_unmatched_source_index_count:21,graph_unmatched_source_examples:[],
+          candidate_move_count_reported:21,raw_occurrences:269,priority_score:0,parameter_samples:[]},
+        {requirement_id:682,source_character_id:"bryan",example_move_indexes:[],
+          matched_master_indexes:[],matched_sample_indexes:[],matched_graph_indexes:[],
+          graph_candidate_edge_count_total:254,graph_distinct_source_index_count:33,
+          graph_unmatched_source_index_count:33,graph_unmatched_source_examples:[],
+          candidate_move_count_reported:33,raw_occurrences:254,priority_score:0,parameter_samples:[]},
         {requirement_id:439,source_character_id:"bryan",example_move_indexes:[74,75],
           matched_master_indexes:[1569],matched_sample_indexes:[],matched_graph_indexes:[1569],
           graph_edge_evidence:[{source_move_index:1569,cancel_index:8730,dest_move_id_raw:2170,
@@ -88,6 +98,23 @@ const fixtures = (u) => {
           raw_occurrences:3,candidate_move_count_reported:31,priority_score:50,
           parameter_samples:[{values:[11,0,0,0],count:31}]}
       ],
+      research:{priority_requirements:[
+        {requirement_id:1021,candidate_cancel_rows:92,distinct_source_indexes:79,
+          candidate_indexes:[{source_move_index:1473,edge_occurrences:2,example_cancel_index:8286,example_dest_move_id_raw:2165}],
+          top_raw_destinations:[{raw_id:2165,occurrences:65},{raw_id:32769,occurrences:27}],
+          related_requirements:[{requirement_id:362,shared_source_indexes:79,jaccard:1}]},
+        {requirement_id:88,candidate_cancel_rows:269,distinct_source_indexes:21,
+          candidate_indexes:[{source_move_index:440,edge_occurrences:22,example_cancel_index:4198,example_dest_move_id_raw:32769}],
+          top_raw_destinations:[{raw_id:32769,occurrences:248}],
+          related_requirements:[{requirement_id:781,shared_source_indexes:14,jaccard:0.6667}]},
+        {requirement_id:682,candidate_cancel_rows:254,distinct_source_indexes:33,
+          candidate_indexes:[{source_move_index:2223,edge_occurrences:10,example_cancel_index:12688,example_dest_move_id_raw:2246}],
+          top_raw_destinations:[{raw_id:2233,occurrences:42}],
+          related_requirements:[{requirement_id:193,shared_source_indexes:16,jaccard:0.4848}]}
+        ],coverage:{anmbin_declared_movelist_total:2304,named_master_records:58,
+          mvl_entries_total:147,mvl_candidates_with_move_index:56},
+        mvl_unresolved_entries:[{source_entry_index:2,name_ja:"ヒート中にできること２ (共通)",command:"説明のみ"}],
+        anmbin_reference_candidates:[{motbin_move_index:238,animation_reference_verified:true,display_move_identity_confirmed:false}]},
       indexed_moves:{"1550":{motbin_move_index:1550,motbin_move_id:1489449424,source_character_id:"bryan",
         animation_reference_verified:true,command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22"}],
         site_checksheet_review_candidates:[
@@ -194,13 +221,41 @@ const fixtures = (u) => {
           const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
-          assert.equal(await priority.locator(".pt-cloud-id-button").count(),3,"Research IDs visible");
+          assert.equal(await priority.locator(".pt-cloud-id-button").count(),5,"Research IDs visible");
+          const focusCards=priority.locator(".pt-cloud-focus-card");
+          assert.equal(await focusCards.count(),3,"Three prioritized research cards");
+          assert((await focusCards.nth(0).innerText()).includes("ID 1021"),"Priority 1021 shown");
+          assert((await focusCards.nth(1).innerText()).includes("ID 88"),"Priority 88 shown");
+          assert((await focusCards.nth(2).innerText()).includes("ID 682"),"Priority 682 shown");
+          if(width===390){
+            const [focusCsv]=await Promise.all([
+              page.waitForEvent("download"),priority.getByRole("button",{name:"重点3 IDの候補インデックスCSV"}).click()
+            ]);
+            const content=await fs.readFile(await focusCsv.path(),"utf8");
+            assert(content.includes("1021")&&content.includes("1473")&&content.includes("未検証"),"Focus CSV includes research provenance");
+            const coverage=priority.locator(".pt-cloud-research-coverage");
+            await coverage.locator("summary").first().click();
+            assert((await coverage.innerText()).includes("2304"),"Full game move count explicitly limited");
+            const mvl=coverage.locator(".pt-cloud-mvl-unknown");
+            await mvl.locator("summary").click();
+            assert((await mvl.innerText()).includes("ヒート中にできること２"),"Unlinked MVL entries are separate");
+            for(let i=1;i<3;i++){
+              await focusCards.nth(i).locator("button").click();
+              const detail=page.locator(".pt-cloud-dialog");
+              await detail.waitFor({state:"visible"});
+              assert((await detail.innerText()).includes("重点調査"),"Focus opens detailed research");
+              const peer=detail.locator(".pt-cloud-focus-detail .pt-cloud-graph-details").nth(1);
+              await peer.locator("summary").click();
+              assert((await peer.innerText()).includes("Jaccard"),"Cooccurrence shown with unverified label");
+              await page.keyboard.press("Escape");
+            }
+          }
           const search=priority.locator('input[type="search"]');
           await search.fill("1021");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===1);
           assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
           await search.fill("");
-          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===3);
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===5);
           // Character evidence filter distinguishes sourced candidates from confirmed IDs.
           const charSelect=priority.locator(".pt-cloud-filter-label select").last();
           await charSelect.selectOption("bryan_named");
@@ -235,11 +290,21 @@ const fixtures = (u) => {
           assert((await graphModal.innerText()).includes("境界の推定"),"Heuristic disclaimer visible");
           await page.keyboard.press("Escape");
           await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
-          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
-          await priority.locator(".pt-cloud-id-button").first().click();
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"88","Occurrence sorting works");
+          await priority.getByRole("button",{name:"1021",exact:true}).click();
           const modal=page.locator(".pt-cloud-dialog");
           await modal.waitFor({state:"visible"});
           assert((await modal.innerText()).includes("Requirements ID"),"Detailed ID drawer opens");
+          assert((await modal.innerText()).includes("重点調査：ID 1021"),"Priority research detail shown");
+          const dest=modal.locator(".pt-cloud-focus-detail .pt-cloud-graph-details").first();
+          await dest.locator("summary").click();
+          assert((await dest.innerText()).includes("raw 2165"),"Raw destination distribution visible");
+          const peers=modal.locator(".pt-cloud-focus-detail .pt-cloud-graph-details").nth(1);
+          await peers.locator("summary").click();
+          assert((await peers.innerText()).includes("Requirements 362"),"Related requirement shown");
+          const indices=modal.locator(".pt-cloud-focus-indexes");
+          await indices.locator("summary").click();
+          assert((await indices.innerText()).includes("インデックス 1473"),"Candidate source index visible");
           assert((await modal.innerText()).includes("技名未照合インデックス"),"Unmatched source count shown");
           const unknownDetails=modal.locator(".pt-cloud-unmatched");
           await unknownDetails.locator("summary").click();
@@ -259,8 +324,8 @@ const fixtures = (u) => {
           if(width===390){
             const filterCharacter=priority.locator(".pt-cloud-filter-label").filter({hasText:"キャラクター資料"}).locator("select");
             await filterCharacter.selectOption("bryan_unmatched");
-            assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Only one unnamed fixture source ID");
-            assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021");
+            assert.equal(await priority.locator(".pt-cloud-id-button").count(),3,"Three unnamed fixture source IDs");
+            assert(["1021","88","682"].includes(await priority.locator(".pt-cloud-id-button").first().innerText()));
             await filterCharacter.selectOption("all");
             const filterStatus=priority.locator(".pt-cloud-filter-label select").nth(1);
             await filterStatus.selectOption("investigating");
@@ -297,7 +362,7 @@ const fixtures = (u) => {
           assert(await cross.evaluate(node=>node.open),"Individual section opens independently");
           assert(!(await priority.evaluate(node=>node.open)),"Other section stays collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"再読み込み"}).click();
-          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="3件");
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="5件");
           assert(await cross.evaluate(node=>node.open),"Reload preserves opened sections");
           assert(!(await priority.evaluate(node=>node.open)),"Reload preserves closed sections");
         }
