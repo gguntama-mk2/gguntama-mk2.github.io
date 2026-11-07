@@ -38,6 +38,7 @@ const server = http.createServer(async (req,res)=>{
   res.writeHead(404);res.end();
 });
 
+const savedReviews = new Map();
 const fixtures = (u) => {
   if(u.pathname==="/api/v1/me") return {is_admin:true,display_name:"管理者テスト",project_t_id:"11111111-2222-4333-8444-555555555555",csrf_token:"test"};
   if(u.pathname==="/api/v1/admin/checksheet") return {characters:[]};
@@ -54,7 +55,7 @@ const fixtures = (u) => {
         {req_id:1021,characters_present:35,records_all_characters:100,parameter_variants:5,investigation_score_heuristic:72},
         {req_id:439,characters_present:1,records_all_characters:8,parameter_variants:2,investigation_score_heuristic:90}
       ]};
-    return {reports:{bryan,cross},reviews:[],errors:{},history:{
+    return {reports:{bryan,cross},reviews:[...savedReviews.values()],errors:{},history:{
       bryan:{snapshots:[
         {generated_utc:"2026-11-07",data:{summary:{moves_count:250},ids:bryan.top_unknown_ids}},
         {generated_utc:"2026-11-06",data:{summary:{moves_count:249},ids:[{id:1021,raw_occurrences:99,candidate_moves:25,priority_score:69}]}}
@@ -79,7 +80,16 @@ const fixtures = (u) => {
       const page=await browser.newPage({viewport:{width,height:850}});
       const errors=[];page.on("pageerror",e=>errors.push(e.message));
       await page.route("**/api/v1/**", async(route)=>{
-        const data=fixtures(new URL(route.request().url()));
+        const u=new URL(route.request().url());
+        if(u.pathname==="/api/v1/admin/cloud-analysis/review"&&route.request().method()==="POST"){
+          assert.equal(route.request().headers()["x-csrf-token"],"test");
+          const body=JSON.parse(route.request().postData());
+          const saved={...body,updated_by:"11111111-2222-4333-8444-555555555555",updated_at:"2026-11-07T02:00:00Z"};
+          savedReviews.set(body.scope+":"+body.req_id,saved);
+          await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(saved)});
+          return;
+        }
+        const data=fixtures(u);
         if(data===null){await route.fulfill({status:404,body:"{}"});return;}
         await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
       });
@@ -147,10 +157,20 @@ const fixtures = (u) => {
           assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
           await search.fill("");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===2);
+          await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
           await priority.locator(".pt-cloud-id-button").first().click();
           const modal=page.locator(".pt-cloud-dialog");
           await modal.waitFor({state:"visible"});
           assert((await modal.innerText()).includes("Requirements ID"),"Detailed ID drawer opens");
+          if(width===390){
+            await modal.locator("select").selectOption("investigating");
+            await modal.locator("textarea").fill("解析中・テスト記録");
+            await modal.getByRole("button",{name:"調査状況を保存"}).click();
+            await page.waitForFunction(()=>document.querySelector(".pt-cloud-dialog-feedback")?.textContent.includes("保存しました"));
+            assert.equal(savedReviews.get("bryan:1021").status,"investigating","Server-shared review saved");
+            assert.equal(savedReviews.get("bryan:1021").note,"解析中・テスト記録");
+          }
           await page.keyboard.press("Escape");
           assert(!(await modal.isVisible()),"Escape closes research detail");
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
@@ -163,7 +183,7 @@ const fixtures = (u) => {
           assert(await cross.evaluate(node=>node.open),"Individual section opens independently");
           assert(!(await priority.evaluate(node=>node.open)),"Other section stays collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"再読み込み"}).click();
-          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="1件");
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="2件");
           assert(await cross.evaluate(node=>node.open),"Reload preserves opened sections");
           assert(!(await priority.evaluate(node=>node.open)),"Reload preserves closed sections");
         }
