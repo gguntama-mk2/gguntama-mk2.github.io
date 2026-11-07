@@ -42,7 +42,7 @@ for(const device of ["pc","sp"]){
   const m=loader.match(/const modules=(\{[^\n]+\});/);
   const apis=loader.match(/const apis=(\{[^\n]+\});/);
   if(!m||!apis)throw Error(device+": route registration missing");
-  const routes=JSON.parse(m[1]),targets=JSON.parse(apis[1]);
+  const routes=JSON.parse(m[1]),targets=vm.runInNewContext("("+apis[1]+")",Object.create(null),{timeout:1000});
   routes.update="20";targets.update="UPD";
   loader=loader.replace(m[0],"const modules="+JSON.stringify(routes)+";");
   loader=loader.replace(apis[0],"const apis="+JSON.stringify(targets)+";");
