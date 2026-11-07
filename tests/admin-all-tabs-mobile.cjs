@@ -44,6 +44,24 @@ const fixtures = (u) => {
   if(u.pathname.startsWith("/api/v1/admin/checksheet/"))return {exists:false,current_base_hash:null,manifest_ok:true,moves:[],published:null};
   if(u.pathname==="/api/v1/admin/move-icons")return {entries:[]};
   if(u.pathname==="/api/v1/admin/move-media")return {entries};
+  if(u.pathname==="/api/v1/admin/cloud-analysis/workspace"){
+    const bryan={moves_count:250,unique_ids:55,unlabeled_ids:10,rows_with_candidate_edges:8,
+      top_unknown_ids:[{id:1021,raw_occurrences:100,candidate_moves:25,priority_score:75},
+        {id:439,raw_occurrences:50,candidate_moves:17,priority_score:90}]};
+    const cross={characters_found:35,requirements_records_parsed_total:3000,
+      requirements_unique_ids_global:200,ids_in_all_analyzed_characters:10,ids_in_exactly_one_character:20,
+      bryan_unlabeled_found_in_overview:15,top_priority_ids:[
+        {req_id:1021,characters_present:35,records_all_characters:100,parameter_variants:5,investigation_score_heuristic:72},
+        {req_id:439,characters_present:1,records_all_characters:8,parameter_variants:2,investigation_score_heuristic:90}
+      ]};
+    return {reports:{bryan,cross},reviews:[],errors:{},history:{
+      bryan:{snapshots:[
+        {generated_utc:"2026-11-07",data:{summary:{moves_count:250},ids:bryan.top_unknown_ids}},
+        {generated_utc:"2026-11-06",data:{summary:{moves_count:249},ids:[{id:1021,raw_occurrences:99,candidate_moves:25,priority_score:69}]}}
+      ]},
+      cross:{snapshots:[]}
+    }};
+  }
   if(u.pathname==="/api/v1/admin/cloud-analysis")return {moves_count:250,unique_ids:55,unlabeled_ids:10,rows_with_candidate_edges:8,
      top_unknown_ids:[{id:1021,raw_occurrences:100,candidate_moves:25,priority_score:75}]};
   if(u.pathname==="/api/v1/admin/cloud-analysis/all-characters")return {characters_found:35,requirements_records_parsed_total:3000,
@@ -122,6 +140,19 @@ const fixtures = (u) => {
           const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
+          assert.equal(await priority.locator(".pt-cloud-id-button").count(),2,"Research IDs visible");
+          const search=priority.locator('input[type="search"]');
+          await search.fill("1021");
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===1);
+          assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
+          await search.fill("");
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===2);
+          await priority.locator(".pt-cloud-id-button").first().click();
+          const modal=page.locator(".pt-cloud-dialog");
+          await modal.waitFor({state:"visible"});
+          assert((await modal.innerText()).includes("Requirements ID"),"Detailed ID drawer opens");
+          await page.keyboard.press("Escape");
+          assert(!(await modal.isVisible()),"Escape closes research detail");
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
           assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて開く"}).click();
