@@ -390,7 +390,7 @@ const fixtures = (u) => {
         await page.locator('nav.tabs button[data-tab="cloud"]').click();
         await page.locator('#secCloud .pt-cloud-controls button').filter({hasText:"再読み込み"}).click();
         const priorityPanel=page.locator('#secCloud details[data-cloud-panel="priority"]');
-        if(!(await priorityPanel.evaluate(d=>d.open)))await priorityPanel.locator("summary").click();
+        if(!(await priorityPanel.evaluate(d=>d.open)))await priorityPanel.locator(":scope > summary").click();
         await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="77件");
         await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===50);
         assert.equal(await priorityPanel.locator(".pt-cloud-id-button").count(),50,"Only first 50 candidates rendered");
