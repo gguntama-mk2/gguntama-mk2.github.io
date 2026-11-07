@@ -128,7 +128,15 @@ const fixtures = (u) => {
           animation_reference_verified:false,command_list_entries:[{kind:"punishment_drill",name_ja:"確定反撃の練習",command_plain:"立ち途中に 2"}],
           gameplay_verified:false,site_move_key:null}}
     };
-    return {reports:{bryan,cross},linkage,reviews:[...savedReviews.values()],errors:{},history:{
+    const motbin_coverage={
+      schema_version:1,character_id:"bryan",expected_move_count:2304,
+      individual_records_present:2,individual_records_missing:2302,
+      full_extraction_verified:false,source_status:"partial_known_master_only",
+      known_move_indexes:[1444,1550],
+      source_motbin_sha256:"15c673d2699985c1854568a021e5cb2de4c3f92dbf5fa87b9c81a0e580b6bee0",
+      structural:{requirements_total_in_review:328}
+    };
+    return {reports:{bryan,cross},linkage,motbin_coverage,reviews:[...savedReviews.values()],errors:{},history:{
       bryan:{snapshots:[
         {generated_utc:"2026-11-07",data:{summary:{moves_count:250},ids:bryan.top_unknown_ids}},
         {generated_utc:"2026-11-06",data:{summary:{moves_count:249},ids:[{id:1021,raw_occurrences:99,candidate_moves:25,priority_score:69}]}}
@@ -219,9 +227,13 @@ const fixtures = (u) => {
         if(tab==="media")await page.locator("#secMedia .pt-mobile-table tbody tr").first().waitFor();
         if(tab==="cloud"){
           const accordion=page.locator("#secCloud details[data-cloud-panel]");
-          assert.equal(await accordion.count(),4,"Four independently collapsible analysis sections");
+          assert.equal(await accordion.count(),5,"Five independently collapsible analysis sections");
           const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
+          const motbin=page.locator('#secCloud details[data-cloud-panel="motbin"]');
+          assert(!(await motbin.evaluate(node=>node.open)),"MOTBIN coverage collapsed by default");
+          assert((await motbin.locator("summary").innerText()).includes("2 / 2304件"),
+            "Exact individual-record coverage in summary");
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
           assert.equal(await priority.locator(".pt-cloud-id-button").count(),5,"Research IDs visible");
           const focusCards=priority.locator(".pt-cloud-focus-card");
@@ -361,8 +373,16 @@ const fixtures = (u) => {
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
           assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて開く"}).click();
-          assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),4,"Expand all sections");
+          assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),5,"Expand all sections");
           if(width===390){
+            assert((await motbin.innerText()).includes("2,302"),"Missing records clearly identified");
+            assert((await motbin.innerText()).includes("部分データ"),"Never claim full MOTBIN extraction");
+            const [motbinCsv]=await Promise.all([
+              page.waitForEvent("download"),motbin.getByRole("button",{name:"取得状況をCSV出力"}).click()
+            ]);
+            const motbinCsvText=await fs.readFile(await motbinCsv.path(),"utf8");
+            assert(motbinCsvText.includes("1444") && motbinCsvText.includes("1550"),"Known index rows exported");
+            assert(motbinCsvText.includes("未取得")&&motbinCsvText.includes("未検証"),"Missing ranges marked");
             const compare=page.locator('#secCloud details[data-cloud-panel="sync"] .pt-cloud-compare');
             assert((await compare.innerText()).includes("追加された上位ID"),"Snapshot difference visible");
             const [diffCsv]=await Promise.all([
