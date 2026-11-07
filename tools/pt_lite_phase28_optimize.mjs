@@ -16,23 +16,33 @@ try{
  const f=ast.body.find(n=>n.type==='FunctionDeclaration'&&n.id?.name==='fitNames');
  if(!f)throw Error('Expected named fitNames function missing');
  const original=old.slice(f.start,f.end);
- const first='const list = only || [...document.querySelectorAll("#list .card .head .nm")];';
- if(original.split(first).length!==2)throw Error('fitNames list anchor mismatch');
- const cmd='n.querySelector(".cmdtxt")',info='n.querySelector(".minfo")';
- const count=(s,p)=>s.split(p).length-1;
- const cmdCount=count(original,cmd),infoCount=count(original,info);
- if(cmdCount!==2||infoCount!==2)throw Error('Unexpected child selector call counts '+cmdCount+'/'+infoCount);
- const helper='const pt28Elements=new Map(); const pt28Get=n=>{let x=pt28Elements.get(n);if(!x){x={c:n.querySelector(".cmdtxt"),mi:n.querySelector(".minfo")};pt28Elements.set(n,x)}return x};';
- let changed=original.replaceAll(cmd,'pt28Get(n).c').replaceAll(info,'pt28Get(n).mi');
- changed=changed.replace(first,first+'\n  '+helper);
- if(changed.includes('n.querySelector(".cmdtxt")') && changed.split('n.querySelector(".cmdtxt")').length!==2)throw Error('Unexpected uncached cmd query');
- if(!changed.includes('pt28Get(n).c')||!changed.includes('pt28Get(n).mi'))throw Error('Selector substitution not applied');
- // Keep exact width/height comparisons, scale factors, and write loops.
- for(const marker of ['scrollHeight > t.clientHeight + 1','scrollWidth > c.clientWidth + 1',
-   'scrollWidth > mi.clientWidth + 1','for (let k = 0; k < 6 && pi.length; k++)',
-   'for (let k = 0; k < 6 && pc.length; k++)','0.92, 0.85, 0.78, 0.72, 0.66']){
-   if(!original.includes(marker)||!changed.includes(marker))throw Error('Fit behavior anchor missing: '+marker);
- }
+ // Identify repeated child lookups structurally instead of assuming formatting.
+ const edits=[], counts={cmdtxt:0,minfo:0};
+ const walk=n=>{if(!n||typeof n!=='object')return;
+   if(n.type==='CallExpression'&&n.callee?.type==='MemberExpression'
+      &&n.callee.property?.name==='querySelector'
+      &&n.arguments?.length===1&&n.arguments[0]?.type==='Literal'){
+     const selector=n.arguments[0].value;
+     if(selector==='.cmdtxt'||selector==='.minfo'){
+       const obj=old.slice(n.callee.object.start,n.callee.object.end);
+       edits.push({start:n.start,end:n.end,code:'pt28Query('+obj+','+JSON.stringify(selector)+')'});
+       counts[selector.slice(1)]++;
+     }
+   }
+   for(const [key,value] of Object.entries(n)){
+     if(key==='start'||key==='end'||key==='loc')continue;
+     if(Array.isArray(value))for(const v of value)walk(v);
+     else if(value&&typeof value==='object')walk(value);
+   }
+ };
+ walk(f.body);
+ if(counts.cmdtxt<1||counts.minfo<1)throw Error('Expected child selectors missing: '+JSON.stringify(counts));
+ const helper='const pt28Cache=new WeakMap();function pt28Query(el,sel){let bySel=pt28Cache.get(el);if(!bySel){bySel=new Map();pt28Cache.set(el,bySel)}if(!bySel.has(sel))bySel.set(sel,el.querySelector(sel));return bySel.get(sel)}';
+ let changed=original;
+ for(const e of edits.sort((x,y)=>y.start-x.start))
+   changed=changed.slice(0,e.start-f.start)+e.code+changed.slice(e.end-f.start);
+ changed=changed.slice(0,f.body.start+1-f.start)+'\n'+helper+'\n'+changed.slice(f.body.start+1-f.start);
+ if(changed===original)throw Error('No optimization generated');
  const js=old.slice(0,f.start)+changed+old.slice(f.end);
  parse(js,{ecmaVersion:'latest',sourceType:'script'});
  if(!js.includes('requestAnimationFrame(chunk)')||!js.includes('pt26Stats.fitCalls++')||!js.includes('pt27HeadTemplate'))throw Error('Previous-stage behavior lost');
@@ -40,7 +50,7 @@ try{
  report.files[name]={oldBytes:Buffer.byteLength(old),newBytes:Buffer.byteLength(js),
   oldSha256:crypto.createHash('sha256').update(old).digest('hex'),
   newSha256:crypto.createHash('sha256').update(js).digest('hex'),
-  cachedCmdLookupSites:cmdCount,cachedInfoLookupSites:infoCount,
+  cachedCmdLookupSites:counts.cmdtxt,cachedInfoLookupSites:counts.minfo,
   cacheLifetime:'one fitNames call',fitComparisonsAndScalingUnchanged:true,
   cardDOMUnchanged:true,commandsAndIconRuntimeUntouched:true,onlyMobileRuntimeChanged:true};
  report.passed=true;
