@@ -1,19 +1,19 @@
 {
   "schema": 5,
   "mode": "test-only",
-  "at": "2026-11-07T01:07:18.717Z",
+  "at": "2026-11-07T01:11:36.688Z",
   "passed": false,
   "network": {
     "pc": {
-      "total_local_bytes": 1695910,
+      "total_local_bytes": 1461111,
       "under_1mb": false,
       "groups": {
         "html": 14946,
         "css": 112064,
-        "javascript": 671721,
+        "javascript": 436922,
         "other_media": 792880,
-        "pxstore_images": 17539,
-        "character_json": 86760
+        "character_json": 86760,
+        "pxstore_images": 17539
       },
       "request_count": 71,
       "loaded_character_ids": [
@@ -32,12 +32,6 @@
           "status": 200,
           "bytes": 301108,
           "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/js/pc_17.js",
-          "status": 200,
-          "bytes": 267712,
-          "kind": "javascript"
         },
         {
           "path": "/test-litev1/assets/css/pc_00.css",
@@ -67,6 +61,12 @@
           "path": "/test-litev1/assets/js/pc_10.js",
           "status": 200,
           "bytes": 36994,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_17.js",
+          "status": 200,
+          "bytes": 32772,
           "kind": "javascript"
         },
         {
@@ -326,12 +326,12 @@
       "page_errors": []
     },
     "sp": {
-      "total_local_bytes": 1394569,
+      "total_local_bytes": 1159769,
       "under_1mb": false,
       "groups": {
         "html": 17096,
         "css": 101018,
-        "javascript": 663968,
+        "javascript": 429168,
         "other_media": 508188,
         "pxstore_images": 17539,
         "character_json": 86760
@@ -353,12 +353,6 @@
           "status": 200,
           "bytes": 301108,
           "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/js/sp_17.js",
-          "status": 200,
-          "bytes": 267714,
-          "kind": "javascript"
         },
         {
           "path": "/test-litev1/assets/css/sp_00.css",
@@ -388,6 +382,12 @@
           "path": "/test-litev1/assets/js/sp_10.js",
           "status": 200,
           "bytes": 36967,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_17.js",
+          "status": 200,
+          "bytes": 32773,
           "kind": "javascript"
         },
         {
@@ -459,7 +459,7 @@
         {
           "path": "/test-litev1/assets/js/sp_route-loader.js",
           "status": 200,
-          "bytes": 2445,
+          "bytes": 2586,
           "kind": "javascript"
         },
         {
@@ -503,9 +503,28 @@
       "page_errors": []
     }
   },
-  "storage": {},
+  "storage": {
+    "pc_checkpoint": {
+      "actual": {
+        "check": true,
+        "memo": "保存互換テスト・あいうえお",
+        "review": true,
+        "last": "alisa"
+      },
+      "visible": {
+        "checked": false,
+        "reviewClass": false
+      },
+      "chosen": {
+        "id": "alisa",
+        "k": 0,
+        "moveName": "リードジャブ",
+        "idx": 0
+      }
+    }
+  },
   "errors": [
-    "AssertionError [ERR_ASSERTION]: UI state visible\n\nfalse !== true\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:105:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:110:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:132:18"
+    "AssertionError [ERR_ASSERTION]: UI state visible\n\nfalse !== true\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:109:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:114:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:136:18"
   ],
   "notes": []
 }

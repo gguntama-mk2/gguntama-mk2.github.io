@@ -1,8 +1,8 @@
 /* PROJECT T lazy feature modules. Test branch only. */
 (function(){
   "use strict";
-  const modules={"combo":"06","glossary":"07","punish":"08","stage":"09","gallery":"12","login":"14","vs":"15","privacy":"16","price":"16","download":"16","guide":"16"};
-  const apis={combo:"CB",glossary:"GL",punish:"PN",stage:"SG",gallery:"GA",login:"LG",vs:"VS",privacy:"PR",price:"PC",download:"DL",guide:"GD"};
+  const modules={"combo":"06","glossary":"07","punish":"08","stage":"09","gallery":"12","login":"14","vs":"15","privacy":"16","price":"16","download":"16","guide":"16","update":"20"};
+  const apis={"combo":"CB","glossary":"GL","punish":"PN","stage":"SG","gallery":"GA","login":"LG","vs":"VS","privacy":"PR","price":"PC","download":"DL","guide":"GD","update":"UPD"};
   const prefix="assets/js/sp_";
   const states=new Map();
   function loadOne(code) {
@@ -26,7 +26,7 @@
     const prefetch=page==="punish" && window.PT_CHAR_DATA && typeof CHARACTERS!=="undefined"
       ? Promise.all(CHARACTERS.map(c=>window.PT_CHAR_DATA.load(c)))
       : Promise.resolve();
-    prefetch.then(()=>loadOne(code)).then(()=>{loaded.add(code); if(document.documentElement.dataset.page===page){const api=window[apis[page]];if(api&&typeof api.show==="function")api.show();} }).catch(err=>{
+    prefetch.then(()=>loadOne(code)).then(()=>{loaded.add(code); if(document.documentElement.dataset.page===page){const api=window[apis[page]];if(api&&typeof api.show==="function")api.show();if(page==="update"&&window.UPD&&typeof window.UPD.render==="function")window.UPD.render();} }).catch(err=>{
       console.error("[PROJECT T] feature load failed",page,err);
       if(document.documentElement.dataset.page!==page)return;
       const targets={combo:"cbHost",glossary:"glHost",punish:"pnHost",stage:"sgHost",gallery:"gaHost",login:"lgHost",vs:"vsHost",privacy:"prHost",price:"pcHost",download:"dlHost",guide:"gdHost"};

@@ -1,0 +1,71 @@
+{
+  "schema": 5,
+  "mode": "test-only",
+  "devices": {
+    "pc": {
+      "original_router_and_update_bytes": 267712,
+      "new_router_bytes": 32772,
+      "deferred_update_bytes": 243926,
+      "homepage_summary_bytes": 8881,
+      "total_versions": 34,
+      "brief_versions": [
+        "3.02.02",
+        "3.02.01",
+        "3.01.01"
+      ],
+      "checksum_first3": [
+        {
+          "v": "3.02.02",
+          "date": "2026-09-10",
+          "common": 1,
+          "characters": 3
+        },
+        {
+          "v": "3.02.01",
+          "date": "2026-08-20",
+          "common": 12,
+          "characters": 41
+        },
+        {
+          "v": "3.01.01",
+          "date": "2026-05-28",
+          "common": 7,
+          "characters": 34
+        }
+      ]
+    },
+    "sp": {
+      "original_router_and_update_bytes": 267714,
+      "new_router_bytes": 32773,
+      "deferred_update_bytes": 243927,
+      "homepage_summary_bytes": 8881,
+      "total_versions": 34,
+      "brief_versions": [
+        "3.02.02",
+        "3.02.01",
+        "3.01.01"
+      ],
+      "checksum_first3": [
+        {
+          "v": "3.02.02",
+          "date": "2026-09-10",
+          "common": 1,
+          "characters": 3
+        },
+        {
+          "v": "3.02.01",
+          "date": "2026-08-20",
+          "common": 12,
+          "characters": 41
+        },
+        {
+          "v": "3.01.01",
+          "date": "2026-05-28",
+          "common": 7,
+          "characters": 34
+        }
+      ]
+    }
+  },
+  "notes": "Home update summaries retained; full versions load only on update route"
+}
