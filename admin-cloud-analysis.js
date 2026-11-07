@@ -163,7 +163,10 @@
       }
       if(f.character==="bryan_source"&&!linkInfo(id))return false;
       if(f.character==="bryan_named"&&!namedMatchesFor(id).length)return false;
-      if(!["all","bryan_source","bryan_named"].includes(f.character)
+      if(f.character==="bryan_unmatched"&&!(
+        linkInfo(id)?.graph_unmatched_source_index_count>0 && matchesFor(id).length===0
+      ))return false;
+      if(!["all","bryan_source","bryan_named","bryan_unmatched"].includes(f.character)
           &&(!Array.isArray(row.characters)||!row.characters.includes(f.character)))return false;
       return true;
     }).sort((a,b)=>{
@@ -199,7 +202,8 @@
     if(payload?.linkage){
       const items=[["all","全ての候補"],
         ["bryan_source","ブライアン資料に例あり（構造候補）"],
-        ["bryan_named","ブライアン技名候補あり"]];
+        ["bryan_named","ブライアン技名候補あり"],
+        ["bryan_unmatched","ブライアン技名未照合（候補インデックスあり）"]];
       if(characters.length)items.push(...characters.map(v=>[v,v+"（レポートの名前）"]));
       if(!items.some(item=>item[0]===f.character))f.character="all";
       control("キャラクター資料","character",items);
@@ -237,8 +241,10 @@
         const matches=namedMatchesFor(rowId(scope,row));
         const td=el("td",!evidence?"資料なし":matches.length?
           "技名候補 "+matches.length+"件" +
-          (evidence.graph_edge_evidence?.length?"／遷移候補 "+evidence.graph_edge_evidence.length+"件":""):
-          "例示のみ" + (evidence.graph_edge_evidence?.length?"／遷移候補 "+evidence.graph_edge_evidence.length+"件":""));
+          (evidence.graph_edge_evidence?.length?"／照合した遷移候補 "+evidence.graph_edge_evidence.length+"件":""):
+          (evidence.graph_unmatched_source_index_count>0?
+            "技名未照合 "+evidence.graph_unmatched_source_index_count+"インデックス":
+            "例示のみ") );
         td.dataset.label="資料照合";tr.append(td);
       }
       const td=el("td",statusLabel(scope,row));td.dataset.label="調査状況";tr.append(td);tbody.append(tr);
@@ -267,6 +273,7 @@
       outer.append(metrics([["CSV例示の照合ID",stats.requirements_with_master_sample_overlap],
         ["CSV＋遷移候補の照合ID",stats.requirements_with_any_master_overlap],
         ["遷移候補レコード",stats.graph_candidate_edge_records],
+        ["技名未照合・遷移ありID",stats.graph_requirement_ids_with_only_unmatched_sources],
         ["実機検証済み紐付け",stats.gameplay_verified_links]]));
       outer.append(note("すべて未検証。遷移候補はMOTBINキャンセルリストの境界推定であり、ゲーム内の確定情報ではありません。","pt-cloud-evidence-warning"));
     }
@@ -360,14 +367,17 @@
   }
   function exportRows(scope){
     const cols=FIELDS[scope],head=[...cols.map(x=>x[1]),"調査状況","調査メモ",
-      "資料上の出現候補","照合できたMOTBINインデックス","CSVサンプル照合件数","遷移推定レコード数","検証状態"];
+      "資料上の出現候補","照合できたMOTBINインデックス","CSVサンプル照合件数","遷移推定レコード数",
+      "技名未照合インデックス総数","グラフ条件行総数","検証状態"];
     const rows=filtered(scope).map(row=>{
       const id=rowId(scope,row),rev=getReview(scope,id);
       const proof=linkInfo(id),matches=matchesFor(id);
       return [...cols.map(x=>row[x[0]]),STATUS[rev.status]||STATUS.unreviewed,rev.note,
         proof?"ブライアン構造候補あり":"未収録",matches.map(m=>m.motbin_move_index).join(" "),
         proof?.matched_sample_indexes?.length??proof?.matched_master_indexes?.length??0,
-        proof?.graph_edge_evidence?.length??0,"実機未検証"];
+        proof?.graph_edge_evidence?.length??0,
+        proof?.graph_unmatched_source_index_count??0,
+        proof?.graph_candidate_edge_count_total??0,"実機未検証"];
     });
     downloadCsv("project-t-"+scope+"-research.csv",[head,...rows]);
   }
@@ -397,7 +407,9 @@
       section.append(metrics([
         ["CSV例示との一致",proof.matched_sample_indexes?.length??0],
         ["遷移グラフの候補",proof.graph_edge_evidence?.length??0],
-        ["技インデックスの重複なし合計",proof.matched_master_indexes?.length??0]
+        ["技インデックスの重複なし合計",proof.matched_master_indexes?.length??0],
+        ["全候補キャンセル行",proof.graph_candidate_edge_count_total??0],
+        ["技名未照合インデックス",proof.graph_unmatched_source_index_count??0]
       ]));
       section.append(note("遷移グラフはキャンセルリスト境界の推定です。「遷移先 raw ID」と実際の内部 move_id の同一性も未確認です。","pt-cloud-evidence-warning"));
     }
@@ -427,6 +439,24 @@
         evidenceRows.append(box);
       }
       details.append(evidenceRows);section.append(details);
+    }
+    const unidentified=proof.graph_unmatched_source_examples||[];
+    if(proof.graph_unmatched_source_index_count>0){
+      const details=node("details","pt-cloud-graph-details pt-cloud-unmatched");
+      details.append(el("summary","技名未照合の候補インデックス "+
+        proof.graph_unmatched_source_index_count+"種類（上位 "+unidentified.length+"件を表示）"));
+      details.append(note("技インデックスだけが得られた候補です。技名、技の効果、実機上の遷移先はまだ確定していません。","pt-cloud-evidence-warning"));
+      const list=node("div","pt-cloud-graph-grid");
+      for(const source of unidentified){
+        const box=node("div","pt-cloud-graph-edge");
+        box.append(el("strong","候補技インデックス "+source.source_move_index));
+        box.append(note("候補キャンセル行への登場："+source.edge_occurrences+"回","pt-cloud-small"));
+        box.append(note("根拠の行例："+source.example_cancel_index+
+          " ／ 遷移先raw例："+source.example_dest_move_id_raw,"pt-cloud-small"));
+        list.append(box);
+      }
+      details.append(list);
+      section.append(details);
     }
     const matched=matchesFor(reqId);
     if(!matched.length){
