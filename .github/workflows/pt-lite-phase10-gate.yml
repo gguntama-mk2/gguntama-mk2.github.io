@@ -1,0 +1,77 @@
+name: PROJECT T Phase10 Release Gate — staging only
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - tools/pt_lite_phase10_release_gate.mjs
+      - .github/workflows/pt-lite-phase10-gate.yml
+  workflow_dispatch:
+concurrency:
+  group: pt-lite-phase10-gate
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  release-gate:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify isolated branch
+        run: |
+          test "$(git branch --show-current)" = "project-t-preview-20261107"
+          test -f tools/pt_lite_phase10_release_gate.mjs
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node --check tools/pt_lite_phase10_release_gate.mjs
+      - name: Cold/warm HTTP, storage and cache browser release gate
+        run: |
+          set +e
+          node tools/pt_lite_phase10_release_gate.mjs > /tmp/pt-phase10-gate.log 2>&1
+          rc=$?
+          set -e
+          tail -c 19000 /tmp/pt-phase10-gate.log
+          echo "Test exit: $rc"
+          test -s test-litev1/assets/data/phase10-release-gate-report.json
+      - name: Upload verifiable report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase10-release-gate
+          path: test-litev1/assets/data/phase10-release-gate-report.json
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Commit report ONLY to test branch
+        if: always()
+        run: |
+          if test -s test-litev1/assets/data/phase10-release-gate-report.json; then
+            cp test-litev1/assets/data/phase10-release-gate-report.json /tmp/pt-phase10-gate.json
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch origin project-t-preview-20261107
+            git reset --hard origin/project-t-preview-20261107
+            cp /tmp/pt-phase10-gate.json test-litev1/assets/data/phase10-release-gate-report.json
+            git add test-litev1/assets/data/phase10-release-gate-report.json
+            if ! git diff --cached --quiet; then
+              git commit -m "test: stage10 release gate network/cache/storage audit"
+              git push origin HEAD:project-t-preview-20261107
+            fi
+          fi
+      - name: Block rollout if ANY live gate failed
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('test-litev1/assets/data/phase10-release-gate-report.json').read_text())
+          for device,row in x['network'].items():
+              print(device, 'initial transfer (bytes):',row['cold']['totalBytes'],
+                    'warm:',row['warm']['totalBytes'],'groups:',row['cold']['groups'])
+          assert x['passed'], json.dumps(x['failures'],ensure_ascii=False)[:5000]
+          assert all(row['cold']['totalBytes']<1000000 for row in x['network'].values())
+          assert x['storage']['isolatedProfile']
+          print('STAGE 10 GATE PASSED — production not deployed')
+          PY
