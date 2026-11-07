@@ -266,6 +266,7 @@ const fixtures = (u) => {
         const priorityPanel=page.locator('#secCloud details[data-cloud-panel="priority"]');
         if(!(await priorityPanel.evaluate(d=>d.open)))await priorityPanel.locator("summary").click();
         await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="77件");
+        await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===50);
         assert.equal(await priorityPanel.locator(".pt-cloud-id-button").count(),50,"Only first 50 candidates rendered");
         await priorityPanel.locator(".pt-cloud-more").click();
         assert.equal(await priorityPanel.locator(".pt-cloud-id-button").count(),77,"Additional 27 candidates rendered");
