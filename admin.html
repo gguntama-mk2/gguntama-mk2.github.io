@@ -423,6 +423,31 @@
     .pt-cloud-dialog { max-height:calc(100dvh - 20px); padding:14px 12px; }
     .pt-cloud-dialog-head h3 { font-size:16px; }
   }
+
+  /* Structural Requirements-to-move evidence (admin only). */
+  .pt-cloud-evidence { min-width:0; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .pt-cloud-evidence h4 { font-size:15px; margin:0 0 10px; }
+  .pt-cloud-evidence-status { display:inline-flex; align-items:center; min-height:28px; padding:4px 9px; border-radius:7px; color:#f0d79f; background:rgba(168,114,31,.17); border:1px solid rgba(199,156,72,.3); font-size:12px; font-weight:700; margin:0 0 8px; }
+  .pt-cloud-index-list { display:grid; gap:6px; padding:10px; border-radius:9px; background:var(--panel2); border:1px solid var(--line); }
+  .pt-cloud-index-list strong { font-size:12px; color:var(--sub); }
+  .pt-cloud-index-list code { font-size:13px; line-height:1.7; white-space:normal; overflow-wrap:anywhere; }
+  .pt-cloud-params { margin:10px 0; border:1px solid var(--line); border-radius:9px; padding:8px 10px; }
+  .pt-cloud-params summary { font-size:12px; cursor:pointer; color:var(--sub); }
+  .pt-cloud-params ul { margin:10px 0 0; padding-left:20px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; font-size:12px; }
+  .pt-cloud-links { display:grid; gap:10px; margin:11px 0; }
+  .pt-cloud-link-item { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:11px; display:grid; gap:7px; min-width:0; }
+  .pt-cloud-link-item > strong { font-size:13px; }
+  .pt-cloud-link-name { display:flex; flex-wrap:wrap; gap:5px 10px; align-items:baseline; line-height:1.5; }
+  .pt-cloud-link-name > span { flex:1 1 140px; font-size:14px; font-weight:600; overflow-wrap:anywhere; }
+  .pt-cloud-link-name code { flex:0 1 auto; font-size:12px; padding:3px 6px; border-radius:5px; background:#11131f; white-space:normal; overflow-wrap:anywhere; }
+  .pt-cloud-small, .pt-cloud-source { font-size:11px; color:var(--sub); line-height:1.55; margin:0; overflow-wrap:anywhere; }
+  .pt-cloud-evidence-warning { color:#f0d79f; font-size:12px; }
+  #secCloud .pt-cloud-table td[data-label="資料照合"] { max-width:220px; font-size:12px; white-space:normal; }
+  @media (max-width:800px) {
+    .pt-cloud-link-item { padding:10px; }
+    .pt-cloud-link-name { display:grid; grid-template-columns:minmax(0,1fr); }
+    #secCloud .pt-cloud-table td[data-label="資料照合"] { max-width:none; }
+  }
 </style>
 </head>
 <body>
