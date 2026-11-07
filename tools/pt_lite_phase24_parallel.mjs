@@ -25,6 +25,10 @@ function makeLoader(dev){
   '  s.onload=ok;s.onerror=function(){no(Error("Cannot load PROJECT T dependency "+file))};',
   '  document.head.appendChild(s);',
   ' })}',
+  ' function warm(){',
+  '  var c=CHARACTERS.find(function(x){return x.id===current});',
+  '  if(c)PT_CHAR_DATA.load(c).catch(function(e){console.warn("[PT24] character prewarm",e)})',
+  ' }',
   ' function ensure(){',
   '  if(pending)return pending;',
   '  pending=(async function(){',
@@ -49,11 +53,12 @@ function makeLoader(dev){
   '  });',
   '  return pending;',
   ' }',
-  ' function update(){if((root.dataset.page||"sheet")!=="home")ensure().catch(console.error)}',
+  ' function update(){var p=root.dataset.page||"sheet";if(p==="sheet")warm();',
+  '  if(p!=="home")ensure().catch(console.error)}',
   ' function intent(e){',
   '  if(e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ")return;',
   '  var x=e.target&&e.target.closest&&e.target.closest("[data-go=sheet]");',
-  '  if(x)ensure().catch(console.error)',
+  '  if(x){warm();ensure().catch(console.error)}',
   ' }',
   ' window.PT_SHEET_RUNTIME=Object.freeze({ready:ensure,state:function(){return {loaded:loaded,loading:!!pending,errors:errors.slice()}}});',
   ' new MutationObserver(update).observe(root,{attributes:true,attributeFilter:["data-page"]});',
@@ -88,7 +93,8 @@ try{
   report.devices[dev]={passed:true,loaderBeforeBytes:beforeBytes,loaderAfterBytes:afterBytes,
     loaderDeltaBytes:afterBytes-beforeBytes,minifiedLoader:true,sequentialBaselineSha256:beforeHash,
     iconVideoRuntimeLoadedInOrder:true,scriptRequestsStartInParallel:true,
-    noHomeFetchUnlessUserIntent:true,existingFontRouterUnchanged:true};
+    noHomeFetchUnlessUserIntent:true,existingFontRouterUnchanged:true,
+    characterJsonPrewarmOnlyOnSheetIntent:true};
  }
  report.passed=true;
 }catch(e){report.errors.push(String(e?.stack||e));}
