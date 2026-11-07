@@ -58,19 +58,34 @@ const fixtures = (u) => {
         {req_id:509,characters_present:4,records_all_characters:31,parameter_variants:1,investigation_score_heuristic:50}
       ]};
     const linkage={
-      schema_version:1,source_character_id:"bryan",gameplay_verified:false,
+      schema_version:2,source_character_id:"bryan",gameplay_verified:false,
+      stats:{requirements_with_master_sample_overlap:1,requirements_with_any_master_overlap:2,graph_candidate_edge_records:2,gameplay_verified_links:0},
       requirements:[
         {requirement_id:1021,source_character_id:"bryan",example_move_indexes:[74,75],
-          matched_master_indexes:[],candidate_move_count_reported:79,parameter_samples:[{values:[10,0,0,0],count:65}]},
+          matched_master_indexes:[],matched_sample_indexes:[],matched_graph_indexes:[],
+          graph_edge_evidence:[],candidate_move_count_reported:79,parameter_samples:[{values:[10,0,0,0],count:65}]},
         {requirement_id:439,source_character_id:"bryan",example_move_indexes:[74,75],
-          matched_master_indexes:[],candidate_move_count_reported:92,parameter_samples:[]},
+          matched_master_indexes:[1569],matched_sample_indexes:[],matched_graph_indexes:[1569],
+          graph_edge_evidence:[{source_move_index:1569,cancel_index:8730,dest_move_id_raw:2170,
+            requirement_index:2424,command_hex:"0x4000000600000020",
+            frame_window_start_raw:1,frame_window_end_raw:1,
+            attribution:"candidate_next_distinct_move_cancel_pointer_not_verified_list_end",gameplay_verified:false}],
+          candidate_move_count_reported:92,parameter_samples:[]},
         {requirement_id:509,source_character_id:"bryan",example_move_indexes:[1550,1571],
-          matched_master_indexes:[1550],raw_occurrences:3,candidate_move_count_reported:31,priority_score:50,
+          matched_master_indexes:[1550],matched_sample_indexes:[1550],matched_graph_indexes:[1550],
+          graph_edge_evidence:[{source_move_index:1550,cancel_index:8761,dest_move_id_raw:32769,
+            requirement_index:2500,command_hex:"0x4000000600000020",
+            frame_window_start_raw:1,frame_window_end_raw:1,
+            attribution:"candidate_next_distinct_move_cancel_pointer_not_verified_list_end",gameplay_verified:false}],
+          raw_occurrences:3,candidate_move_count_reported:31,priority_score:50,
           parameter_samples:[{values:[11,0,0,0],count:31}]}
       ],
       indexed_moves:{"1550":{motbin_move_index:1550,motbin_move_id:1489449424,source_character_id:"bryan",
         animation_reference_verified:true,command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22"}],
-        gameplay_verified:false,site_move_key:null}}
+        gameplay_verified:false,site_move_key:null},
+        "1569":{motbin_move_index:1569,motbin_move_id:3812518756,source_character_id:"bryan",
+          animation_reference_verified:false,command_list_entries:[{kind:"punishment_drill",name_ja:"確定反撃の練習",command_plain:"立ち途中に 2"}],
+          gameplay_verified:false,site_move_key:null}}
     };
     return {reports:{bryan,cross},linkage,reviews:[...savedReviews.values()],errors:{},history:{
       bryan:{snapshots:[
@@ -187,8 +202,23 @@ const fixtures = (u) => {
           assert(namedText.includes("スネークピット"),"Source Japanese move name exposed");
           assert(namedText.includes("チェックシートの技名＋コマンドが一致する候補"),"Strict checklist comparison visible");
           assert(namedText.includes("実機未検証"),"Evidence clearly labelled unverified");
+          assert(namedText.includes("CSV例示と一致"),"CSV sample provenance visible");
+          assert(namedText.includes("遷移グラフ推定"),"Graph inference provenance visible");
+          const graph509=namedModal.locator(".pt-cloud-graph-details");
+          await graph509.locator("summary").click();
+          assert((await graph509.innerText()).includes("キャンセル行 8761"),"Cancel row provenance visible");
           await page.keyboard.press("Escape");
           await charSelect.selectOption("all");
+          await priority.getByRole("button",{name:"439",exact:true}).click();
+          const graphModal=page.locator(".pt-cloud-dialog");
+          await graphModal.waitFor({state:"visible"});
+          assert((await graphModal.innerText()).includes("内部move_id：3812518756"),"Original MOTBIN id remains distinct");
+          const graphInfo=graphModal.locator(".pt-cloud-graph-details");
+          await graphInfo.locator("summary").click();
+          assert((await graphInfo.innerText()).includes("遷移先raw 2170"),"Raw transition is not called internal move ID");
+          assert((await graphInfo.innerText()).includes("キャンセル行 8730"),"Graph cancel evidence visible");
+          assert((await graphModal.innerText()).includes("境界の推定"),"Heuristic disclaimer visible");
+          await page.keyboard.press("Escape");
           await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
           assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
           await priority.locator(".pt-cloud-id-button").first().click();
@@ -214,6 +244,10 @@ const fixtures = (u) => {
               page.waitForEvent("download"),priority.locator(".pt-cloud-list-actions button").click()
             ]);
             assert(csv.suggestedFilename().endsWith(".csv"),"Filtered CSV is downloadable");
+            const csvText=await fs.readFile(await csv.path(),"utf8");
+            assert(csvText.includes("CSVサンプル照合件数"),"Provenance columns exported");
+            assert(csvText.includes("遷移推定レコード数"),"Graph evidence count exported");
+            assert(csvText.includes("実機未検証"),"CSV marks inferred data unverified");
           }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
           assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
