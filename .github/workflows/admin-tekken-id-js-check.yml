@@ -4,6 +4,10 @@ on:
     paths:
       - 'admin.html'
       - 'admin.js'
+      - 'admin-move-icons.js'
+      - 'admin-move-media.js'
+      - 'admin-cloud-analysis.js'
+      - 'tests/admin-all-tabs-mobile.cjs'
       - 'tests/admin-mobile-layout.cjs'
       - '.github/workflows/admin-tekken-id-js-check.yml'
   workflow_dispatch:
@@ -19,16 +23,26 @@ jobs:
         with:
           node-version: '22'
       - name: Check admin page JavaScript syntax
-        run: node --check admin.js && node --check tests/admin-mobile-layout.cjs
+        run: |
+          node --check admin.js
+          node --check admin-move-icons.js
+          node --check admin-move-media.js
+          node --check admin-cloud-analysis.js
+          node --check tests/admin-mobile-layout.cjs
+          node --check tests/admin-all-tabs-mobile.cjs
       - name: Install browser test runner
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
       - name: Verify mobile cards, status badge, search and desktop table
-        run: node tests/admin-mobile-layout.cjs
+        run: |
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: admin-responsive-screenshots
-          path: admin-layout-*.png
+          path: |
+            admin-layout-*.png
+            admin-all-tabs-*.png
           if-no-files-found: ignore
