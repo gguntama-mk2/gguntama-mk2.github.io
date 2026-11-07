@@ -12,7 +12,7 @@
   var ACTION_JA = { admin_grant: "管理者を付与", admin_grant_noop: "管理者の付与（すでに管理者）", admin_revoke: "管理者を解除", admin_revoke_noop: "管理者の解除（管理者ではなかった）",
     admin_revoke_denied_self: "自分の解除を拒否", admin_revoke_denied_last: "最後の管理者の解除を拒否", admin_bootstrap: "初期設定で管理者に", admin_account_deleted: "管理者が退会",
     admin_delete_account_denied_last: "最後の管理者の退会を拒否", checksheet_save_draft: "下書きを保存", checksheet_publish: "公開", checksheet_revert: "公開済みに戻す", checksheet_remove_override: "上書きを削除（元データへ）",
-    checksheet_rebase: "最新の元データに合わせて保存", checksheet_save_denied_base_changed: "下書き保存を拒否（元データが更新済み）", checksheet_publish_denied_base_changed: "公開を拒否（元データが更新済み）" };
+    checksheet_rebase: "最新の元データに合わせて保存", checksheet_save_denied_base_changed: "下書き保存を拒否（元データが更新済み）", checksheet_publish_denied_base_changed: "公開を拒否（元データが更新済み）", cloud_review_update: "クラウド解析の調査状況を更新" };
   var HIST_JA = { save_draft: "下書きを保存", publish: "公開", revert_to_published: "公開済みに戻す", remove_override: "上書きを削除", rebase: "最新の元データに合わせて保存" };
   var FIELD_JA = { name: "技名", y: "読み", t: "タグ", tg: "取得・消費", ss: "強化状態", off: "対象外" };
   // 元データが更新されたときの案内（固定の文言）
