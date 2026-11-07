@@ -1,0 +1,94 @@
+name: PROJECT T Phase11 Same-Origin Pages Package (test only)
+on:
+  push:
+    branches: [project-t-preview-20261107]
+    paths:
+      - tools/pt_lite_phase11_pages_bundle.py
+      - tools/pt_lite_phase11_pages_smoke.mjs
+      - .github/workflows/pt-lite-phase11-pages-package.yml
+  workflow_dispatch:
+concurrency:
+  group: pt-lite-phase11-pages-package
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  build-and-smoke:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify branch and refuse main
+        run: |
+          test "$GITHUB_REF_NAME" = "project-t-preview-20261107"
+          test -f test-litev1/pc.html
+          test -f test-litev1/sp.html
+          test -f CNAME
+      - name: Build unpublished Pages package
+        run: |
+          python3 tools/pt_lite_phase11_pages_bundle.py --out phase11-pages-package
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('phase11-pages-package/manifest.json').read_text())
+          assert m['external_proxy_required'] is False
+          assert m['character_count']==44
+          assert m['icon_count']==15
+          assert m['total_bytes'] < 1_000_000_000
+          assert m['total_files'] >= 450
+          assert all(m['html_bytes'][d]<100_000 for d in ('pc','sp'))
+          print('PACKAGE', {k:v for k,v in m.items() if k not in ('payloads',)})
+          PY
+      - name: Install browser for same-origin static smoke test
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node --check tools/pt_lite_phase11_pages_smoke.mjs
+      - name: Test real bundle served on localhost — no GitHub raw relay
+        run: |
+          set +e
+          node tools/pt_lite_phase11_pages_smoke.mjs > /tmp/phase11-smoke.log 2>&1
+          rc=$?
+          set -e
+          tail -c 22000 /tmp/phase11-smoke.log
+          echo "SMOKE_EXIT=$rc"
+          test -f phase11-pages-package/browser-report.json
+          test "$rc" = 0
+      - name: Require smoke checks to be green
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('phase11-pages-package/browser-report.json')
+          x=json.loads(p.read_text('utf-8'))
+          assert x['passed'],json.dumps(x['failures'],ensure_ascii=False)
+          assert set(x['devices']) == {'pc','sp'}
+          for device,item in x['devices'].items():
+            assert item['routes']['sheet']['rows']==228
+            assert item['routes']['glossary']==280
+            assert item['routes']['stage']==21
+            assert item['routes']['updates']==34
+            assert not item['staticHttpErrors']
+            assert not item['jsErrors']
+            assert not item['proxyRequests']
+          print('PHASE11 PAGES PACKAGE PASSED — NOT PUBLISHED')
+          PY
+      - name: Upload release candidate ZIP (unpublished)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase11-pages-release-candidate
+          path: phase11-pages-package/project-t-pages-phase11.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload package manifest and browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase11-pages-validation
+          path: |
+            phase11-pages-package/manifest.json
+            phase11-pages-package/browser-report.json
+          if-no-files-found: warn
+          retention-days: 14
