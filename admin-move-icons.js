@@ -50,7 +50,7 @@
     overrides = {}; d.entries.forEach(function (e) { (overrides[e.character_id] = overrides[e.character_id] || {})[String(e.site_k)] = e; });
   }
   function closeEditor() {
-    sel = null; delete ui.editor.dataset.open; ui.editor.replaceChildren();
+    sel = null; delete ui.editor.dataset.open; if (ui.backdrop) ui.backdrop.hidden = true; ui.editor.replaceChildren();
     if (nChecked()) { renderBulk(); delete ui.editor.dataset.open; return; }
     ui.editor.appendChild(make("p", "左の一覧で技の「選ぶ」を押すと、ここにアイコン一覧が出ます。右はしのチェックを入れると、複数の技にまとめて設定できます。", "pt-mi-hint"));
   }
@@ -84,8 +84,8 @@
   function pickedOf() { var o = {}; ["c", "g", "a"].forEach(function (z) { o[z] = order(Object.keys(ui.boxes[z]).filter(function (id) { return ui.boxes[z][id].checked; })); }); return o; }
   function renderBulk() {
     var keys = Object.keys(checked), n = keys.length;
-    ui.editor.replaceChildren(); ui.editor.dataset.open = "1";
-    var closeBtn = make("button", "× 閉じる", "btn pt-mi-close"); closeBtn.type = "button"; closeBtn.addEventListener("click", function () { delete ui.editor.dataset.open; });
+    ui.editor.replaceChildren(); ui.editor.dataset.open = "1"; if (ui.backdrop) ui.backdrop.hidden = false;
+    var closeBtn = make("button", "× 閉じる", "btn pt-mi-close"); closeBtn.type = "button"; closeBtn.addEventListener("click", function () { delete ui.editor.dataset.open; if (ui.backdrop) ui.backdrop.hidden = true; });
     ui.editor.appendChild(closeBtn);
     ui.editor.appendChild(make("h3", "まとめて設定：" + n + "件を選択中"));
     var save = make("button", n + "件に保存"); save.type = "button"; save.className = "btn primary";
@@ -179,7 +179,7 @@
     sel = { char: c.id, k: k, name: mv.name, mv: mv };
     renderList();                                                  // 選んだ行に印を付ける（ページの位置は動かさない）
     var e = effective(c.id, mv, k), have = { c: {}, g: {}, a: {} }; ["c", "g", "a"].forEach(function (z) { e.place[z].forEach(function (id) { have[z][id] = 1; }); });
-    ui.editor.replaceChildren(); ui.editor.dataset.open = "1";
+    ui.editor.replaceChildren(); ui.editor.dataset.open = "1"; if (ui.backdrop) ui.backdrop.hidden = false;
     var closeBtn = make("button", "× 閉じる", "btn pt-mi-close"); closeBtn.type = "button"; closeBtn.addEventListener("click", function () { closeEditor(); renderList(); });
     ui.editor.appendChild(closeBtn);
     ui.editor.appendChild(make("h3", c.name + "　" + k + " · " + mv.name));
@@ -220,8 +220,13 @@
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
     ui.count = make("p", ""); ui.bulkBtn = make("button", "", "btn primary pt-mi-bulkbtn"); ui.bulkBtn.type = "button"; ui.bulkBtn.hidden = true; ui.bulkBtn.addEventListener("click", function () { if (!sel) renderBulk(); }); ui.list = make("div", undefined, "tw"); ui.editor = make("aside", undefined, "pt-mi-editor"); ui.editor.setAttribute("aria-label", "アイコンの設定"); closeEditor();
     var wrap = make("div", undefined, "pt-mi-wrap"); wrap.append(ui.list, ui.editor);
+    ui.backdrop = make("div", undefined, "pt-mi-backdrop"); ui.backdrop.hidden = true;
+    ui.backdrop.addEventListener("click", function () { closeEditor(); renderList(); });
+    host.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && ui.editor.dataset.open === "1") { ev.preventDefault(); closeEditor(); renderList(); }
+    });
     ui.note = make("p", "技を選んでください。"); ui.note.setAttribute("role", "status"); ui.note.setAttribute("aria-live", "polite");
-    panel.append(bar, ui.count, ui.bulkBtn, wrap, ui.note); host.appendChild(panel);
+    panel.append(bar, ui.count, ui.bulkBtn, wrap, ui.note); host.append(panel, ui.backdrop);
     var w = ctx.win && ctx.win(); var ic = w && w.PTIcons; catalog = ic ? ic.catalog : [];
     loadOverrides().then(function () { setCharacters(ctx.characters()); }).catch(function (e) { say("設定の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
   }
