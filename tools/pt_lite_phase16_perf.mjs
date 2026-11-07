@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 
 const ROOT = 'http://127.0.0.1:8776/';
 const OUTPUT = process.argv.find(x => x.startsWith('--out='))?.slice(6) || 'phase16-performance/baseline.json';
+const SITE = process.argv.find(x => x.startsWith('--site='))?.slice(7) || '.';
 const profiles = [
   {name:'desktop-fast', downloadBps:1_250_000, uploadBps:250_000, latency:20},
   {name:'mobile-4g-simulated', downloadBps:250_000, uploadBps:125_000, latency:80}
@@ -25,7 +26,7 @@ let server, browser;
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function serve(){
-  server=spawn('python3',['-m','http.server','8776','--bind','127.0.0.1'],{stdio:'ignore'});
+  server=spawn('python3',['-m','http.server','8776','--bind','127.0.0.1','--directory',SITE],{stdio:'ignore'});
   for(let i=0;i<90;i++){
     try{const response=await fetch(ROOT+'pc.html');if(response.status===200)return;}catch{}
     await sleep(150);
