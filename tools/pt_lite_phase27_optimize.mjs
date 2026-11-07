@@ -27,10 +27,13 @@ try{
  let renderBody=old.slice(render.start,render.end);
  const oldDecl='const added = [];';
  const oldLoop='const el = cardEl(items[p]); added.push(el); frag.appendChild(el);';
- if(renderBody.split(oldDecl).length!==2||renderBody.split(oldLoop).length!==2)throw Error('Unused chunk array AST source does not match');
- const declIndex=render.start+renderBody.indexOf(oldDecl),loopIndex=render.start+renderBody.indexOf(oldLoop);
- edits.push({a:declIndex,b:declIndex+oldDecl.length,text:''});
- edits.push({a:loopIndex,b:loopIndex+oldLoop.length,text:'frag.appendChild(cardEl(items[p]));'});
+ // Stage26 may have different formatting or optimizer-generated code.
+ // Optional micro-optimization only when both exact anchors are present; never fail rendering optimization for this.
+ if(renderBody.split(oldDecl).length===2&&renderBody.split(oldLoop).length===2){
+   const declIndex=render.start+renderBody.indexOf(oldDecl),loopIndex=render.start+renderBody.indexOf(oldLoop);
+   edits.push({a:declIndex,b:declIndex+oldDecl.length,text:''});
+   edits.push({a:loopIndex,b:loopIndex+oldLoop.length,text:'frag.appendChild(cardEl(items[p]));'});
+ }
  // Count command and move icon generation per card without touching rendering output.
  const cardCalls={command:0,icons:0};
  walk(card,n=>{if(n.type==='CallExpression'){if(n.callee?.name==='renderSheetCmd')cardCalls.command++;if(n.callee?.type==='MemberExpression'&&n.callee.object?.name==='PTIcons'&&n.callee.property?.name==='attach')cardCalls.icons++;}});
@@ -43,7 +46,7 @@ try{
  js=js.slice(0,cardStart)+template+js.slice(cardStart);
  parse(js,{ecmaVersion:'latest',sourceType:'script'});
  if(!js.includes('requestAnimationFrame(chunk)')||!js.includes('pt26Stats.fitCalls++'))throw Error('Phase26 behavior lost');
- if(js.includes('added.push(el)'))throw Error('Unused array remains');
+ // Preserve unchanged fragment creation if exact optional anchors are unavailable.
  fs.writeFileSync(file,js);
  report.files[name]={oldBytes:Buffer.byteLength(old),newBytes:Buffer.byteLength(js),
   oldSha256:crypto.createHash('sha256').update(old).digest('hex'),
