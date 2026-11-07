@@ -546,7 +546,7 @@
           if (i === c.sel) selected = String(i);
         }
       });
-      picker.replaceChildren(h("option", { value: "", text: count ? "技を選択…" : "該当する技がありません" }), options);
+      picker.replaceChildren.apply(picker, [h("option", { value: "", text: count ? "技を選択…" : "該当する技がありません" })].concat(options));
       picker.value = selected;
       matches.textContent = count + " / " + c.moves.length + " 技";
     }
