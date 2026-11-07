@@ -1,14 +1,14 @@
 {
   "mode": "test-only",
-  "proxy": "raw.githack.com",
+  "proxy": "githubraw.com",
   "preview_branch": "project-t-preview-20261107",
   "html": {
     "pc": {
-      "bytes": 15058,
+      "bytes": 14932,
       "guard": true
     },
     "sp": {
-      "bytes": 17208,
+      "bytes": 17082,
       "guard": true
     }
   },
