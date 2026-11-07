@@ -46,6 +46,19 @@ try{
  write(sp,spText.replace('im.src=c.img;b.prepend(im)',
     'im.loading="lazy";im.decoding="async";im.fetchPriority="low";im.src=c.img;b.prepend(im)'));
  report.scriptChanges.push({path:sp,label:'mobile character selector thumbnails lazy and async'});
+ // The two large homepage character illustrations use the exact same files.
+ // Defer their *requests* while below the fold; do not change the art or CSS.
+ for(const device of ['pc','sp']){
+  const script='assets/js/'+device+'_10.js';
+  const source=read(script);
+  const marker='decoding="async" draggable="false"></div>';
+  if(source.split(marker).length!==2)throw Error('Hero image tag anchor changed in '+script);
+  const updated=source.replace(marker,
+   'loading="lazy" decoding="async" fetchpriority="low" draggable="false"></div>');
+  write(script,updated);
+  report.scriptChanges.push({path:script,label:'lazy load below-fold homepage hero images without changing pixels'});
+ }
+
 
  // Optional very high-fidelity reencoding of large WebP artwork, accepted
  // only after decoding both originals and outputs into identical RGB(A) dimensions.
