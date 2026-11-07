@@ -51,6 +51,8 @@ jobs:
             git add test-litev1/assets/data/phase8-vercel-report.json
             if ! git diff --cached --quiet; then
               git commit -m "test: phase8 Vercel browser measurements"
+              # The browser runner also rewrites its phase7 scratch report; do not rebase with that unstaged diff.
+              git restore -- test-litev1/assets/data/phase7-public-preview-report.json
               git fetch origin project-t-preview-20261107
               git rebase origin/project-t-preview-20261107
               git push origin HEAD:project-t-preview-20261107
