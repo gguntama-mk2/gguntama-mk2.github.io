@@ -14,7 +14,8 @@ const chars = Array.from({length:35}, (_,i) => ({
     a: {command:k===0 ? "LP" : "LP LP WP DF+"+k}
   }))
 }));
-chars[1].moves[0] = { k:0, name:"スネークピット", a:{command:"1+22"} };
+chars[1].moves[0] = { k:0, name:"不一致の技", a:{command:"WPRP"} };
+chars[1].moves.push({ k:37, name:"スネークピット", a:{command:"WPRP"} });
 const preview = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
 var CHARACTERS = ${JSON.stringify(chars)};
 var COLS = [{id:"command",label:"コマンド"},{id:"hit",label:"ヒット時"}];
@@ -82,6 +83,10 @@ const fixtures = (u) => {
       ],
       indexed_moves:{"1550":{motbin_move_index:1550,motbin_move_id:1489449424,source_character_id:"bryan",
         animation_reference_verified:true,command_list_entries:[{kind:"move",name_ja:"スネークピット",command_plain:"1+22"}],
+        site_checksheet_review_candidates:[
+          {site_k:37,site_name:"スネークピット",site_command:"WPRP",review_group:"repeat_mvl_entry_same_move",review_status:"unverified",checklist_binding_verified:false},
+          {site_k:0,site_name:"スネークピット",site_command:"WPRP",review_group:"single_candidate",review_status:"unverified",checklist_binding_verified:false}
+        ],
         gameplay_verified:false,site_move_key:null},
         "1569":{motbin_move_index:1569,motbin_move_id:3812518756,source_character_id:"bryan",
           animation_reference_verified:false,command_list_entries:[{kind:"punishment_drill",name_ja:"確定反撃の練習",command_plain:"立ち途中に 2"}],
@@ -201,6 +206,9 @@ const fixtures = (u) => {
           assert(namedText.includes("内部move_id：1489449424"),"Internal move ID preserved exactly");
           assert(namedText.includes("スネークピット"),"Source Japanese move name exposed");
           assert(namedText.includes("チェックシートの技名＋コマンドが一致する候補"),"Strict checklist comparison visible");
+          assert(namedText.includes("#37 スネークピット"),"Exact site-k/name/command review candidate appears");
+          assert(namedText.includes("レビュー記録のk・技名・コマンド3点一致"),"Reviewed triple labelled unverified");
+          assert(!namedText.includes("#0 スネークピット"),"Mismatched site record cannot be promoted");
           assert(namedText.includes("実機未検証"),"Evidence clearly labelled unverified");
           assert(namedText.includes("CSV例示と一致"),"CSV sample provenance visible");
           assert(namedText.includes("遷移グラフ推定"),"Graph inference provenance visible");
