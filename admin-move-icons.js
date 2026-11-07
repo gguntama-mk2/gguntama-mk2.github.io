@@ -7,7 +7,7 @@
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
-  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = { c: {}, g: {}, a: {} }, bulkMode = "add";
+  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = { c: {}, g: {}, a: {} }, bulkMode = "add", resolveSeq = 0;
   var ckey = function (c, k) { return c + "/" + k; };
   var nChecked = function () { return Object.keys(checked).length; };
 
@@ -218,20 +218,56 @@
       await loadOverrides(); var c = currentChar(), mv = sel.mv, k = sel.k; if (c) choose(c, mv, k);
     } catch (e) { say("保存できませんでした：" + e.message, "error"); btn.disabled = false; }
   }
+  // 管理者チェックシートの保存済み下書き／編集中データを k で照合し、
+  // プレビューから来た元データより優先する。選択変更中の古い応答は破棄する。
+  async function resolveCurrent() {
+    var id = ui.char && ui.char.value, seq = ++resolveSeq;
+    if (!id) { renderList(); return; }
+    if (!ctx || typeof ctx.resolveCharacter !== "function") { renderList(); return; }
+    ui.list.replaceChildren(make("p", "編集済みの技名・コマンドを確認中…"));
+    ui.count.textContent = "読み込み中…";
+    try {
+      var c = await ctx.resolveCharacter(id);
+      if (seq !== resolveSeq || ui.char.value !== id) return;
+      if (!c || c.id !== id || !Array.isArray(c.moves)) throw new Error("技データの照合に失敗しました");
+      var old = characters.find(function (x) { return x.id === id; });
+      if (!old) return;
+      characters = characters.map(function (x) { return x.id === id ? c : x; });
+      // 一括設定の対象も固定 k から最新の技を参照する。削除された技は除外。
+      Object.keys(checked).forEach(function (key) {
+        var entry = checked[key];
+        if (entry.char !== id) return;
+        var mv = c.moves.find(function (m, i) { return kOf(m, i) === entry.k; });
+        if (!mv) { delete checked[key]; return; }
+        checked[key] = Object.assign({}, entry, { cname: c.name, mv: mv, name: mv.name });
+      });
+      if (sel && sel.char === id) {
+        var selected = c.moves.find(function (m, i) { return kOf(m, i) === sel.k; });
+        if (selected) sel = { char: id, k: sel.k, name: selected.name, mv: selected };
+        else closeEditor();
+      }
+      renderList();
+    } catch (e) {
+      if (seq !== resolveSeq) return;
+      ui.list.replaceChildren(make("p", "技チェックシートの最新データを取得できませんでした。再選択してください。"));
+      ui.count.textContent = "";
+      say("技データの取得に失敗しました：" + e.message, "error");
+    }
+  }
   function setCharacters(list) {
     characters = Array.isArray(list) ? list.filter(function (c) { return c && CHAR_RE.test(c.id) && Array.isArray(c.moves); }) : [];
     if (!ui.char) return;
     var prev = ui.char.value; ui.char.replaceChildren();
     characters.forEach(function (c) { var o = make("option", c.name + "（" + (c.en || c.id) + "）"); o.value = c.id; ui.char.appendChild(o); });
     if (characters.some(function (c) { return c.id === prev; })) ui.char.value = prev;
-    closeEditor(); renderList();
+    closeEditor(); resolveCurrent();
   }
   function mount(target, context) {
     ctx = context; host = target; host.replaceChildren();
     var panel = make("section", undefined, "card");
     panel.appendChild(make("h2", "技のアイコン設定"));
     panel.appendChild(make("p", "技ごとに、技表に出すアイコンを設定します。ホーミング・パワークラッシュは、コマンドの右はし。そのほかは、「地上ヒット・ガード時」「空中ヒット時」の欄に出ます。設定していない技は、自動の判定（トルネード・ヒートエンゲージ・リカバリアブルダメージ→地上ヒット・ガード時、ホーミング・パワークラッシュ→コマンドの横）のままです。"));
-    ui.char = make("select"); ui.char.addEventListener("change", function () { ui.visibleLimit = 36; closeEditor(); renderList(); });
+    ui.char = make("select"); ui.char.addEventListener("change", function () { ui.visibleLimit = 36; closeEditor(); resolveCurrent(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索";
     ui.q.addEventListener("input", function () { ui.visibleLimit = 36; renderList(); });
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
