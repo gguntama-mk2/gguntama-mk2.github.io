@@ -196,7 +196,7 @@ const fixtures = (u) => {
             await page.locator("#secMedia input[type=file]").setInputFiles({name:"test.mp4",mimeType:"video/mp4",buffer:Buffer.from([0,0,0,24,102,116,121,112])});
             await page.locator("#secMedia form button[type=submit]").click();
             await page.waitForFunction(()=>document.querySelector("#secMedia [role=status]")?.textContent.includes("登録しました"),{timeout:15000});
-            assert(videoUploads.some(x=>x.includes("更新後の技名")&&x.includes('name="site_k"')),"Video upload references edited move name and same site_k");
+            assert(videoUploads.some(x=>x.includes("更新後の技名")&&x.includes('name="site_k"')),"Video upload references edited move name and same site_k: "+JSON.stringify(videoUploads.map(x=>x.slice(0,1300))));
           }
           await ch.selectOption("bryan");
           await page.waitForFunction(()=>Array.from(document.querySelectorAll("#secMedia form select"))[1]?.options.length===18,{timeout:15000});
