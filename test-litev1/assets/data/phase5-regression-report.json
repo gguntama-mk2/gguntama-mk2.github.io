@@ -1,12 +1,511 @@
 {
   "schema": 5,
   "mode": "test-only",
-  "at": "2026-11-07T01:06:08.134Z",
+  "at": "2026-11-07T01:07:18.717Z",
   "passed": false,
-  "network": {},
+  "network": {
+    "pc": {
+      "total_local_bytes": 1695910,
+      "under_1mb": false,
+      "groups": {
+        "html": 14946,
+        "css": 112064,
+        "javascript": 671721,
+        "other_media": 792880,
+        "pxstore_images": 17539,
+        "character_json": 86760
+      },
+      "request_count": 71,
+      "loaded_character_ids": [
+        "alisa"
+      ],
+      "loaded_feature_codes": [],
+      "top_responses": [
+        {
+          "path": "/test-litev1/assets/js/pc_04.js",
+          "status": 200,
+          "bytes": 321688,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/a512bebf66816c386edb.woff2",
+          "status": 200,
+          "bytes": 301108,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_17.js",
+          "status": 200,
+          "bytes": 267712,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/css/pc_00.css",
+          "status": 200,
+          "bytes": 109323,
+          "kind": "css"
+        },
+        {
+          "path": "/test-litev1/assets/data/characters/alisa.json",
+          "status": 200,
+          "bytes": 86760,
+          "kind": "character_json"
+        },
+        {
+          "path": "/test-litev1/assets/media/356e885b36a307552b9b.webp",
+          "status": 200,
+          "bytes": 62360,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/6bdfaa0c26f6f7e4588c.webp",
+          "status": 200,
+          "bytes": 54070,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_10.js",
+          "status": 200,
+          "bytes": 36994,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/7e5616b661cc3e3a14c6.woff",
+          "status": 200,
+          "bytes": 30288,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/590d76a38d297080c723.woff2",
+          "status": 200,
+          "bytes": 24132,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/8188ad9e81eac5cc98cb.woff2",
+          "status": 200,
+          "bytes": 22236,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
+          "status": 200,
+          "bytes": 17234,
+          "kind": "pxstore_images"
+        },
+        {
+          "path": "/test-litev1/pc.html",
+          "status": 200,
+          "bytes": 14946,
+          "kind": "html"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_11.js",
+          "status": 200,
+          "bytes": 12689,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_13.js",
+          "status": 200,
+          "bytes": 12064,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_18.js",
+          "status": 200,
+          "bytes": 11124,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/db69014ee56eba319d92.webp",
+          "status": 200,
+          "bytes": 10000,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/6065e31d6eaa39c0b1fd.webp",
+          "status": 200,
+          "bytes": 9068,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/42af80ced32ba2aab3cf.webp",
+          "status": 200,
+          "bytes": 8592,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/e66811c13da615ca6334.webp",
+          "status": 200,
+          "bytes": 8022,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/54a666f059de32829fa2.woff",
+          "status": 200,
+          "bytes": 7968,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/0da58b8cd3f2c561e378.webp",
+          "status": 200,
+          "bytes": 7938,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/6b07a67995fd9ef62d81.webp",
+          "status": 200,
+          "bytes": 7910,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/ac456906500a30d51fdb.webp",
+          "status": 200,
+          "bytes": 7830,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/d50b4ddcbc21b0431cb0.webp",
+          "status": 200,
+          "bytes": 7684,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/d07e4b9afe96e03345c3.webp",
+          "status": 200,
+          "bytes": 7332,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/98fa4ed7562bc1bb8c57.webp",
+          "status": 200,
+          "bytes": 7270,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/3adf93fb28ed89c04ad9.webp",
+          "status": 200,
+          "bytes": 7262,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/37c4deba3c4d59b7db5f.webp",
+          "status": 200,
+          "bytes": 7038,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/30a88ca50a0e3ff0a21a.webp",
+          "status": 200,
+          "bytes": 6742,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/d4fe271a0e9e0c1390ea.webp",
+          "status": 200,
+          "bytes": 6696,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/ff20e631725e5f75d72a.webp",
+          "status": 200,
+          "bytes": 6564,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/7b3d51525dcd2d9d3b7c.webp",
+          "status": 200,
+          "bytes": 6558,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/d300100397e851f2265d.webp",
+          "status": 200,
+          "bytes": 6546,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/47d5ef4cb6959dab85e0.webp",
+          "status": 200,
+          "bytes": 6516,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/f39aae153b8787095fef.webp",
+          "status": 200,
+          "bytes": 6478,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/864bf0a5e9ac6e0c21e8.webp",
+          "status": 200,
+          "bytes": 6442,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/37a740fa41f7f35356a3.webp",
+          "status": 200,
+          "bytes": 6434,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/3ac17081dfcaeff0c5dd.webp",
+          "status": 200,
+          "bytes": 6366,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/ce144bd100afd26d7bce.webp",
+          "status": 200,
+          "bytes": 6362,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/368d40d7328ff5273d86.webp",
+          "status": 200,
+          "bytes": 6336,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/4c77c584aa291fcb8487.webp",
+          "status": 200,
+          "bytes": 6316,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/78af84eaa5797e241c92.webp",
+          "status": 200,
+          "bytes": 6278,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_05.js",
+          "status": 200,
+          "bytes": 6269,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/93132e40ec2245ff055e.webp",
+          "status": 200,
+          "bytes": 6204,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/c40cdb48823b8e5c5c07.webp",
+          "status": 200,
+          "bytes": 6168,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/8ae4d8a93b7adad6dd4f.webp",
+          "status": 200,
+          "bytes": 6140,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/f5bc735e7b4f3ec56cb5.webp",
+          "status": 200,
+          "bytes": 6126,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/441acd27a4840c16574b.webp",
+          "status": 200,
+          "bytes": 6026,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/6d5f976a6a5762e7b10f.webp",
+          "status": 200,
+          "bytes": 6000,
+          "kind": "other_media"
+        }
+      ],
+      "bad_responses": [],
+      "page_errors": []
+    },
+    "sp": {
+      "total_local_bytes": 1394569,
+      "under_1mb": false,
+      "groups": {
+        "html": 17096,
+        "css": 101018,
+        "javascript": 663968,
+        "other_media": 508188,
+        "pxstore_images": 17539,
+        "character_json": 86760
+      },
+      "request_count": 26,
+      "loaded_character_ids": [
+        "alisa"
+      ],
+      "loaded_feature_codes": [],
+      "top_responses": [
+        {
+          "path": "/test-litev1/assets/js/sp_04.js",
+          "status": 200,
+          "bytes": 313958,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/a512bebf66816c386edb.woff2",
+          "status": 200,
+          "bytes": 301108,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_17.js",
+          "status": 200,
+          "bytes": 267714,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/css/sp_00.css",
+          "status": 200,
+          "bytes": 101018,
+          "kind": "css"
+        },
+        {
+          "path": "/test-litev1/assets/data/characters/alisa.json",
+          "status": 200,
+          "bytes": 86760,
+          "kind": "character_json"
+        },
+        {
+          "path": "/test-litev1/assets/media/356e885b36a307552b9b.webp",
+          "status": 200,
+          "bytes": 62360,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/6bdfaa0c26f6f7e4588c.webp",
+          "status": 200,
+          "bytes": 54070,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_10.js",
+          "status": 200,
+          "bytes": 36967,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/7e5616b661cc3e3a14c6.woff",
+          "status": 200,
+          "bytes": 30288,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/590d76a38d297080c723.woff2",
+          "status": 200,
+          "bytes": 24132,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/media/8188ad9e81eac5cc98cb.woff2",
+          "status": 200,
+          "bytes": 22236,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/pxstore/b1017ee715b16bf043feb462.webp",
+          "status": 200,
+          "bytes": 17234,
+          "kind": "pxstore_images"
+        },
+        {
+          "path": "/test-litev1/sp.html",
+          "status": 200,
+          "bytes": 17096,
+          "kind": "html"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_11.js",
+          "status": 200,
+          "bytes": 12689,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_13.js",
+          "status": 200,
+          "bytes": 12065,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_18.js",
+          "status": 200,
+          "bytes": 11125,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/54a666f059de32829fa2.woff",
+          "status": 200,
+          "bytes": 7968,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_05.js",
+          "status": 200,
+          "bytes": 6269,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/441acd27a4840c16574b.webp",
+          "status": 200,
+          "bytes": 6026,
+          "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_route-loader.js",
+          "status": 200,
+          "bytes": 2445,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_01.js",
+          "status": 200,
+          "bytes": 496,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/pxstore/48481f1229888c33fc382ec0.avif",
+          "status": 200,
+          "bytes": 305,
+          "kind": "pxstore_images"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_00.js",
+          "status": 200,
+          "bytes": 240,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_02.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_03.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/sp_19.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
+        }
+      ],
+      "bad_responses": [],
+      "page_errors": []
+    }
+  },
   "storage": {},
   "errors": [
-    "AssertionError [ERR_ASSERTION]: pc local HTTP errors\n\n1 !== 0\n\n    at collect (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:49:10)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:128:58"
+    "AssertionError [ERR_ASSERTION]: UI state visible\n\nfalse !== true\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:105:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:110:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:132:18"
   ],
   "notes": []
 }
