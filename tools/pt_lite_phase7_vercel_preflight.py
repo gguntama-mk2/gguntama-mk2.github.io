@@ -6,7 +6,7 @@ base=Path("test-litev1")
 cfg=json.loads(Path("vercel.json").read_text("utf-8"))
 assert cfg["outputDirectory"]=="test-litev1","Only the isolated test UI may be served"
 assert cfg["framework"] is None
-assert cfg["public"] is False
+assert "public" not in cfg, "Deprecated public key is unsupported in Vercel deployments"
 assert any(h["source"]=="/(.*)" and any(x["key"]=="X-Robots-Tag" for x in h["headers"]) for h in cfg["headers"])
 assert not Path("test-litev1/.env").exists()
 results={"schema":7,"mode":"preview-only","safe":True,"output_dir":cfg["outputDirectory"],"devices":{}}
