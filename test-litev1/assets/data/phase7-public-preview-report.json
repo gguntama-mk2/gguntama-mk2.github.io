@@ -2,21 +2,361 @@
   "schema": 7,
   "mode": "isolated-external-HTTPS-preview",
   "source_branch": "project-t-preview-20261107",
-  "preview_base": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/",
-  "at": "2026-11-07T01:47:40.852Z",
-  "passed": false,
+  "preview_base": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5535810f4b02f8f53c/test-litev1/",
+  "at": "2026-11-07T01:49:00.478Z",
+  "passed": true,
   "browser": "Chromium",
-  "devices": {},
-  "issues": [
-    {
-      "device": "pc",
-      "error": "Error: pc preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/pc_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
+  "devices": {
+    "pc": {
+      "url": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5535810f4b02f8f53c/test-litev1/pc.html#home",
+      "initial": {
+        "http_status": 200,
+        "html_content_type": "text/html;charset=utf-8",
+        "page_title": "鉄拳8 技チェックシート",
+        "previewBanner": "PROJECT T テスト版｜実アカウントでログインしないでください。保存データは本番と共有されません。",
+        "featureCount": 0,
+        "characterCount": 0,
+        "page": "home",
+        "errors": []
+      },
+      "apiGuard": {
+        "status": 401,
+        "body": {
+          "error": "preview_disabled",
+          "message": "This preview has no account backend."
+        }
+      },
+      "firstLoad": {
+        "requestCount": 24,
+        "navigationMs": 2290,
+        "assetsByType": {
+          "document": 1,
+          "stylesheet": 2,
+          "script": 11,
+          "image": 6,
+          "font": 4
+        },
+        "html": {
+          "url": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5535810f4b02f8f53c/test-litev1/pc.html",
+          "status": 200,
+          "kind": "document",
+          "type": "text/html;charset=utf-8",
+          "cache": "max-age=3600, s-maxage=300",
+          "compressed": "zstd"
+        }
+      },
+      "vs": {
+        "present": true,
+        "loaded": [
+          "15"
+        ]
+      },
+      "cacheReload": {
+        "resources": 139,
+        "zeroTransfer": 117,
+        "js": [
+          {
+            "name": "pt-preview-guard.js",
+            "transferSize": 1500,
+            "encodedBodySize": 1200,
+            "decodedBodySize": 2198
+          },
+          {
+            "name": "pc_00.js",
+            "transferSize": 598,
+            "encodedBodySize": 298,
+            "decodedBodySize": 496
+          },
+          {
+            "name": "pc_03.js",
+            "transferSize": 541,
+            "encodedBodySize": 241,
+            "decodedBodySize": 240
+          },
+          {
+            "name": "pc_04.js",
+            "transferSize": 78624,
+            "encodedBodySize": 78324,
+            "decodedBodySize": 321826
+          },
+          {
+            "name": "pc_05.js",
+            "transferSize": 3011,
+            "encodedBodySize": 2711,
+            "decodedBodySize": 6269
+          }
+        ],
+        "nav": [
+          {
+            "transferSize": 5513,
+            "encodedBodySize": 5213,
+            "decodedBodySize": 15299,
+            "duration": 2287
+          }
+        ]
+      },
+      "staticRequests": 136,
+      "thirdPartyRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d8730179208881409",
+          "status": 200,
+          "kind": "script",
+          "type": "text/javascript;charset=UTF-8",
+          "cache": "public, max-age=86400",
+          "compressed": "gzip"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://timeapi.io/api/time/current/zone",
+          "status": 200,
+          "kind": "fetch",
+          "type": "application/json; charset=utf-8",
+          "cache": "",
+          "compressed": "gzip"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/avif",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://githubraw.com/cdn-cgi/rum",
+          "status": 204,
+          "kind": "xhr",
+          "type": "text/plain",
+          "cache": "",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        }
+      ],
+      "httpErrors": [],
+      "jsErrors": []
     },
-    {
-      "device": "sp",
-      "error": "Error: sp preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_03.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_02.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
+    "sp": {
+      "url": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5535810f4b02f8f53c/test-litev1/sp.html#home",
+      "initial": {
+        "http_status": 200,
+        "html_content_type": "text/html;charset=utf-8",
+        "page_title": "鉄拳8 技チェックシート（スマホ版）",
+        "previewBanner": "PROJECT T テスト版｜実アカウントでログインしないでください。保存データは本番と共有されません。",
+        "featureCount": 0,
+        "characterCount": 0,
+        "page": "home",
+        "errors": []
+      },
+      "apiGuard": {
+        "status": 401,
+        "body": {
+          "error": "preview_disabled",
+          "message": "This preview has no account backend."
+        }
+      },
+      "firstLoad": {
+        "requestCount": 22,
+        "navigationMs": 1217,
+        "assetsByType": {
+          "document": 1,
+          "script": 11,
+          "stylesheet": 1,
+          "font": 4,
+          "image": 5
+        },
+        "html": {
+          "url": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5535810f4b02f8f53c/test-litev1/sp.html",
+          "status": 200,
+          "kind": "document",
+          "type": "text/html;charset=utf-8",
+          "cache": "max-age=3600, s-maxage=300",
+          "compressed": "zstd"
+        }
+      },
+      "vs": {
+        "present": true,
+        "loaded": [
+          "15"
+        ]
+      },
+      "cacheReload": {
+        "resources": 95,
+        "zeroTransfer": 73,
+        "js": [
+          {
+            "name": "pt-preview-guard.js",
+            "transferSize": 1500,
+            "encodedBodySize": 1200,
+            "decodedBodySize": 2198
+          },
+          {
+            "name": "sp_01.js",
+            "transferSize": 598,
+            "encodedBodySize": 298,
+            "decodedBodySize": 496
+          },
+          {
+            "name": "sp_00.js",
+            "transferSize": 541,
+            "encodedBodySize": 241,
+            "decodedBodySize": 240
+          },
+          {
+            "name": "sp_05.js",
+            "transferSize": 3011,
+            "encodedBodySize": 2711,
+            "decodedBodySize": 6269
+          },
+          {
+            "name": "sp_04.js",
+            "transferSize": 75393,
+            "encodedBodySize": 75093,
+            "decodedBodySize": 314047
+          }
+        ],
+        "nav": [
+          {
+            "transferSize": 5807,
+            "encodedBodySize": 5507,
+            "decodedBodySize": 17449,
+            "duration": 1215
+          }
+        ]
+      },
+      "staticRequests": 90,
+      "thirdPartyRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d8730179208881409",
+          "status": 200,
+          "kind": "script",
+          "type": "text/javascript;charset=UTF-8",
+          "cache": "public, max-age=86400",
+          "compressed": "gzip"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/avif",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://githubraw.com/cdn-cgi/rum",
+          "status": 204,
+          "kind": "xhr",
+          "type": "text/plain",
+          "cache": "",
+          "compressed": ""
+        },
+        {
+          "url": "https://timeapi.io/api/time/current/zone",
+          "status": 200,
+          "kind": "fetch",
+          "type": "application/json; charset=utf-8",
+          "cache": "",
+          "compressed": "gzip"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        },
+        {
+          "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/71d27ed791be9fc0a3574b5",
+          "status": 200,
+          "kind": "image",
+          "type": "image/webp",
+          "cache": "max-age=300",
+          "compressed": ""
+        }
+      ],
+      "httpErrors": [],
+      "jsErrors": []
     }
-  ],
+  },
+  "issues": [],
   "notes": [
     "This is a third-party proxy, NOT a GitHub Pages deployment.",
     "Network coverage is on the isolated preview origin; authenticated server behavior is disabled."
