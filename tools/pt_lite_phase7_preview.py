@@ -59,6 +59,11 @@ report={"mode":"test-only","proxy":"raw.githack.com","preview_branch":"project-t
 for device in ("pc","sp"):
  p=base/(device+".html")
  html=p.read_text("utf-8")
+ # Some third-party proxies wrongly return HTTP 501 for empty JS placeholders.
+ # These scripts have no behavior, so omit them from the preview HTML entirely.
+ for empty in (base/"assets"/"js").glob(device+"_*.js"):
+  if empty.stat().st_size==0:
+   html=html.replace('<script src="assets/js/'+empty.name+'"></script>','')
  tag='<script src="assets/js/pt-preview-guard.js"></script>'
  if tag not in html:
   if "<head>" not in html:raise ValueError("Missing html head "+device)
