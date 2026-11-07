@@ -1,0 +1,17 @@
+{
+  "mode": "test-only",
+  "proxy": "raw.githack.com",
+  "preview_branch": "project-t-preview-20261107",
+  "html": {
+    "pc": {
+      "bytes": 15058,
+      "guard": true
+    },
+    "sp": {
+      "bytes": 17208,
+      "guard": true
+    }
+  },
+  "real_auth_disabled": true,
+  "api_calls_mocked": true
+}
