@@ -38,9 +38,9 @@
     const data=await request("/api/v1/admin/move-media");
     listing.replaceChildren();
     if(!data.entries||!data.entries.length){listing.appendChild(make("p","登録済みの動画はありません。"));return;}
-    const table=make("table"),h=make("tr");table.className="pt-mobile-table";
+    const table=make("table"),thead=make("thead"),tbody=make("tbody"),h=make("tr");table.className="pt-mobile-table";
     for(const col of ["キャラクター","技名 / k","状態","確認","操作"])h.appendChild(make("th",col));
-    table.appendChild(h);
+    thead.appendChild(h);table.append(thead,tbody);
     for(const item of data.entries){
       const row=make("tr");
       row.appendChild(make("td",item.character_id));
@@ -65,7 +65,7 @@
       });
       action.appendChild(btn);row.appendChild(action);
       ["キャラクター","技名 / k","状態","確認","操作"].forEach((label,i)=>{row.children[i].dataset.label=label;});
-      table.appendChild(row);
+      tbody.appendChild(row);
     }
     listing.appendChild(table);
   }
