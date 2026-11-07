@@ -45,6 +45,18 @@ def verify_rel_path(root: Path, relative: str) -> None:
         raise AssertionError(f"Missing or unsafe reference: {relative}")
 
 
+def restore_production_ads(html: str, device: str) -> tuple[str, int]:
+    """Restore the original monetization block, removed by preview sanitizing."""
+    source = Path(device + ".html").read_text("utf-8")
+    pattern = re.compile(r"<!--PTADS-START-->(.*?)<!--PTADS-END-->", re.DOTALL)
+    original = pattern.search(source)
+    candidate = pattern.search(html)
+    assert original and candidate, (device, "missing monetization block marker")
+    body = original.group(1)
+    assert len(body) < 20000, (device, "unexpectedly huge ads block")
+    return html[:candidate.start(1)] + body + html[candidate.end(1):], len(body)
+
+
 def prepare_html(s: str, device: str, version: str) -> str:
     assert "<head>" in s and "<body>" in s
     assert s.count('src="assets/js/pt-preview-guard.js"') == 1
@@ -121,11 +133,16 @@ def build(output: Path) -> dict:
     assert re.fullmatch(r"[A-Za-z0-9-]+", version)
     for device in ("pc", "sp"):
         html = prepare_html((SOURCE / (device + ".html")).read_text("utf-8"), device, version)
+        html, ads_bytes = restore_production_ads(html, device)
+        print(f"ADS_PARITY {device}: restored {ads_bytes} characters from original production HTML")
         (site / (device + ".html")).write_text(html, "utf-8")
     # The source homepage still advertised its old 50MB monolithic HTML. The
     # new bundle uses lazy files, so remove the misleading initial-load warning.
     index = (site / "index.html").read_text("utf-8")
-    index = index.replace("初回のみ、約50MB", "必要なファイルのみ順番に読み込みます")
+    index = index.replace(
+        "読み込みに時間がかかる場合があります（初回のみ、約50MB）。",
+        "必要な内容を順番に読み込むため、最初の表示には少し時間がかかる場合があります。"
+    )
     (site / "index.html").write_text(index, "utf-8")
     for icon in Path("icons").glob("*.webp"):
         target = site / icon.relative_to(Path("."))
