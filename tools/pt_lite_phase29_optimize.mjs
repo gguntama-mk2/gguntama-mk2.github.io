@@ -1,4 +1,4 @@
-/** PROJECT T Phase29: reduce fitNames cache allocation/call CPU on isolated mobile runtime only.
+/** PROJECT T Phase29: test fixed-pair child element cache CPU on isolated mobile runtime only.
  * This tests one optimization hypothesis; it must pass A/B CPU regression gates.
  */
 import fs from 'node:fs';
@@ -8,11 +8,11 @@ import {parse} from 'acorn';
 const ROOT=path.resolve('phase29-performance');
 const name='assets/js/sp_04_runtime.js',file=path.join(ROOT,'optimized-site',name);
 const report={phase:29,mode:'test-only',passed:false,errors:[],files:{},
- strategy:'Replace stage28 Map-per-heading cache with a two-slot object per heading to reduce allocations and lookup overhead, without changing query targets or fitNames layout logic.'};
+ strategy:'Replace stage28 nested Map cache with a fixed two-element array per heading to avoid per-lookup Map.has/Map.get and preserve element identity, with identical layout logic.'};
 try{
  const old=fs.readFileSync(file,'utf8');
  const oldHelper='const pt28Cache=new WeakMap();function pt28Query(el,sel){let bySel=pt28Cache.get(el);if(!bySel){bySel=new Map();pt28Cache.set(el,bySel)}if(!bySel.has(sel))bySel.set(sel,el.querySelector(sel));return bySel.get(sel)}';
- const newHelper='const pt28Cache=new WeakMap();function pt28Query(el,sel){let bySel=pt28Cache.get(el);if(!bySel){bySel=Object.create(null);pt28Cache.set(el,bySel)}const slot=sel===".cmdtxt"?"c":sel===".minfo"?"mi":null;if(slot===null)throw Error("Unexpected cached selector");if(!(slot in bySel))bySel[slot]=el.querySelector(sel);return bySel[slot]}';
+ const newHelper='const pt28Cache=new WeakMap();function pt28Query(el,sel){let pair=pt28Cache.get(el);if(!pair){pair=[el.querySelector(".cmdtxt"),el.querySelector(".minfo")];pt28Cache.set(el,pair)}if(sel===".cmdtxt")return pair[0];if(sel===".minfo")return pair[1];throw Error("Unexpected cached selector")}';
  if(old.split(oldHelper).length!==2)throw Error('Expected exact Phase28 cache helper missing or duplicated');
  const js=old.replace(oldHelper,newHelper);
  const ast0=parse(old,{ecmaVersion:'latest',sourceType:'script'}),ast1=parse(js,{ecmaVersion:'latest',sourceType:'script'});
