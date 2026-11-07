@@ -61,6 +61,14 @@ async function getState(page,device,route){
       html:{width:document.documentElement.scrollWidth,viewport:innerWidth,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)},
       sheet:{visible:!!bodyRoot,rows:device==='pc'?tbodyRows:spRows},
       mainMenu:rect(document.getElementById('mnTab')),
+      visual:{
+        movieColumn:document.querySelectorAll('#headRow th.pt-mv').length,
+        movieRows:document.querySelectorAll('#body td.pt-mv').length,
+        iconModule:!!window.PTIcons,
+        movieModule:!!window.PTMoveMedia,
+        parallaxImage:(()=>{const el=document.querySelector('.pxbg');const bg=el?getComputedStyle(el,'::before').backgroundImage:'';return bg.slice(0,300)})(),
+        parallaxKey:document.querySelector('.pxbg')?.dataset.k||''
+      },
       loadedModules:window.PT_ROUTE_ASSETS?.loaded?.()||null,
       loadedCharacterData:window.PT_CHAR_DATA?.loaded?.()||null,
       previewBanner:!!document.getElementById('ptPreviewNotice'),
@@ -89,6 +97,15 @@ async function navigate(page,route,device){
   }
   if(route==='combo'){
     await page.waitForFunction(()=>{const h=document.getElementById('cbHost');const r=h?.shadowRoot||h;return !!r&&r.children.length>0;},{timeout:25000});
+  }
+  if(route==='gallery'){
+    // Loading the gallery canvas and lazy bitmap can lag the route marker.
+    await page.waitForFunction(()=>document.querySelectorAll('#gaHost .ga-card').length>0,null,{timeout:35000});
+  }
+  if(route==='sheet'){
+    // Mock-only MOVIE manifests preserve exact column layout in the Vercel preview.
+    await page.waitForFunction(()=>document.querySelectorAll('#headRow th.pt-mv').length>0 || !document.getElementById('headRow'),null,{timeout:20000}).catch(()=>{});
+    await page.waitForTimeout(900);
   }
   if(route==='update' && !!(await page.evaluate(()=>!!window.PT_ROUTE_ASSETS))){
     await page.waitForFunction(()=>typeof PT_FULL_UPDATES!=='undefined'&&PT_FULL_UPDATES?.length>0,{timeout:50000});
@@ -192,6 +209,13 @@ function check(device,prod,preview){
       diff.push({kind:route,key,production:left??null,preview:right??null});
     }
     if(route==='vs'&&p.vsMounted&&(!q.vsMounted))issues.push('preview VS did not mount');
+    if(route==='sheet'){
+      if(q.visual?.movieColumn!==p.visual?.movieColumn)issues.push('MOVIE column mismatch: production '+p.visual?.movieColumn+' preview '+q.visual?.movieColumn);
+      if(q.visual?.movieRows!==p.visual?.movieRows)issues.push('MOVIE row cells mismatch: production '+p.visual?.movieRows+' preview '+q.visual?.movieRows);
+      if(!q.visual?.parallaxImage||q.visual.parallaxImage==='none'||q.visual.parallaxImage.includes('/assets/css/assets/')){
+        issues.push('Preview parallax image CSS URL invalid: '+String(q.visual?.parallaxImage).slice(0,160));
+      }
+    }
   }
   if(preview.errors.length)issues.push('preview JS errors: '+preview.errors.slice(0,4).join('|'));
   if(preview.firstPartyHttpErrors.length)issues.push('preview HTTP failures: '+JSON.stringify(preview.firstPartyHttpErrors.slice(0,6)));
