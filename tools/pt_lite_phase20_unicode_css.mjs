@@ -93,21 +93,23 @@ try{
  for(const dev of ['pc','sp']){
   const f=path.join(SITE,dev+'.html');
   let s=fs.readFileSync(f,'utf8');
-  const anchor='  window.PT19_ENSURE_FONTS=ensure;';
-  if(s.split(anchor).length!==2)throw Error('Phase19 font router anchor changed in '+dev);
+  if(!s.includes('pt19-maru-shards.css'))throw Error('Phase19 font stylesheet router missing in '+dev);
   const hint=[
-   '  /* Phase20: a sheet pointerdown or keyboard navigation can start font CSS before page-state change. */',
-   '  document.addEventListener("pointerdown",function(e){',
-   '    var b=e.target.closest("[data-go]");',
-   '    if(b&&b.getAttribute("data-go")==="sheet")ensure();',
-   '  },{capture:true,passive:true});',
-   '  document.addEventListener("keydown",function(e){',
-   '    if(e.key!=="Enter"&&e.key!==" ")return;',
-   '    var b=e.target.closest("[data-go]");',
-   '    if(b&&b.getAttribute("data-go")==="sheet")ensure();',
-   '  },{capture:true});'
+    '<script>',
+    '/* PT20: request deferred font CSS on an explicit sheet navigation intent. */',
+    '(function(){',
+    '  function intent(e){',
+    '    if(e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ")return;',
+    '    var b=e.target&&e.target.closest&&e.target.closest("[data-go]");',
+    '    if(b&&b.getAttribute("data-go")==="sheet"&&window.PT19_ENSURE_FONTS)window.PT19_ENSURE_FONTS();',
+    '  }',
+    '  document.addEventListener("pointerdown",intent,{capture:true,passive:true});',
+    '  document.addEventListener("keydown",intent,{capture:true});',
+    '})();',
+    '</script>'
   ].join('\n');
-  s=s.replace(anchor,anchor+'\n'+hint);
+  if(!s.includes('</head>'))throw Error('No head close in '+dev);
+  s=s.replace('</head>',hint+'\n</head>');
   fs.writeFileSync(f,s,'utf8');
  }
  report.homeInteractionHint=true;
