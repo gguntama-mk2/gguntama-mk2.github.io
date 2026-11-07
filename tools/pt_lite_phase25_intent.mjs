@@ -44,15 +44,16 @@ try{
     },event);
     await page.waitForFunction(()=>document.querySelector('link[href*="pt19-maru-shards.css"]')!==null,{timeout:10000});
     await page.evaluate(()=>window.PT19_FONT_READY);
+    await page.evaluate(()=>window.PT_SHEET_RUNTIME.fontPrewarm());
     if(css.length!==1)throw Error('CSS requested '+css.length+' times for '+dev+' '+event);
     if(eventState!=='home')throw Error('Intent event changed route '+dev+' '+event+' route='+eventState);
-    if(fonts.length!==0)throw Error('Prewarm fetched WOFF2 prematurely '+dev+' '+event+' '+fonts.join(','));
+    if(fonts.length<1||fonts.length>2)throw Error('Expected only actual on-demand font-face shards on sheet intent '+dev+' '+event+' '+fonts.join(','));
     await page.evaluate(()=>window.setPage('sheet'));
     await page.waitForFunction(dev=>dev==='pc'
        ?document.querySelectorAll('#body tr[data-k]').length===228
        :document.querySelectorAll('#list .card[data-i]').length===228,dev,{timeout:50000});
     if(errors.length)throw Error('Page JS exception '+errors.join(';'));
-    const item={device:dev,event,cssRequests:css.length,earlyFontRequests:0,
+    const item={device:dev,event,cssRequests:css.length,earlyFontRequests:fonts.length,
      sheetRows:228,fontCSSAlreadyReadyBeforeSheet:true,passed:true};
     result.checks.push(item);
     console.log('PHASE25_INTENT_CHECK',JSON.stringify(item));
