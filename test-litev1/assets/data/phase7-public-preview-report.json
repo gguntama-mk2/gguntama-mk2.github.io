@@ -1,0 +1,24 @@
+{
+  "schema": 7,
+  "mode": "isolated-external-HTTPS-preview",
+  "source_branch": "project-t-preview-20261107",
+  "preview_base": "https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/",
+  "at": "2026-11-07T01:37:12.518Z",
+  "passed": false,
+  "browser": "Chromium",
+  "devices": {},
+  "issues": [
+    {
+      "device": "pc",
+      "error": "page.waitForFunction: Timeout 20000ms exceeded.\n    at verify (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:35:14)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:89:25"
+    },
+    {
+      "device": "sp",
+      "error": "page.waitForFunction: Timeout 20000ms exceeded.\n    at verify (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:35:14)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:89:25"
+    }
+  ],
+  "notes": [
+    "This is a third-party proxy, NOT a GitHub Pages deployment.",
+    "Network coverage is on the isolated preview origin; authenticated server behavior is disabled."
+  ]
+}
