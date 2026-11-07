@@ -55,7 +55,7 @@
       section.appendChild(el("p", "最新同期: " + updated, "muted"));
       section.appendChild(el("h3", "未解明 Requirements 調査候補（推定優先順位）"));
       var wrap = el("div", null, "tw");
-      var table = el("table");
+      var table = el("table"); table.className = "pt-mobile-table";
       var th = el("tr");
       ["ID", "対象キャラ数", "出現レコード数", "パラメータ種類", "調査スコア"].forEach(function (v) {
         th.appendChild(el("th", v));
@@ -66,7 +66,11 @@
         var tr = el("tr");
         ["req_id", "characters_present", "records_all_characters",
           "parameter_variants", "investigation_score_heuristic"].forEach(function (key) {
-          tr.appendChild(el("td", entry[key] == null ? "—" : entry[key]));
+          var cell = el("td", entry[key] == null ? "—" : entry[key]);
+          cell.dataset.label = { req_id:"ID", characters_present:"対象キャラ数",
+            records_all_characters:"出現レコード数", parameter_variants:"パラメータ種類",
+            investigation_score_heuristic:"調査スコア" }[key] || key;
+          tr.appendChild(cell);
         });
         tbody.appendChild(tr);
       });
@@ -112,15 +116,17 @@
       var section = el("div", null, "card");
       section.appendChild(el("h2", "優先調査ID"));
       var wrap = el("div", null, "tw");
-      var table = el("table");
+      var table = el("table"); table.className = "pt-mobile-table";
       var thead = el("thead"), trh = el("tr");
       ["ID", "元データ出現数", "関連技候補", "優先度"].forEach(function (x) { trh.appendChild(el("th", x)); });
       thead.appendChild(trh);
       var tbody = el("tbody");
       (data.top_unknown_ids || []).forEach(function (entry) {
         var tr = el("tr");
-        [entry.id, entry.raw_occurrences, entry.candidate_moves, entry.priority_score].forEach(function (v) {
-          tr.appendChild(el("td", v));
+        [entry.id, entry.raw_occurrences, entry.candidate_moves, entry.priority_score].forEach(function (v, i) {
+          var td = el("td", v);
+          td.dataset.label = ["ID","元データ出現数","関連技候補","優先度"][i];
+          tr.appendChild(td);
         });
         tbody.appendChild(tr);
       });
