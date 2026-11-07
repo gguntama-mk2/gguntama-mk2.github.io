@@ -19,9 +19,10 @@ for device in ("pc","sp"):
     js=JS/(device+"_17.js")
     src=js.read_text("utf-8")
     hook='    if(page!=="home"){\n      document.querySelectorAll("#chars img[data-pt-src]'
-    if hook not in src:raise ValueError(device+": deferred thumbnail hook missing")
-    src=src.replace(hook,'    if(page!=="home"){\n      root.classList.add("pt-full-font-ready");\n      document.querySelectorAll("#chars img[data-pt-src]',1)
-    js.write_text(src,"utf-8")
+    if 'root.classList.add("pt-full-font-ready")' not in src:
+        if hook not in src:raise ValueError(device+": deferred thumbnail hook missing")
+        src=src.replace(hook,'    if(page!=="home"){\n      root.classList.add("pt-full-font-ready");\n      document.querySelectorAll("#chars img[data-pt-src]',1)
+        js.write_text(src,"utf-8")
     styles.append({"device":device,"css_bytes":css.stat().st_size,"body_font":"KosugiMaru on first home view, MaruGoKawa after feature navigation"})
 output=BASE/"data"/"phase5-font-strategy.json"
 output.write_text(json.dumps({"schema":5,"mode":"test-only","strategy":"defer original full UI font until first non-home page, keep same-family rounded fallback on home","files":styles},ensure_ascii=False,indent=2)+"\n","utf-8")
