@@ -143,7 +143,7 @@
   function buildSheetSkeleton() {
     D.banner = h("div", { id: "banner" });
     D.chars = h("div", { id: "chars" });
-    D.tool = h("div", { class: "card row", id: "tool" });
+    D.tool = h("div", { class: "card pt-sheet-toolbar", id: "tool" });
     D.diff = h("div", { class: "card", id: "diffBox", hidden: true });
     D.editor = h("div", { class: "editor card", id: "editor" });
     D.hist = h("div", { class: "card", id: "hist" });
@@ -153,7 +153,19 @@
     D.pvBox = h("div", { class: "card" }, h("div", { class: "row" }, h("b", { text: "プレビュー" }), h("span", { class: "muted", text: "実際のサイトの技チェックシートに、編集中の内容をその場で映します（保存・公開はされません）" }),
       h("label", { class: "chk" }, h("input", { type: "checkbox", onchange: function (ev) { toggleSP(ev.target.checked); } }), "スマホ版も見る")),
       h("div", { class: "pv" }, D.pcFrame, D.spBox));
-    sec.sheet.replaceChildren(D.banner, h("div", { class: "card" }, h("div", { class: "muted", text: "キャラを選ぶ" }), D.chars), D.tool, D.diff, D.editor, D.hist, D.pvBox);
+    D.charPicker = h("select", { id: "ptSheetCharPicker", "aria-label": "編集するキャラクターを選ぶ", onchange: function (ev) {
+      var id = ev.target.value;
+      if (!id || (S.cur && id === S.cur.id)) return;
+      if (S.dirty && !confirm("保存していない変更があります。破棄して移動しますか？")) {
+        ev.target.value = S.cur ? S.cur.id : "";
+        return;
+      }
+      S.dirty = false; openChar(id);
+    } });
+    sec.sheet.replaceChildren(D.banner, h("div", { class: "card pt-sheet-character-panel" },
+      h("div", { class: "pt-sheet-mobile-picker" }, h("label", { for: "ptSheetCharPicker", text: "編集するキャラクター" }), D.charPicker),
+      h("div", { class: "pt-sheet-char-caption", text: "キャラクターを選ぶ" }), D.chars),
+      D.tool, D.diff, D.editor, D.hist, D.pvBox);
     D.chars.textContent = "元データ（サイトの技表）を読み込んでいます…（数十秒かかることがあります）";
     D.pcFrame.addEventListener("load", onBaseLoaded);
   }
@@ -199,6 +211,16 @@
   }
   function renderChars() {
     D.chars.replaceChildren();
+    if (D.charPicker) {
+      var oldValue = D.charPicker.value;
+      D.charPicker.replaceChildren();
+      S.chars.forEach(function (c) {
+        var opt = h("option", { value: c.id, text: c.name + "（" + c.en + "） · " + c.moves.length + "技" });
+        D.charPicker.appendChild(opt);
+      });
+      var selectedId = S.cur ? S.cur.id : oldValue;
+      if (selectedId && S.chars.some(function (x) { return x.id === selectedId; })) D.charPicker.value = selectedId;
+    }
     S.chars.forEach(function (c) {
       var o = S.ovr[c.id], badge = null, stale = null;
       if (o) badge = h("span", { class: "badge " + (o.has_unpublished_changes ? "draft" : "pub"), text: o.has_unpublished_changes ? "未公開の変更" : "公開中" });
@@ -374,16 +396,26 @@
     var c = S.cur; D.tool.replaceChildren();
     if (!c) return;
     var st = baseState(), rebasePending = c.exists && c.contentBase !== c.savedBase;
-    D.tool.append(
+    var heading = h("div", { class: "pt-sheet-tool-heading" },
       h("b", { text: c.name }), h("span", { class: "muted", text: status() + (S.dirty ? "　● 未保存の変更あり" : "") }),
-      h("span", { class: "badge " + (st === "current" ? "pub" : "stale"), id: "baseBadge", "data-state": st, text: BASE_BADGE[st] }),
-      h("span", { style: "flex:1" }),
-      h("button", { type: "button", class: "btn", text: "元データを読み込む", title: "サイトに埋め込まれた最新の元の技の一覧を、下書きとして読み込みます（保存するまで反映されません）", onclick: loadBase }),
-      h("button", { type: "button", class: "btn", id: "btnSave", text: "下書きを保存", disabled: !S.dirty && c.exists && !rebasePending, title: "一般のサイトには出ません。「公開する」を押したときだけ反映されます", onclick: function () { saveDraft(); } }),
-      h("button", { type: "button", class: "btn primary", id: "btnPublish", text: "公開する", disabled: !c.exists && !S.dirty, title: "一般公開の技チェックシートに反映します", onclick: publish }),
-      h("button", { type: "button", class: "btn", text: "公開済みに戻す", disabled: !c.published, title: "下書きを、公開中の内容に戻します", onclick: revert }),
-      h("button", { type: "button", class: "btn danger", text: "上書きを削除", disabled: !c.exists, title: "このキャラの上書きを消して、サイトの元データに戻します（履歴は残ります）", onclick: removeOverride }),
-      h("div", { class: "muted", style: "flex-basis:100%", text: "「下書きを保存」では一般のサイトは変わりません。一般公開の技チェックシートに反映されるのは「公開する」を押したときだけです。" }));
+      h("span", { class: "badge " + (st === "current" ? "pub" : "stale"), id: "baseBadge", "data-state": st, text: BASE_BADGE[st] }));
+    var mainActions = h("div", { class: "pt-sheet-primary-actions" },
+      h("button", { type: "button", class: "btn", id: "btnSave", text: "下書きを保存", disabled: !S.dirty && c.exists && !rebasePending,
+        title: "一般のサイトには出ません。「公開する」を押したときだけ反映されます", onclick: function () { saveDraft(); } }),
+      h("button", { type: "button", class: "btn primary", id: "btnPublish", text: "公開する", disabled: !c.exists && !S.dirty,
+        title: "一般公開の技チェックシートに反映します", onclick: publish }));
+    var extraActions = h("div", { class: "pt-sheet-extra-actions" },
+      h("button", { type: "button", class: "btn", text: "元データを読み込む",
+        title: "サイトの最新技データを下書きとして読み込みます", onclick: loadBase }),
+      h("button", { type: "button", class: "btn", text: "公開済みに戻す", disabled: !c.published,
+        title: "下書きを公開中の内容に戻します", onclick: revert }),
+      h("button", { type: "button", class: "btn danger", text: "上書きを削除", disabled: !c.exists,
+        title: "上書きを削除し元データに戻します", onclick: removeOverride }));
+    var more = h("details", { class: "pt-sheet-more" },
+      h("summary", { text: "その他の操作（元データ・復元・削除）" }), extraActions);
+    D.tool.append(heading, mainActions, more,
+      h("p", { class: "muted pt-sheet-tool-note",
+        text: "下書きを保存してもサイトは変わりません。「公開する」で一般公開に反映されます。" }));
   }
   async function loadBase() {
     var c = S.cur;
@@ -484,30 +516,59 @@
   }
   function renderEditor() {
     var c = S.cur;
-    var oldList = D.editor.querySelector("#mlist"), keepTop = oldList && S.listFor === (c && c.id) ? oldList.scrollTop : 0, keepY = window.pageYOffset;   // 作り直しても、一覧とページの位置を保つ
+    var oldList = D.editor.querySelector("#mlist"), keepTop = oldList && S.listFor === (c && c.id) ? oldList.scrollTop : 0, keepY = window.pageYOffset;
     D.editor.replaceChildren();
     if (!c) return;
     S.listFor = c.id;
     var baseK = {}; baseOf(c.id).moves.forEach(function (m) { baseK[m.k] = JSON.stringify(m); });
     var list = h("div", { id: "mlist" });
-    var q = (c.filter || "").trim().toLowerCase();
+    var picker = h("select", { id: "ptSheetMovePicker", "aria-label": "編集する技を選ぶ",
+      onchange: function (ev) { if (!ev.target.value) return; c.sel = Number(ev.target.value); renderEditor(); } });
+    var search = h("input", { type: "search", id: "ptSheetMoveSearch", placeholder: "技名・コマンド・kで検索",
+      value: c.filter || "", "aria-label": "技を検索", oninput: function (ev) { c.filter = ev.target.value; updateFilteredMoves(); } });
+    var matches = h("div", { class: "pt-sheet-matches", role: "status" });
     c.moves.forEach(function (m, i) {
       var cmd = (m.a && m.a.command) || "";
-      if (q && (m.name + " " + cmd + " " + (m.y || "")).toLowerCase().indexOf(q) < 0) return;
       var cls = !(m.k in baseK) ? "new" : (baseK[m.k] !== JSON.stringify(m) ? "chg" : "");
-      list.appendChild(h("button", { type: "button", "aria-pressed": String(i === c.sel), onclick: function () { c.sel = i; renderEditor(); } },
-        h("span", { class: "k", text: "#" + m.k }), h("span", { class: cls, text: m.name }), cmd ? h("div", { class: "muted", text: cmd }) : null));
+      list.appendChild(h("button", { type: "button", "data-index": i, "aria-pressed": String(i === c.sel),
+        onclick: function () { c.sel = i; renderEditor(); } },
+        h("span", { class: "k", text: "#" + m.k }), h("span", { class: cls, text: m.name }),
+        cmd ? h("div", { class: "muted", text: cmd }) : null));
     });
+    function updateFilteredMoves() {
+      var q = (c.filter || "").normalize("NFKC").toLowerCase().trim(), options = [], count = 0, selected = "";
+      Array.prototype.forEach.call(list.children, function (btn, i) {
+        var m = c.moves[i], cmd = (m.a && m.a.command) || "";
+        var show = !q || (String(m.k) + " " + m.name + " " + cmd + " " + (m.y || "")).normalize("NFKC").toLowerCase().indexOf(q) >= 0;
+        btn.hidden = !show;
+        if (show) {
+          count++; options.push(h("option", { value: i, text: "#" + m.k + " · " + m.name + (cmd ? " / " + cmd : "") }));
+          if (i === c.sel) selected = String(i);
+        }
+      });
+      picker.replaceChildren(h("option", { value: "", text: count ? "技を選択…" : "該当する技がありません" }), options);
+      picker.value = selected;
+      matches.textContent = count + " / " + c.moves.length + " 技";
+    }
     var left = h("div", { class: "mleft" },
-      h("input", { type: "search", placeholder: "技名・コマンドで絞り込み", value: c.filter || "", oninput: function (ev) { c.filter = ev.target.value; var pos = ev.target.selectionStart; renderEditor(); var n = $("input[type=search]", D.editor); n.focus(); n.setSelectionRange(pos, pos); } }),
-      h("div", { class: "row", style: "margin:6px 0" },
+      h("label", { class: "pt-sheet-move-search-label", for: "ptSheetMoveSearch", text: "技を検索" }),
+      search, matches,
+      h("div", { class: "pt-sheet-mobile-picker" },
+        h("label", { for: "ptSheetMovePicker", text: "編集する技" }), picker),
+      h("div", { class: "row pt-sheet-list-actions" },
         h("button", { type: "button", class: "btn", text: "＋技を追加", onclick: addMove }),
-        missingBase().length ? h("select", { onchange: function (ev) { restoreBase(+ev.target.value); } }, h("option", { value: "", text: "元データから復元…" }), missingBase().map(function (m) { return h("option", { value: m.k, text: "#" + m.k + " " + m.name }); })) : null),
-      list, h("div", { class: "muted", text: "● 元データから変更　＋新規（元データに無い）" }));
-    D.editor.append(left, c.moves[c.sel] ? form(c.moves[c.sel]) : h("div", { class: "muted", text: c.moves.length ? "左の一覧から技を選んでください" : "このキャラの技はまだありません。「＋技を追加」から作れます。" }));
+        missingBase().length ? h("select", { "aria-label": "元データから技を復元", onchange: function (ev) { restoreBase(+ev.target.value); } },
+          h("option", { value: "", text: "元データから復元…" }),
+          missingBase().map(function (m) { return h("option", { value: m.k, text: "#" + m.k + " " + m.name }); })) : null),
+      list, h("div", { class: "muted pt-sheet-legend", text: "● 元データから変更　＋新規（元データに無い）" }));
+    updateFilteredMoves();
+    D.editor.append(left, h("div", { class: "pt-sheet-form-area" },
+      c.moves[c.sel] ? form(c.moves[c.sel]) :
+        h("div", { class: "muted", text: c.moves.length ? "左の一覧から技を選んでください" : "このキャラクターの技はまだありません。「＋技を追加」から作れます。" })));
     list.scrollTop = keepTop;
-    var on = list.querySelector('[aria-pressed="true"]');       // 選んだ技が一覧の外にあるときだけ、一覧の中だけを動かして見える位置にする
-    if (on && (on.offsetTop < list.scrollTop || on.offsetTop + on.offsetHeight > list.scrollTop + list.clientHeight)) list.scrollTop = Math.max(0, on.offsetTop - Math.round(list.clientHeight / 3));
+    var on = list.querySelector('[aria-pressed="true"]');
+    if (on && !on.hidden && (on.offsetTop < list.scrollTop || on.offsetTop + on.offsetHeight > list.scrollTop + list.clientHeight))
+      list.scrollTop = Math.max(0, on.offsetTop - Math.round(list.clientHeight / 3));
     if (Math.abs(window.pageYOffset - keepY) > 1) window.scrollTo(window.pageXOffset, keepY);
   }
   function missingBase() { var have = {}; S.cur.moves.forEach(function (m) { have[m.k] = 1; }); return baseOf(S.cur.id).moves.filter(function (m) { return !have[m.k]; }); }
