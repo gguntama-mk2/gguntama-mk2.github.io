@@ -48,6 +48,8 @@ async function collect(device){
     bad_responses:bad,page_errors:jsErrors
   };
   report.network[device]=info; // Persist measurements even if a later assertion fails.
+  const summaryReady=await page.evaluate(()=>typeof UPDATES!=="undefined" && Array.isArray(UPDATES) && UPDATES.length>=3);
+  assert.equal(summaryReady,true,'home update summaries present');
   console.log('NETWORK',device,JSON.stringify(info));
   assert.equal(bad.length,0,device+' local HTTP errors');
   assert.equal(jsErrors.length,0,device+' page errors');
@@ -102,6 +104,8 @@ async function stateCompatibility(){
       const progress=document.getElementById('barNum')?.textContent||'';
       return {card:!!card,progress};
     },{device,k:chosen.k});
+    report.storage[device+'_checkpoint']={actual,visible,chosen};
+    console.log('STORAGE_CHECKPOINT',device,JSON.stringify({actual,visible,chosen}));
     assert.equal(device==='pc'?visible.checked:visible.card,true,'UI state visible');
     if(device==='pc')assert.equal(visible.reviewClass,true,'UI bookmark present');
     console.log('STORAGE',device,JSON.stringify({actual,visible,chosen}));
