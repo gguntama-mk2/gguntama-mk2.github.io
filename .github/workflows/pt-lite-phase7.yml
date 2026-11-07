@@ -38,7 +38,7 @@ jobs:
         run: |
           set -e
           for device in pc sp; do
-            url="https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/${device}.html"
+            url="https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/${device}.html"
             echo "Checking preview ${device}"
             for attempt in 1 2 3 4 5 6; do
               curl -fsSL --max-time 25 --compressed "${url}" -o "/tmp/pt-preview-${device}.html" || true
