@@ -18,21 +18,47 @@ try{
  const html=old.match(/pt27HeadTemplate\.innerHTML\s*=\s*(['"])(.*?)\1\s*;/);
  if(!html||!html[2].startsWith('<span class="nm"></span><span class="mbadge" hidden>'))
   throw Error('Immutable heading template sibling order not verified');
- const orig=old.slice(card.start,card.end);
- const marker='head.appendChild(pt27HeadTemplate.content.cloneNode(true))';
- const badge='head.firstElementChild.nextElementSibling';
- const nameExpr='const nm = head.firstElementChild;';
- if(orig.split(marker).length!==2||orig.split(badge).length!==2||orig.split(nameExpr).length!==2)
-  throw Error('Phase31 AST source anchors missing or repeated');
- const changed=orig.replace(marker,marker+';const pt32First=head.firstElementChild')
-   .replace(badge,'pt32First.nextElementSibling')
-   .replace(nameExpr,'const nm = pt32First;');
- // The extra declaration is after the clone, before either reference.
- const js=old.slice(0,card.start)+changed+old.slice(card.end);
+ // Target the actual AST nodes, not whitespace-sensitive source snippets.
+ // Guard that two firstElementChild reads occur inside cardEl only, and that
+ // both are reached after the existing static template clone statement.
+ const edits=[];
+ let cloneStatement=null;
+ function visit(n,parent){
+  if(!n||typeof n!=='object')return;
+  if(n.type==='ExpressionStatement'&&n.expression?.type==='CallExpression'){
+   const c=n.expression;
+   if(c.callee?.type==='MemberExpression'&&c.callee.object?.name==='head'
+      &&c.callee.property?.name==='appendChild'&&c.arguments?.length===1
+      &&old.slice(c.arguments[0].start,c.arguments[0].end)==='pt27HeadTemplate.content.cloneNode(true)'){
+     if(cloneStatement)throw Error('Duplicate template clone');
+     cloneStatement=n;
+   }
+  }
+  if(n.type==='MemberExpression'&&!n.computed&&n.object?.name==='head'
+    &&n.property?.name==='firstElementChild'){
+    edits.push({a:n.start,b:n.end,text:'pt32First',parent:parent?.type});
+  }
+  for(const [key,value] of Object.entries(n)){
+   if(['start','end','loc'].includes(key))continue;
+   if(Array.isArray(value))value.forEach(x=>visit(x,n));
+   else if(value&&typeof value==='object')visit(value,n);
+  }
+ }
+ visit(card.body,null);
+ if(!cloneStatement||edits.length!==2
+   ||edits.some(e=>e.a<=cloneStatement.end))
+  throw Error('Unsafe heading access shape: '+JSON.stringify({clone:!!cloneStatement,reads:edits.length,positions:edits.map(e=>e.a)}));
+ const modifications=[
+  ...edits,
+  {a:cloneStatement.end,b:cloneStatement.end,text:'\n  const pt32First = head.firstElementChild;'}
+ ];
+ let js=old;
+ for(const e of modifications.sort((x,y)=>y.a-x.a))
+  js=js.slice(0,e.a)+e.text+js.slice(e.b);
  parse(js,{ecmaVersion:'latest',sourceType:'script'});
- if(!js.includes('pt32First.nextElementSibling')||!js.includes('const nm = pt32First;'))
+ if(!js.includes('pt32First.nextElementSibling')||!js.includes('pt32First;'))
   throw Error('New code missing');
- if(js.replace(changed,orig)!==old)throw Error('Unexpected edits outside cardEl');
+ if(js.slice(0,card.start)!==old.slice(0,card.start))throw Error('Unexpected changes outside cardEl');
  for(const anchor of ['pt27HeadTemplate','pt28Query','pt26Stats.fitCalls++','renderSheetCmd','PTIcons.attach','requestAnimationFrame(chunk)'])
   if(!js.includes(anchor))throw Error('Previous behavior missing '+anchor);
  fs.writeFileSync(file,js);
