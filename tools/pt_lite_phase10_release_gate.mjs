@@ -94,8 +94,9 @@ async function network(device){
   await ctx.close();
 }
 async function storage(){
-  const ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
-  const page=await ctx.newPage(),err=[];
+  // Discover a move in a disposable context, then seed a fresh browser profile before any app initialization.
+  let ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+  let page=await ctx.newPage();const err=[];
   page.on('pageerror',e=>err.push(e.message));
   await page.goto(BASE+'pc.html#sheet',{waitUntil:'load',timeout:65000});
   await page.waitForFunction(()=>window.PT_CHAR_DATA&&window.PT_CHAR_DATA.loaded().includes('alisa'),null,{timeout:35000});
@@ -117,7 +118,15 @@ async function storage(){
     'tekken-checksheet-review-v1':JSON.stringify({[reviewKey]:true}),
     'tekken-checksheet-last':'alisa'
   };
-  await page.evaluate(seed=>{for(const [k,v] of Object.entries(seed))localStorage.setItem(k,v);},seed);
+  await ctx.close();
+  ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+  await ctx.addInitScript(values=>{
+    if(!sessionStorage.getItem('__pt_phase10_seeded')){
+      for(const [k,v] of Object.entries(values))localStorage.setItem(k,v);
+      sessionStorage.setItem('__pt_phase10_seeded','1');
+    }
+  },seed);
+  page=await ctx.newPage();page.on('pageerror',e=>err.push(e.message));
   async function one(device){
     await page.goto(BASE+device+'.html#sheet',{waitUntil:'load',timeout:65000});
     await page.waitForFunction(()=>window.PT_CHAR_DATA&&window.PT_CHAR_DATA.loaded().includes('alisa'),null,{timeout:35000});
