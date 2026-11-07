@@ -20,7 +20,31 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         else:
             self.send_header("Cache-Control","no-cache")
         self.send_header("X-PT-Test-Only","phase16-local-cache-simulation")
+        self.send_header("Content-Security-Policy",
+            "default-src 'self' data: blob:; connect-src 'self'; "
+            "img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; font-src 'self' data:; "
+            "media-src 'self' blob:; frame-src 'none'; object-src 'none'; "
+            "base-uri 'self'; form-action 'self'")
         super().end_headers()
+
+    def do_GET(self):
+        if urlsplit(self.path).path.startswith("/api/"):
+            data=b'{"detail":"test_only"}'
+            self.send_response(401)
+            self.send_header("Content-Type","application/json")
+            self.send_header("Content-Length",str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+        return super().do_GET()
+
+    def do_POST(self):
+        self.send_error(403,"Test server is read-only")
+
+    do_PUT=do_POST
+    do_PATCH=do_POST
+    do_DELETE=do_POST
 
     def log_message(self,format,*args):
         return  # silent synthetic local browser tests
