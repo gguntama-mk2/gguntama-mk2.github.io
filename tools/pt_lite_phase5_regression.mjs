@@ -78,7 +78,12 @@ async function stateCompatibility(){
     'tekken-checksheet-review-v1':JSON.stringify({[reviewKey]:true}),
     'tekken-checksheet-last':'alisa'
   };
-  await page.evaluate(values=>{for(const [k,v] of Object.entries(values))localStorage.setItem(k,v);},legacy);
+  await page.addInitScript(values=>{
+    if(!sessionStorage.getItem('__pt_phase5_seeded')){
+      for(const [k,v] of Object.entries(values))localStorage.setItem(k,v);
+      sessionStorage.setItem('__pt_phase5_seeded','1');
+    }
+  },legacy);
   async function validate(device){
     const target=base+device+'.html#sheet';
     if(page.url()===target)await page.reload({waitUntil:'load',timeout:45000});
