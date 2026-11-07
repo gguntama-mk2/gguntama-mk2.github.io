@@ -123,6 +123,9 @@ async function run(device,profile){
       device,{timeout:90000});
     await page.evaluate(()=>window.PT19_FONT_READY||Promise.resolve());
     await page.evaluate(()=>document.fonts.ready);
+    // Settle all lazy images visible in this viewport so 4G font-load timing
+    // does not randomly absorb/defer 30–50 KB of image bytes per run.
+    await page.waitForLoadState('networkidle',{timeout:45000});
     await sleep(200);
     snapshots.sheet={elapsedMs:Date.now()-t1,network:delta(marker,snapshot())};
     marker=snapshot();
