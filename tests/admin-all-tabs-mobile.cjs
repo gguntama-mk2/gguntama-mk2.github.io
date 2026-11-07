@@ -158,7 +158,7 @@ const fixtures = (u) => {
           await search.fill("");
           await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===2);
           await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
-          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1,021","Occurrence sorting works");
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
           await priority.locator(".pt-cloud-id-button").first().click();
           const modal=page.locator(".pt-cloud-dialog");
           await modal.waitFor({state:"visible"});
