@@ -9,7 +9,7 @@
     if(states.has(code)) return states.get(code);
     const p=new Promise((resolve,reject)=>{
       const node=document.createElement("script");
-      node.src=prefix+code+".js";
+      node.src=prefix+code+".js?v="+encodeURIComponent(window.PT_ASSET_VERSION||"1");
       node.onload=()=>resolve();
       node.onerror=()=>reject(new Error("feature module could not load: "+node.src));
       document.head.appendChild(node);

@@ -9,7 +9,7 @@ function ptLoadMoves(c){
   if(!c)return Promise.reject(new Error("unknown character"));
   if(c.__ptLoaded)return Promise.resolve(c);
   if(c.__ptPending)return c.__ptPending;
-  const url="assets/data/characters/"+encodeURIComponent(c.id)+".json";
+  const url="assets/data/characters/"+encodeURIComponent(c.id)+".json?v="+encodeURIComponent(window.PT_ASSET_VERSION||"1");
   c.__ptPending=fetch(url).then(r=>{
     if(!r.ok)throw new Error("HTTP "+r.status+" "+url);
     return r.json();
