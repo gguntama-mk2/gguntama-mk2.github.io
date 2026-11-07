@@ -25,7 +25,7 @@
     hydrateCurrent();
   }
   async function hydrateCurrent(){
-    const id=character.value,token=++resolutionSeq;
+    const id=character.value,token=++resolutionSeq,previousK=move.value;
     if(!id)return;
     // 過去の元データを一瞬でも選択・送信しないように、取得完了まで無効化する。
     move.replaceChildren(make("option","技チェックシートの編集内容を取得中…"));
@@ -36,7 +36,7 @@
       if(token!==resolutionSeq||character.value!==id)return;
       if(!resolved||resolved.id!==id||!Array.isArray(resolved.moves))throw Error("技データの照合に失敗しました");
       characters=characters.map(c=>c.id===id?resolved:c);
-      setMoves();
+      setMoves(previousK);
       move.disabled=false;
     }catch(e){
       if(token!==resolutionSeq)return;
@@ -44,8 +44,8 @@
       message("技チェックシートの最新データを取得できませんでした："+e.message,"error");
     }
   }
-  function setMoves(){
-    const previous=move.selectedOptions[0]?.value;
+  function setMoves(previous){
+    previous=previous||move.selectedOptions[0]?.value;
     move.replaceChildren();
     const c=characters.find(x=>x.id===character.value);if(!c)return;
     c.moves.forEach((entry,index)=>{
@@ -77,7 +77,7 @@
     for(const item of data.entries){
       const row=make("tr");
       const selectedChar=names.get(item.character_id);
-      const selectedMove=selectedChar?.moves.find((m,i)=>(Number.isSafeInteger(m.k)?m.k:i)===item.site_k);
+      const selectedMove=selectedChar?.moves.find((m,i)=>(Number.isSafeInteger(m.k)?m.k:i)===Number(item.site_k));
       const label=selectedMove?.name||item.move_name;
       const command=typeof selectedMove?.a?.command==="string"?selectedMove.a.command:"";
       row.appendChild(make("td",selectedChar?.name||item.character_id));
@@ -150,5 +150,5 @@
     setCharacters(context.characters?context.characters():[]);
     refresh().catch(e=>message("一覧を取得できませんでした："+e.message,"error"));
   }
-  window.PTAdminMoveMedia=Object.freeze({mount,updateCharacters:setCharacters});
+  window.PTAdminMoveMedia=Object.freeze({mount,updateCharacters:setCharacters,refresh:()=>refresh().catch(e=>message(e.message,"error"))});
 })();
