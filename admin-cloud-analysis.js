@@ -93,6 +93,34 @@
     const link=linkInfo(reqId),moves=payload?.linkage?.indexed_moves||{};
     return (link?.matched_master_indexes||[]).map(index=>moves[String(index)]).filter(Boolean);
   }
+  function searchableEvidence(reqId){
+    const proof=linkInfo(reqId);
+    if(!proof)return "";
+    const parts=[];
+    const put=(prefix,value)=>{
+      if(value!==null && value!==undefined && value!=="")parts.push(prefix+":"+value);
+    };
+    for(const ix of [...(proof.example_move_indexes||[]),...(proof.matched_master_indexes||[])])
+      put("index",ix);
+    for(const e of proof.graph_unmatched_source_examples||[]){
+      put("index",e.source_move_index);
+      put("cancel",e.example_cancel_index);
+      put("raw",e.example_dest_move_id_raw);
+    }
+    for(const e of proof.graph_edge_evidence||[]){
+      put("index",e.source_move_index);
+      put("cancel",e.cancel_index);
+      put("raw",e.dest_move_id_raw);
+    }
+    for(const e of proof.graph_main_raw_destinations||[])put("raw",e.raw_id);
+    for(const m of matchesFor(reqId)){
+      put("moveid",m.motbin_move_id);
+      put("anmbin",m.anmbin_body_index_raw);
+      for(const e of m.command_list_entries||[])put("mvl",e.entry_index);
+      for(const e of m.site_checksheet_review_candidates||[])put("sitek",e.site_k);
+    }
+    return parts.join(" ").toLowerCase();
+  }
   function namedMatchesFor(reqId){
     return matchesFor(reqId).filter(move=>(move.command_list_entries||[])
       .some(entry=>(entry.kind==="move"||entry.kind==="key_move")&&entry.name_ja));
@@ -153,7 +181,8 @@
       const evidenceNames=matchesFor(id).flatMap(move=>(move.command_list_entries||[])
         .map(entry=>entry.name_ja+" "+entry.command_plain)).join(" ");
       if(q&&!String(id).includes(q)&&!Object.values(row).some(v=>typeof v==="string"&&v.toLowerCase().includes(q))
-          &&!normalized(evidenceNames).includes(normalized(q)))return false;
+          &&!normalized(evidenceNames).includes(normalized(q))
+          &&!searchableEvidence(id).includes(q))return false;
       if(f.status!=="all"&&getReview(scope,id).status!==f.status)return false;
       if(scope==="cross"){
         const coverage=Number(row.characters_present);
@@ -186,12 +215,18 @@
   }
   function filtersUI(scope){
     const f=state.filters[scope],wrap=node("div","pt-cloud-filters");
-    const search=el("input");search.type="search";search.placeholder="ID・キーワードで検索";
+    const search=el("input");search.type="search";
+    search.placeholder="Requirements ID / index: / moveid: / raw: など";
     search.setAttribute("aria-label",scope==="bryan"?"ブライアンのID検索":"横断解析のID検索");
     search.value=f.q;
     let debounce;
     search.addEventListener("input",()=>{clearTimeout(debounce);debounce=setTimeout(()=>changeFilter(scope,"q",search.value),140);});
     wrap.appendChild(search);
+    const hint=note("IDは種別を区別：index:1473（技インデックス）、moveid:1489449424（内部move_id）、"+
+      "cancel:8730（候補キャンセル行）、raw:2165（遷移先raw）、mvl:77、anmbin:1550、sitek:37。"+
+      "関連はすべて構造候補であり実機未検証です。","pt-cloud-filter-info");
+    hint.classList.add("pt-cloud-search-hint");
+    wrap.appendChild(hint);
     function control(label, key, items, disabled){
       const box=node("label","pt-cloud-filter-label");
       box.append(el("span",label));
@@ -543,7 +578,10 @@
     const cols=FIELDS[scope],head=[...cols.map(x=>x[1]),"調査状況","調査メモ",
       "資料上の出現候補","照合できたMOTBINインデックス","CSVサンプル照合件数","遷移推定レコード数",
       "技名未照合インデックス総数","グラフ条件行総数",
-      "主な遷移先raw候補","共通インデックスのあるRequirements ID","検証状態"];
+      "主な遷移先raw候補","共通インデックスのあるRequirements ID",
+      "MOTBIN内部move_id（別ID）","候補cancel行番号（別ID）","MVL entry index（別ID）",
+      "ANMBIN body index（別ID）","レビューsite_k（未検証・別ID）",
+      "技名未照合の候補インデックス（上位例）","検証状態"];
     const rows=filtered(scope).map(row=>{
       const id=rowId(scope,row),rev=getReview(scope,id);
       const proof=linkInfo(id),matches=matchesFor(id);
@@ -555,6 +593,12 @@
         proof?.graph_candidate_edge_count_total??0,
         (proof?.graph_main_raw_destinations||[]).map(x=>x.raw_id+"("+x.occurrences+")").join(" "),
         (proof?.graph_peer_requirement_examples||[]).map(x=>x.requirement_id).join(" "),
+        matches.map(m=>m.motbin_move_id).filter(x=>x!==null&&x!==undefined).join(" "),
+        (proof?.graph_edge_evidence||[]).map(x=>x.cancel_index).join(" "),
+        matches.flatMap(m=>(m.command_list_entries||[]).map(e=>e.entry_index)).filter(x=>x!=null).join(" "),
+        matches.map(m=>m.anmbin_body_index_raw).filter(x=>x!=null).join(" "),
+        matches.flatMap(m=>(m.site_checksheet_review_candidates||[]).map(x=>x.site_k)).join(" "),
+        (proof?.graph_unmatched_source_examples||[]).map(x=>x.source_move_index).join(" "),
         "実機未検証"];
     });
     downloadCsv("project-t-"+scope+"-research.csv",[head,...rows]);
@@ -684,6 +728,12 @@
           evidenceTypes.append(el("span","遷移グラフ推定","pt-cloud-source-tag pt-cloud-source-tag-uncertain"));
         if(evidenceTypes.childElementCount)item.append(evidenceTypes);
         item.append(el("div","MOTBIN資料上の内部move_id："+(m.motbin_move_id===null?"不明":String(m.motbin_move_id)),"pt-cloud-small"));
+        if(m.anmbin_body_index_raw!==undefined && m.anmbin_body_index_raw!==null){
+          item.append(note("別ID：ANMBIN body index "+m.anmbin_body_index_raw+
+            " ／ fullbody hash32 "+(m.anmbin_fullbody_hash32===null||m.anmbin_fullbody_hash32===undefined?
+              "未取得":"0x"+Number(m.anmbin_fullbody_hash32).toString(16).toUpperCase().padStart(8,"0")),
+            "pt-cloud-small"));
+        }
         const primary=(m.command_list_entries||[]).filter(e=>e.kind==="move"||e.kind==="key_move");
         if(!primary.length){
           item.append(note("通常技名の情報なし（練習・アシスト用資料など）"));
