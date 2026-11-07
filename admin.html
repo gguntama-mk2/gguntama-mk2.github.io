@@ -450,6 +450,20 @@
     .pt-cloud-link-name { display:grid; grid-template-columns:minmax(0,1fr); }
     #secCloud .pt-cloud-table td[data-label="資料照合"] { max-width:none; }
   }
+
+  .pt-cloud-evidence-kinds { display:flex; flex-wrap:wrap; gap:5px; }
+  .pt-cloud-source-tag { border:1px solid #4b6f91; color:#b2d9f5; border-radius:5px; font-size:11px; font-weight:600; padding:3px 7px; line-height:1.35; background:rgba(67,110,155,.16); }
+  .pt-cloud-source-tag-uncertain { border-color:#967a42; color:#f0d79f; background:rgba(168,114,31,.17); }
+  .pt-cloud-graph-details { border:1px solid var(--line); border-radius:10px; padding:10px; margin:12px 0; min-width:0; }
+  .pt-cloud-graph-details summary { cursor:pointer; font-size:13px; font-weight:700; line-height:1.5; }
+  .pt-cloud-graph-details summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+  .pt-cloud-graph-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:7px; margin-top:10px; }
+  .pt-cloud-graph-edge { display:grid; gap:5px; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); min-width:0; overflow-wrap:anywhere; }
+  .pt-cloud-graph-edge > strong { font-size:12px; line-height:1.5; }
+  @media (max-width:800px) {
+    .pt-cloud-graph-grid { grid-template-columns:minmax(0,1fr); }
+    .pt-cloud-graph-details { padding:8px; }
+  }
 </style>
 </head>
 <body>
