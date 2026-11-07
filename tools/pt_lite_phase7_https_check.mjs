@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const ROOT=(process.env.PT_PREVIEW_BASE || 'https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/').replace(/\/?$/, '/');
+const ROOT=(process.env.PT_PREVIEW_BASE || 'https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/').replace(/\/?$/, '/');
 const DEST='test-litev1/assets/data/phase7-public-preview-report.json';
 const SHOTS='phase7-preview-screenshots';
 const data={schema:7,mode:'isolated-external-HTTPS-preview',source_branch:'project-t-preview-20261107',preview_base:ROOT,at:new Date().toISOString(),passed:false,browser:'Chromium',devices:{},issues:[],notes:['This is a third-party proxy, NOT a GitHub Pages deployment.','Network coverage is on the isolated preview origin; authenticated server behavior is disabled.']};
