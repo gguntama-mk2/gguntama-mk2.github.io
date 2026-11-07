@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const ROOT=path.resolve('phase20-performance'),SITE=path.join(ROOT,'optimized-site');
 const CSS=path.join(SITE,'assets/css/pt19-maru-shards.css');
-const report={phase:20,mode:'test-copy-only',passed:false,method:'disjoint codepoint-run CSS compression',faces:[],errors:[],homeInteractionHint:false};
+const report={phase:20,mode:'test-copy-only',passed:false,method:'precise on-demand unicode-range, broad core fallback with font-face order validation',faces:[],errors:[],homeInteractionHint:false};
 function cssRange(token){
  const s=token.trim().toUpperCase();
  const m=s.match(/^U\+([0-9A-F]{1,6})(?:-([0-9A-F]{1,6}))?$/);
@@ -48,39 +48,49 @@ try{
   originalRanges.push(cps);
  }
  if(owner.size!==1674)throw Error('Unexpected original cmap coverage from phase18 '+owner.size);
- const sorted=[...owner].sort((a,b)=>a[0]-b[0]);
- const groups=[[],[]];let start=sorted[0][0],end=start,current=sorted[0][1];
- for(let k=1;k<sorted.length;k++){
-  const [cp,belong]=sorted[k];
-  if(belong===current){end=cp;}
-  else{groups[current].push([start,end]);start=end=cp;current=belong;}
- }
- groups[current].push([start,end]);
+ // Do not merge gaps into the on-demand font's unicode-range. Even a gap
+ // with *no glyph in either WOFF2* could contain DOM/emoji characters; that
+ // would trigger a needless 230 KB download on the very first sheet.
+ // Put the small core face first with a broad fallback coverage, then the
+ // precise on-demand face LAST: later matching face takes priority and the
+ // original 1,674 codepoint ownership is preserved in CSS font matching.
  let after=before;
- for(let i=0;i<faces.length;i++){
-  const old=faces[i],tokens=groups[i].map(([a,b])=>shortRange(a,b)),replacement=tokens.join(',');
-  const next=old.replace(/unicode-range:([^;}]+)/,'unicode-range:'+replacement);
-  if(next===old)throw Error('No CSS rewrite for font '+i);
-  const newUr=next.match(/unicode-range:([^;}]+)/)?.[1]||'';
-  const coverage=new Set();
-  for(const t of newUr.split(',')){
-   const w=t.match(/^U\+([0-9A-F]+)(\?+)$/i);
-   const range=w?[parseInt(w[1],16)*16**w[2].length,
-                   (parseInt(w[1],16)+1)*16**w[2].length-1]:cssRange(t);
-   const [a,b]=range;
-   for(let cp=a;cp<=b;cp++){
-    if(owner.has(cp)&&owner.get(cp)!==i)throw Error('Rewritten CSS includes wrong shard '+i+' cp '+cp);
-    if(owner.get(cp)===i)coverage.add(cp);
-   }
-  }
-  if(coverage.size!==originalRanges[i].size)throw Error('Glyph coverage changed in CSS shard '+i);
-  after=after.replace(old,next);
-  report.faces.push({shard:i,originalRanges:old.match(/unicode-range:([^;}]+)/)[1].split(',').length,
-    compressedRanges:tokens.length,supportedCodepoints:coverage.size,
-    originalUnicodeTextBytes:Buffer.byteLength(old.match(/unicode-range:([^;}]+)/)[1]),
-    compressedUnicodeTextBytes:Buffer.byteLength(replacement),
-    sourceUnchanged:(old.match(/src:url\([^)]*\)/)||[])[0]===(next.match(/src:url\([^)]*\)/)||[])[0]});
+ const oldRestRange=faces[1].match(/unicode-range:([^;}]+)/)?.[1]||'';
+ const restParts=oldRestRange.split(',').filter(Boolean);
+ const restRange=restParts.map(t=>{
+   const [a,b]=cssRange(t);
+   return shortRange(a,b);
+ }).join(',');
+ const restSet=new Set();
+ for(const tok of restRange.split(',')){
+   const wildcard=tok.match(/^U\+([0-9A-F]+)(\?+)$/i);
+   const [a,b]=wildcard
+     ? [parseInt(wildcard[1],16)*16**wildcard[2].length,
+        (parseInt(wildcard[1],16)+1)*16**wildcard[2].length-1]
+     : cssRange(tok);
+   for(let cp=a;cp<=b;cp++)restSet.add(cp);
  }
+ if(restSet.size!==originalRanges[1].size
+  ||[...restSet].some(cp=>owner.get(cp)!==1))
+   throw Error('Precise on-demand unicode-range changed or includes unsupported glyphs');
+ for(const [cp,segment] of owner){
+   const effective=restSet.has(cp)?1:0;
+   if(effective!==segment)throw Error('Font matching priority would change for '+cp);
+ }
+ const replacementRanges=['U+0-10FFFF',restRange];
+ for(let i=0;i<faces.length;i++){
+   const old=faces[i],replacement=replacementRanges[i];
+   const next=old.replace(/unicode-range:([^;}]+)/,'unicode-range:'+replacement);
+   if(next===old)throw Error('No CSS rewrite for face '+i);
+   after=after.replace(old,next);
+   report.faces.push({shard:i,originalRanges:old.match(/unicode-range:([^;}]+)/)[1].split(',').length,
+     compressedRanges:replacement.split(',').length,supportedCodepoints:originalRanges[i].size,
+     originalUnicodeTextBytes:Buffer.byteLength(old.match(/unicode-range:([^;}]+)/)[1]),
+     compressedUnicodeTextBytes:Buffer.byteLength(replacement),
+     sourceUnchanged:(old.match(/src:url\([^)]*\)/)||[])[0]===(next.match(/src:url\([^)]*\)/)||[])[0]});
+ }
+ report.fontMatchingRule='Core face first (broad); precise on-demand face last; all originally supported characters retain their selected font shard';
+ report.extraFontRiskMitigated=true;
  fs.writeFileSync(CSS,after,'utf8');
  report.oldCssBytes=Buffer.byteLength(before);
  report.newCssBytes=Buffer.byteLength(after);
