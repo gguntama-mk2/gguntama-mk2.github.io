@@ -181,11 +181,11 @@ html.chd-on .totop-bar{visibility:hidden}
   function go(k) {
     want = ""; fading = false; if (fb) { clearTimeout(fb); fb = 0; }
     if (layer.getAttribute("data-k") !== k) layer.setAttribute("data-k", k);
-    if (window.PXS && PXS.has(k)) layer.style.setProperty("--pxi", 'url("' + PXS.url(k) + '")');   // 絵は保管庫（pxstore.js）から。HTMLには画像のデータをそのままでは置かない
+    if (window.PXS && PXS.has(k)) layer.style.setProperty("--pxi", 'url("' + new URL(PXS.url(k), document.baseURI).href + '")');   // 絵は保管庫（pxstore.js）から。HTMLには画像のデータをそのままでは置かない
     root.setAttribute("data-px", k);
   }
   // AVIF が使えない環境（古い Safari など）と分かったら、いま出ている背景を、代わりの絵（WebP）に替える（pxstore.js が知らせる）
-  addEventListener("pxs-fallback", () => { const k = layer.getAttribute("data-k"); if (k && window.PXS && PXS.has(k)) layer.style.setProperty("--pxi", 'url("' + PXS.url(k) + '")'); });
+  addEventListener("pxs-fallback", () => { const k = layer.getAttribute("data-k"); if (k && window.PXS && PXS.has(k)) layer.style.setProperty("--pxi", 'url("' + new URL(PXS.url(k), document.baseURI).href + '")'); });
   // フェードアウトが終わった（transitionend）：次に出したい絵があれば、いま出す
   function faded() { fading = false; if (fb) { clearTimeout(fb); fb = 0; } if (want) go(want); }
   layer.addEventListener("transitionend", e => { if (e.target === layer && e.propertyName === "opacity" && !root.hasAttribute("data-px") && fading) faded(); });
