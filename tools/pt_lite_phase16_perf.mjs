@@ -17,8 +17,8 @@ const profiles = [
 ];
 const result={phase:16, type:'isolated-localhost-simulation', at:new Date().toISOString(),
   passed:false, notes:[
-  'All external domains and all non-GET/HEAD/OPTIONS requests are blocked.',
-  'Only a disposable localhost static server is used; /api/* returns synthetic 401.',
+  'Strict local CSP blocks external resource loads; browser DNS denies non-local hosts.',
+  'Only a disposable localhost static server is used; /api/* returns synthetic 401 and writes are denied.',
   'Timings are environment-specific, not production Web Vitals.',
   'No production authentication, uploads, private user data or GitHub Pages are contacted.'
 ], devices:{}, failures:[]};
@@ -58,16 +58,9 @@ async function run(device,profile){
   });
   const page=await ctx.newPage(),cdp=await ctx.newCDPSession(page),reqs=new Map(),completed=[],pageErrors=[];
   page.on('pageerror',e=>pageErrors.push(String(e)));
-  await page.route('**/*',route=>{
-    const r=route.request(),u=new URL(r.url());
-    if(u.origin!==new URL(ROOT).origin || !['GET','HEAD','OPTIONS'].includes(r.method())){
-      return route.abort('blockedbyclient');
-    }
-    if(u.pathname.startsWith('/api/')){
-      return route.fulfill({status:401,contentType:'application/json',body:'{"detail":"test_only"}'});
-    }
-    return route.continue();
-  });
+  // Playwright route() disables the browser HTTP cache. Instead the local
+  // test server supplies 401 for /api and CSP blocks third-party resources.
+  // This preserves real Chromium cache semantics for measured navigations.
   await cdp.send('Network.enable');
   await cdp.send('Network.emulateNetworkConditions',{
     offline:false,latency:profile.latency,
@@ -164,7 +157,7 @@ async function run(device,profile){
 }
 try{
   await serve();
-  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+  browser=await chromium.launch({headless:true,args:['--no-sandbox','--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost']});
   for(const profile of profiles){
     result.devices[profile.name]={};
     for(const device of ['pc','sp']){
