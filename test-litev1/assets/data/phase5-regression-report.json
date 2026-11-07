@@ -1,0 +1,12 @@
+{
+  "schema": 5,
+  "mode": "test-only",
+  "at": "2026-11-07T01:06:08.134Z",
+  "passed": false,
+  "network": {},
+  "storage": {},
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: pc local HTTP errors\n\n1 !== 0\n\n    at collect (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:49:10)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:128:58"
+  ],
+  "notes": []
+}
