@@ -64,6 +64,7 @@ jobs:
           node --check tools/pt_lite_phase27_optimize.mjs
           node --check tools/pt_lite_phase28_optimize.mjs
           node --check tools/pt_lite_phase29_optimize.mjs
+          node --check tools/pt_lite_phase29_root_cause.mjs
           node --check tools/pt_lite_phase29_perf.mjs
           node --check tools/pt_lite_phase29_repeat.mjs
           node --check tools/pt_lite_phase29_visual.mjs
@@ -346,6 +347,8 @@ jobs:
           PY
       - name: Profile three paired A-B rounds including simulated 4G and CPU throttling x4
         run: node tools/pt_lite_phase29_repeat.mjs
+      - name: Diagnose fitNames time, DOM/render residual and browser layout/style metrics
+        run: node tools/pt_lite_phase29_root_cause.mjs
       - name: Analyze median first-render, forced-layout, script duration, asset bytes and cache
         run: |
           python3 - <<'PY'
@@ -407,6 +410,7 @@ jobs:
           reports=(
             'phase29-performance/cache-build.json',
             'phase29-performance/paired-repeat-report.json',
+            'phase29-performance/root-cause-profile.json',
             'phase29-performance/visual-report.json',
             'phase29-performance/44-character-audit.json',
             'phase29-performance/parallel-intent-report.json',
