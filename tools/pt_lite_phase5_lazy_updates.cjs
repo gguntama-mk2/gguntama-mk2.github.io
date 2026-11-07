@@ -6,6 +6,14 @@
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const base=path.join(process.cwd(),"test-litev1","assets");
 const report={schema:5,mode:"test-only",devices:{},notes:"Home update summaries retained; full versions load only on update route"};
+const existingReport=path.join(base,"data","phase5-update-optimization.json");
+if(fs.existsSync(existingReport) &&
+  ["pc","sp"].every(d=>fs.existsSync(path.join(base,"js",d+"_20.js")) &&
+  !fs.readFileSync(path.join(base,"js","pc_17.js"),"utf8").includes("/*UPDJS-START*/") &&
+  !fs.readFileSync(path.join(base,"js","sp_17.js"),"utf8").includes("/*UPDJS-START*/")){
+  console.log("Stage5 full update archive already externalized; keeping verified result.");
+  process.exit(0);
+}
 for(const device of ["pc","sp"]){
   const p=path.join(base,"js",device+"_17.js");
   const text=fs.readFileSync(p,"utf8");
