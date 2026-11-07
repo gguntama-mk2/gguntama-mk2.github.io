@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {minify} from 'terser';
 const ROOT=path.resolve('phase24-performance'),SITE=path.join(ROOT,'optimized-site');
 const report={phase:24,mode:'test-copy-only',passed:false,devices:{},errors:[],
   strategy:'Three simultaneous classic-script fetches, async=false ordered execution. Preserve Phase21 font CSS hint and Phase23 no-eager-home routing'};
@@ -72,14 +73,20 @@ try{
     'await get("assets/js/"+dev+"_04_runtime.js?v="+v)']){
    if(!src.includes(marker))throw Error('Stage23 sequential chain marker absent in '+dev+': '+marker);
   }
-  const next=makeLoader(dev),beforeBytes=Buffer.byteLength(src),afterBytes=Buffer.byteLength(next);
-  if(afterBytes>beforeBytes+500)throw Error('Home loader bloated '+dev+' '+beforeBytes+' '+afterBytes);
-  if(!next.includes('s.async=false')||!next.includes('Promise.all(scripts)'))
+  const raw=makeLoader(dev);
+  if(!raw.includes('s.async=false')||!raw.includes('Promise.all(scripts)'))
    throw Error('Parallel ordered-loading invariant absent '+dev);
+  // The first full regression passed; remove the extra 290 bytes on idle home
+  // by shortening the tiny IIFE without changing its ordering or API.
+  const compressed=await minify(raw,{compress:false,mangle:true,format:{comments:false}});
+  if(!compressed.code)throw Error('Parallel loader compression failed '+dev);
+  const next=compressed.code+'\n';
+  const beforeBytes=Buffer.byteLength(src),afterBytes=Buffer.byteLength(next);
+  if(afterBytes>=beforeBytes)throw Error('Home loader must not grow '+dev+' '+beforeBytes+' '+afterBytes);
   const beforeHash=crypto.createHash('sha256').update(src).digest('hex');
   fs.writeFileSync(p,next,'utf8');
   report.devices[dev]={passed:true,loaderBeforeBytes:beforeBytes,loaderAfterBytes:afterBytes,
-    loaderDeltaBytes:afterBytes-beforeBytes,sequentialBaselineSha256:beforeHash,
+    loaderDeltaBytes:afterBytes-beforeBytes,minifiedLoader:true,sequentialBaselineSha256:beforeHash,
     iconVideoRuntimeLoadedInOrder:true,scriptRequestsStartInParallel:true,
     noHomeFetchUnlessUserIntent:true,existingFontRouterUnchanged:true};
  }
