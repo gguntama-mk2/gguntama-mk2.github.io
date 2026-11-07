@@ -61,9 +61,17 @@ try{
  const originalRange=faces[1].match(/unicode-range:([^;}]+)/)?.[1]||'';
  const safe=exactOptimize(originalRange);
  if(safe.codepoints!==1038)throw Error('Wrong on-demand codepoint set '+safe.codepoints);
- const replacement=faces[1].replace(/unicode-range:([^;}]+)/,'unicode-range:'+safe.out);
- const nextCss=original.replace(faces[1],replacement);
- if(!nextCss.includes(faces[0]))throw Error('Core face changed');
+ // For @font-face, normal style and weight 400 are descriptor defaults.
+ // Removing these declarations does not change font choice or glyph metrics.
+ const dropDefaults=face=>{
+  if(!face.includes('font-style:normal;')||!face.includes('font-weight:400;'))
+   throw Error('Missing known normal/400 font-face defaults');
+  return face.replace('font-style:normal;','').replace('font-weight:400;','');
+ };
+ const core=dropDefaults(faces[0]);
+ const replacement=dropDefaults(faces[1].replace(/unicode-range:([^;}]+)/,'unicode-range:'+safe.out));
+ const nextCss=original.replace(faces[0],core).replace(faces[1],replacement);
+ if(!nextCss.includes(core))throw Error('Core font-face semantics changed');
  if(replacement.match(/src:url\([^)]*\)/)?.[0]!==faces[1].match(/src:url\([^)]*\)/)?.[0])
    throw Error('Font source path changed');
  if(nextCss.length>original.length)throw Error('CSS compression expanded');
@@ -71,7 +79,8 @@ try{
  report.css={beforeBytes:Buffer.byteLength(original),afterBytes:Buffer.byteLength(nextCss),
   savedBytes:Buffer.byteLength(original)-Buffer.byteLength(nextCss),
   oldRanges:originalRange.split(',').length,newRanges:safe.out.split(',').length,
-  unchangedFontFiles:true,exactOnDemandCodepoints:safe.codepoints};
+  unchangedFontFiles:true,exactOnDemandCodepoints:safe.codepoints,
+  removedOnlyRedundantDefaultDescriptors:true};
  const minified=await minify(router,{compress:false,mangle:false,format:{comments:false}});
  if(!minified.code?.includes('PT19_FONT_READY')||!minified.code.includes('PT19_ENSURE_FONTS'))
    throw Error('Minified router lost required APIs');
