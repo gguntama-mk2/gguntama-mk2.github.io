@@ -464,6 +464,38 @@
     .pt-cloud-graph-grid { grid-template-columns:minmax(0,1fr); }
     .pt-cloud-graph-details { padding:8px; }
   }
+
+  /* Focused Bryan Requirements research: compact cards and proof boundaries. */
+  #secCloud .pt-cloud-focus { min-width:0; margin:14px 0; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  #secCloud .pt-cloud-focus > h3 { margin:0 0 6px; font-size:15px; }
+  #secCloud .pt-cloud-focus-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin:12px 0; }
+  #secCloud .pt-cloud-focus-card { display:grid; align-content:start; gap:8px; padding:12px; border-radius:11px; border:1px solid var(--line); background:var(--panel2); min-width:0; }
+  #secCloud .pt-cloud-focus-card-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px; }
+  #secCloud .pt-cloud-focus-card-head strong { font-size:16px; font-variant-numeric:tabular-nums; }
+  #secCloud .pt-cloud-focus-card .pt-cloud-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:0; }
+  #secCloud .pt-cloud-focus-card .pt-cloud-metric { padding:8px; }
+  #secCloud .pt-cloud-focus-card .pt-cloud-metric-value { font-size:19px; }
+  #secCloud .pt-cloud-focus-card .btn { width:100%; min-height:42px; margin-top:auto; white-space:normal; }
+  #secCloud .pt-cloud-focus > .btn { width:100%; min-height:42px; }
+  #secCloud .pt-cloud-research-coverage, #secCloud .pt-cloud-mvl-unknown { border:1px solid var(--line); border-radius:9px; margin-top:12px; min-width:0; padding:10px; }
+  #secCloud .pt-cloud-research-coverage summary, #secCloud .pt-cloud-mvl-unknown summary { cursor:pointer; font-weight:600; font-size:13px; line-height:1.6; }
+  #secCloud .pt-cloud-research-coverage summary:focus-visible, #secCloud .pt-cloud-mvl-unknown summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  #secCloud .pt-cloud-mvl-list { display:grid; gap:6px; margin-top:10px; max-height:330px; overflow:auto; overscroll-behavior:contain; }
+  #secCloud .pt-cloud-mvl-item { display:grid; gap:4px; padding:7px 9px; background:var(--panel2); border:1px solid var(--line); border-radius:7px; min-width:0; overflow-wrap:anywhere; }
+  #secCloud .pt-cloud-mvl-item > strong { font-size:12px; }
+  .pt-cloud-focus-detail { border-top:1px solid var(--line); margin:15px 0 8px; padding-top:10px; min-width:0; }
+  .pt-cloud-focus-detail h4 { font-size:14px; margin:0 0 6px; }
+  .pt-cloud-focus-detail .pt-cloud-graph-grid { grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); }
+  @media (max-width:850px) {
+    #secCloud .pt-cloud-focus-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:580px) {
+    #secCloud .pt-cloud-focus-cards { grid-template-columns:minmax(0,1fr); }
+    #secCloud .pt-cloud-focus-card { padding:10px; }
+    #secCloud .pt-cloud-focus-card-head strong { font-size:15px; }
+    #secCloud .pt-cloud-focus-card .pt-cloud-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .pt-cloud-focus-detail .pt-cloud-graph-grid { grid-template-columns:minmax(0,1fr); }
+  }
 </style>
 </head>
 <body>
