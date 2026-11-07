@@ -24,6 +24,7 @@ jobs:
           node --check tools/pt_lite_phase16_perf.mjs
           node --check admin.js
           node --check tests/admin-mobile-layout.cjs
+          node --check tests/admin-all-tabs-mobile.cjs
       - name: Install isolated Chromium
         run: |
           npm install --no-save playwright terser
@@ -88,6 +89,7 @@ jobs:
           node tools/pt_lite_phase11_pages_smoke.mjs
           node tools/pt_lite_phase12_api_mock_smoke.mjs
           node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
       - name: Check browser regression reports
         run: |
           python3 - <<'PY'
