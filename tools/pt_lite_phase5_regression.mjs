@@ -53,6 +53,25 @@ async function collect(device){
   console.log('NETWORK',device,JSON.stringify(info));
   assert.equal(bad.length,0,device+' local HTTP errors');
   assert.equal(jsErrors.length,0,device+' page errors');
+  // Test the deferred full update history and the original-font activation after navigation.
+  await page.evaluate(()=>window.setPage('update'));
+  await page.waitForFunction(()=>window.PT_ROUTE_ASSETS?.loaded().includes('20') && !!window.UPD && !!document.getElementById('updSec'),{timeout:30000});
+  const update=await page.evaluate(()=>({
+    fullVersions:typeof PT_FULL_UPDATES!=='undefined'?PT_FULL_UPDATES.length:-1,
+    onUpdate:window.pageNow?.()==='update',
+    heading:document.getElementById('updSec')?.textContent?.slice(0,100)||'',
+    originalFontEnabled:document.documentElement.classList.contains('pt-full-font-ready'),
+    font:getComputedStyle(document.body).fontFamily
+  }));
+  assert.equal(update.fullVersions,34,device+' update archive must contain all 34 versions');
+  assert.equal(update.onUpdate,true,device+' update navigation');
+  assert.equal(update.originalFontEnabled,true,device+' full font after navigation');
+  await page.evaluate(()=>window.setPage('sheet'));
+  await page.waitForFunction(()=>window.PT_CHAR_DATA.loaded().length>0,{timeout:30000});
+  await page.waitForFunction(d=>d==='pc'?document.querySelectorAll('#body tr[data-k]').length>0:document.querySelectorAll('#list .card[data-i]').length>0,device,{timeout:30000});
+  info.post_navigation={update,selectedCharacterLoaded:await page.evaluate(()=>window.PT_CHAR_DATA.loaded()),lazyModules:await page.evaluate(()=>window.PT_ROUTE_ASSETS.loaded())};
+  console.log('FEATURES',device,JSON.stringify(info.post_navigation));
+  assert.equal(jsErrors.length,0,device+' post-navigation JS errors');
   await context.close();
   return info;
 }
