@@ -2,19 +2,19 @@
   "schema": 7,
   "mode": "isolated-external-HTTPS-preview",
   "source_branch": "project-t-preview-20261107",
-  "preview_base": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/",
-  "at": "2026-11-07T01:46:10.646Z",
+  "preview_base": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/",
+  "at": "2026-11-07T01:47:40.852Z",
   "passed": false,
   "browser": "Chromium",
   "devices": {},
   "issues": [
     {
       "device": "pc",
-      "error": "Error: pc preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/pc_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/pc_01.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
+      "error": "Error: pc preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/pc_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
     },
     {
       "device": "sp",
-      "error": "Error: sp preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/sp_02.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
+      "error": "Error: sp preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_03.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/605c783e1d751356fe35dd8df5bf7c867685fade/test-litev1/assets/js/sp_02.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
     }
   ],
   "notes": [
