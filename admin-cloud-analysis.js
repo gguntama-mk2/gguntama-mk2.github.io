@@ -6,6 +6,7 @@
   const STATUS = {unreviewed:"未調査", investigating:"調査中", verified:"検証済み（管理者記録）", recheck:"要再検証"};
   const PANELS = [
     ["sync","同期状況","解析日時・保存先・基本指標"],
+    ["motbin","MOTBIN 2304技の抽出状況","取得済み58件と未取得インデックスを明確に表示"],
     ["priority","優先調査ID","ブライアンの未解明ID候補"],
     ["cross","全キャラクター横断解析","42キャラクターの構造解析・集計"],
     ["crossPriority","横断解析の優先調査ID","未解明Requirements調査候補"]
@@ -15,7 +16,7 @@
     cross:[["req_id","ID"],["characters_present","対象キャラ数"],["records_all_characters","出現レコード数"],
       ["parameter_variants","パラメータ種類"],["investigation_score_heuristic","調査スコア"]]
   };
-  const defaults = {open:{sync:false,priority:true,cross:false,crossPriority:false},
+  const defaults = {open:{sync:false,motbin:false,priority:true,cross:false,crossPriority:false},
     filters:{bryan:{q:"",sort:"priority",status:"all",coverage:"all",character:"all"},
       cross:{q:"",sort:"priority",status:"all",coverage:"all",character:"all"}}};
   let root, csrfProvider, characterProvider=()=>[], panels={}, state=null, payload=null,
@@ -436,6 +437,66 @@
     out[0].append(csv);
     return out;
   }
+  function motbinPanel(){
+    const coverage=payload?.motbin_coverage;
+    if(!coverage){
+      return [
+        note("MOTBIN個別レコードの充足率レポートは未配備、または取得できません。"+
+          "前述の2304件は資料上の総数で、全件の技データを取得したという意味ではありません。","pt-cloud-evidence-warning"),
+        note("Windows読み取り専用ツールは解析データのテストブランチにあります。レポートの追加後に再読み込みしてください。")
+      ];
+    }
+    const total=coverage.expected_move_count||2304;
+    const present=coverage.individual_records_present||0;
+    const percent=total>0?Math.round(present/total*10000)/100:0;
+    const wrapper=node("section","pt-motbin-coverage");
+    wrapper.append(note("これは技レコードの取得状況です。Requirementsの効果や技の実機動作が検証済みという意味ではありません。"));
+    wrapper.append(metrics([["MOTBIN総技数（資料上）",total],
+      ["取得済みの個別レコード",present],["未取得の個別レコード",coverage.individual_records_missing],
+      ["データ充足率",percent+"%"]]));
+    const progress=el("progress");progress.max=total;progress.value=present;
+    progress.className="pt-motbin-progress";progress.setAttribute("aria-label","MOTBIN個別技データの充足率");
+    wrapper.append(progress);
+    wrapper.append(note(coverage.full_extraction_verified?
+      "2304件の全件取得とソース照合が完了したと報告されています。実機の技効果は未検証です。":
+      "部分データです。未取得インデックスを自動生成して埋めません。"+
+      "全件抽出を名乗るには2304レコードと検証済みソースの両方が必要です。","pt-cloud-evidence-warning"));
+    const fingerprint=coverage.source_motbin_sha256;
+    if(fingerprint)wrapper.append(note("元MOTBINのSHA-256："+fingerprint,"pt-cloud-source"));
+    const list=node("details","pt-cloud-graph-details pt-motbin-known");
+    list.append(el("summary","取得済みインデックス一覧（"+present+"件）"));
+    const known=coverage.known_move_indexes||[];
+    const holder=node("div","pt-motbin-index-grid");
+    for(const index of known){
+      const row=node("div","pt-motbin-index");
+      const mv=payload?.linkage?.indexed_moves?.[String(index)];
+      const title=(mv?.command_list_entries||[]).find(e=>e.kind==="move"||e.kind==="key_move");
+      row.append(el("code",String(index)),el("span",title?.name_ja||"技名未登録"));
+      holder.append(row);
+    }
+    list.append(holder);wrapper.append(list);
+    const exportBtn=el("button","取得状況をCSV出力（未取得は範囲で表示）","btn");
+    exportBtn.type="button";
+    exportBtn.addEventListener("click",()=>{
+      const rows=[["種別","MOTBIN技インデックス開始","終了","資料上の内部move_id","技名候補","確認状況"]];
+      const sorted=[...known].sort((a,b)=>a-b);
+      let cursor=0;
+      for(const index of sorted){
+        if(index>cursor)rows.push(["未取得",cursor,index-1,"","","未検証・レコードなし"]);
+        const mv=payload?.linkage?.indexed_moves?.[String(index)];
+        const title=(mv?.command_list_entries||[]).find(e=>e.kind==="move"||e.kind==="key_move");
+        rows.push(["資料取得済み",index,index,mv?.motbin_move_id??"",title?.name_ja||"",
+          "個別レコードの資料あり／実機未検証"]);
+        cursor=index+1;
+      }
+      if(cursor<total)rows.push(["未取得",cursor,total-1,"","","未検証・レコードなし"]);
+      downloadCsv("project-t-bryan-motbin-2304-coverage.csv",rows);
+    });
+    wrapper.append(exportBtn);
+    wrapper.append(note("内部move_id、Requirements ID、キャンセル行番号、MVLエントリ番号、ANMBIN body index、チェックシートkは別IDです。","pt-cloud-small"));
+    return [wrapper];
+  }
+
   function syncPanel(){
     const report=payload?.reports?.bryan;
     if(!report)return [note(payload?.errors?.bryan||"同期データを取得できませんでした。","pt-cloud-error")];
@@ -461,6 +522,8 @@
   function applyData(){
     const bryan=sourceRows("bryan").length,cross=sourceRows("cross").length;
     markPanel("sync",syncPanel,payload?.reports?.bryan?"更新済み":"取得失敗");
+    const m=payload?.motbin_coverage;
+    markPanel("motbin",motbinPanel,m?m.individual_records_present+" / "+m.expected_move_count+"件":"未配備");
     markPanel("priority",()=>listPanel("bryan"),payload?.reports?.bryan?bryan+"件":"取得失敗");
     markPanel("cross",crossPanel,payload?.reports?.cross?fmt(payload.reports.cross.characters_found)+"キャラ":"取得失敗");
     markPanel("crossPriority",()=>listPanel("cross"),payload?.reports?.cross?cross+"件":"取得失敗");
