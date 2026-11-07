@@ -34,10 +34,14 @@ for(const name of paths){
       output=result.code;
       if(!output.endsWith('\n'))output+='\n';
     }catch(e){summary.errors.push({path:name,error:String(e)});continue;}
-    fs.writeFileSync(dst,output,'utf8');
     const from=Buffer.byteLength(original),to=Buffer.byteLength(output);
-    if(to>from)summary.errors.push({path:name,error:'minifier increased bytes'});
-    else summary.changed.push({path:name,beforeBytes:from,afterBytes:to,savedBytes:from-to});
+    if(to>=from){
+      fs.copyFileSync(src,dst); // Already tiny, empty or compact: retain byte-exact original.
+      summary.unchanged++;
+    } else {
+      fs.writeFileSync(dst,output,'utf8');
+      summary.changed.push({path:name,beforeBytes:from,afterBytes:to,savedBytes:from-to});
+    }
   }else{
     fs.copyFileSync(src,dst);
     summary.unchanged++;
