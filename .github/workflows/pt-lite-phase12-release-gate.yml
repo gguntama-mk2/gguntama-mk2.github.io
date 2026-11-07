@@ -1,0 +1,83 @@
+name: PROJECT T Phase12 Assets-first and API Contract Gate (test only)
+on:
+  push:
+    branches: [project-t-preview-20261107]
+    paths:
+      - tools/pt_lite_phase12_release_audit.py
+      - tools/pt_lite_phase12_api_mock_smoke.mjs
+      - .github/workflows/pt-lite-phase12-release-gate.yml
+  workflow_dispatch:
+concurrency:
+  group: pt-lite-phase12-release-gate
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  audit-only:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm isolated test branch and inspect production main SHA
+        run: |
+          test "$GITHUB_REF_NAME" = "project-t-preview-20261107"
+          git fetch --no-tags origin main
+          sha="$(git rev-parse origin/main)"
+          echo "READ_ONLY_MAIN_SHA=$sha"
+          test "$sha" = "5c947b5bca83d502d004539c50b54ceaaf9709a1"
+      - name: Build production-like candidate in unpublished workspace
+        run: |
+          python3 tools/pt_lite_phase11_pages_bundle.py --out phase11-pages-package
+      - name: Audit protected pages and prepare additive assets-only archive
+        run: |
+          python3 tools/pt_lite_phase12_release_audit.py
+      - name: Install mock-only Chromium environment
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node --check tools/pt_lite_phase12_api_mock_smoke.mjs
+      - name: Test login, video and admin gate against local fake API (NO real OAuth)
+        run: |
+          set +e
+          node tools/pt_lite_phase12_api_mock_smoke.mjs > /tmp/pt-phase12.log 2>&1
+          rc=$?
+          set -e
+          tail -c 25000 /tmp/pt-phase12.log
+          test "$rc" -eq 0
+      - name: Require all release-safety conditions
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path("phase12-release-audit/phase12-dry-run-report.json").read_text())
+          b=json.loads(Path("phase12-release-audit/phase12-api-mock-browser.json").read_text())
+          assert a['status']=='pass',a['errors']
+          assert b['passed'],b['failures']
+          assert a['added_asset_count']>=400
+          assert len(a['changed_pages'])==3
+          assert set(b['devices'])=={'pc','sp'}
+          assert all(x['lightbox']['volume']==0.5 and not x['lightbox']['muted'] for x in b['devices'].values())
+          print('PHASE12 OK: assets-only candidate, protected production files, fake API smoke (NO LIVE RELEASE)')
+          PY
+      - name: Upload audited phase12 assets-only archive (UNPUBLISHED)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase12-assets-only-unpublished
+          path: phase12-release-audit/project-t-phase12-assets-only.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload phase12 compliance/audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase12-audit-and-mock-report
+          path: |
+            phase12-release-audit/phase12-dry-run-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+          if-no-files-found: warn
+          retention-days: 14
