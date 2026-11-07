@@ -118,7 +118,10 @@
     app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.cloud);
     window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return S.chars; } });
     window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
-    window.PTAdminCloudAnalysis.mount(sec.cloud, { csrf: function () { return S.csrf; } });
+    window.PTAdminCloudAnalysis.mount(sec.cloud, {
+      csrf: function () { return S.csrf; },
+      characters: function () { return S.chars || []; }
+    });
     buildSheetSkeleton();
     setTab("sheet");
   }
