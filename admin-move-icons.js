@@ -58,7 +58,13 @@
     var n = nChecked();
     if (ui.bulkBtn) { ui.bulkBtn.hidden = !n; ui.bulkBtn.textContent = "選択中 " + n + "件にアイコンを設定する"; }
   }
-  function onCheckChange() { updateBulkBar(); if (!sel) { renderBulk(); if (!nChecked()) closeEditor(); } }
+  function onCheckChange() {
+    updateBulkBar();
+    if (!sel) {
+      if (!nChecked()) closeEditor();
+      else if (!window.matchMedia("(max-width:800px)").matches) renderBulk();
+    }
+  }
   function zoneEditor(have, onChange) {
     ui.boxes = { c: {}, g: {}, a: {} };
     var wrap = make("div", undefined, "pt-mi-zones");
@@ -236,8 +242,8 @@
     var wrap = make("div", undefined, "pt-mi-wrap"); wrap.append(ui.list, ui.editor);
     ui.backdrop = make("div", undefined, "pt-mi-backdrop"); ui.backdrop.hidden = true;
     ui.backdrop.addEventListener("click", function () { closeEditor(); renderList(); });
-    host.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape" && ui.editor.dataset.open === "1") { ev.preventDefault(); closeEditor(); renderList(); }
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && !host.hidden && ui.editor.dataset.open === "1") { ev.preventDefault(); closeEditor(); renderList(); }
     });
     ui.note = make("p", "技を選んでください。"); ui.note.setAttribute("role", "status"); ui.note.setAttribute("aria-live", "polite");
     panel.append(bar, ui.count, ui.bulkBtn, wrap, ui.more, ui.note); host.append(panel, ui.backdrop);
