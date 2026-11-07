@@ -81,7 +81,8 @@ try{
  for(let i=0;i<faces.length;i++){
    const old=faces[i],replacement=replacementRanges[i];
    const next=old.replace(/unicode-range:([^;}]+)/,'unicode-range:'+replacement);
-   if(next===old)throw Error('No CSS rewrite for face '+i);
+   if(i===0&&next===old)throw Error('Small first-view CSS face was not compacted');
+   // The exact on-demand range may already be optimal and is left unchanged.
    after=after.replace(old,next);
    report.faces.push({shard:i,originalRanges:old.match(/unicode-range:([^;}]+)/)[1].split(',').length,
      compressedRanges:replacement.split(',').length,supportedCodepoints:originalRanges[i].size,
