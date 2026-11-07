@@ -111,3 +111,14 @@ jobs:
             admin-layout-*.png
           retention-days: 14
           if-no-files-found: warn
+
+      - name: Archive the isolated optimized static site copy (never deploy)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase16-optimized-site-test-only
+          path: phase16-performance/optimized-site/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
