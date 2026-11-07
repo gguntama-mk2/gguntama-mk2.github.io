@@ -67,3 +67,16 @@
 - `test-litev1/assets/data/phase9-production-vs-preview.json` — 第9段階画面・機能差分
 - `test-litev1/assets/data/phase10-release-gate-report.json` — 第10段階初回通信量・キャッシュ・保存互換性
 - `.github/workflows/pt-lite-phase10-gate.yml` — 第10段階実ブラウザCI
+
+## 8. 第10段階の検証完了記録（2026-11-07）
+
+- GitHub Actions: https://github.com/gguntama-mk2/gguntama-mk2.github.io/actions/runs/42337975816 — **success**
+- 実測レポート: `test-litev1/assets/data/phase10-release-gate-report.json` — `passed=true`、**40/40項目成功**。
+- PC版 初回受信量: **402,927 bytes**、再読み込み量: **1,581 bytes**。
+- スマホ版 初回受信量: **394,911 bytes**、再読み込み量: **1,533 bytes**。
+- 上記はGitHub ActionsのChromium環境で、ホームロード完了後2.5秒間までのChrome DevTools Protocol測定値。端末や配信地域が異なる場合の速度・容量は保証しない。
+- 主要9パスのキャッシュ制御 `Cache-Control: public, max-age=0, must-revalidate` と `X-Robots-Tag: noindex, nofollow, noarchive` が実際のHTTPレスポンスから確認できた。
+- PC/SP間でチェック・メモ・ブックマークが保存・再表示され、チェック変更が再読み込み後も維持。別ブラウザプロファイルへのデータ漏れなし。
+- 対象デプロイ: `dpl_6bhQY7NyTtgtPHwYmcFyc8WH6YQo`、独立したVercel `staging` のみ。
+- 本番 `main` のSHA: `5c947b5bca83d502d004539c50b54ceaaf9709a1`（検証完了時点で不変）。**本番公開は未実施**。
+- 次段階: 検証用 `githubraw.com` 経由の外部配信から移行できるよう、GitHub Pagesでの同一オリジン静的アセット配置、ハッシュ付き画像の長期キャッシュ、認証機能の別途検証を設計する。本番へのデプロイはユーザーから明示的な許可を得てから行う。
