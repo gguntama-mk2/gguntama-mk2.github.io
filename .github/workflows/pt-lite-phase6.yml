@@ -1,0 +1,66 @@
+name: PROJECT T Lite Phase 6 (UI and recovery)
+on:
+  push:
+    branches:
+      - test/lite-phase6-20261107
+    paths:
+      - tools/pt_lite_phase6_ui_regression.mjs
+      - tools/pt_lite_phase6_recovery.py
+      - .github/workflows/pt-lite-phase6.yml
+concurrency:
+  group: project-t-lite-phase6
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/test/lite-phase6-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build retry UX in isolated test assets
+        run: |
+          python3 tools/pt_lite_phase6_recovery.py
+          node --check test-litev1/assets/js/pc_route-loader.js
+          node --check test-litev1/assets/js/sp_route-loader.js
+      - name: Install test browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run PC / mobile UI and failure-recovery checks
+        run: |
+          set +e
+          node tools/pt_lite_phase6_ui_regression.mjs > /tmp/pt-lite-phase6.log 2>&1
+          rc=$?
+          set -e
+          tail -c 15000 /tmp/pt-lite-phase6.log
+          test -f test-litev1/assets/data/phase6-ui-regression-report.json
+          echo "Phase6 browser exit status $rc"
+      - name: Save test-only build outputs and report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/assets/js/pc_route-loader.js test-litev1/assets/js/sp_route-loader.js test-litev1/assets/data/phase6-recovery-build.json test-litev1/assets/data/phase6-ui-regression-report.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: stage6 isolated browser and recovery results"
+            git fetch origin test/lite-phase6-20261107
+            git rebase origin/test/lite-phase6-20261107
+            git push origin HEAD:test/lite-phase6-20261107
+          fi
+      - name: Require all UI and recovery checks
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("test-litev1/assets/data/phase6-ui-regression-report.json").read_text())
+          assert r["passed"],r["failures"][:10]
+          assert set(r["devices"])=={"pc","sp"}
+          for d,details in r["devices"].items():
+              assert len(details["cases"])>=12
+              assert all(c["passed"] for c in details["cases"])
+              assert all(c["passed"] for c in details["recovery"])
+          assert all(c["passed"] for c in r["images"])
+          assert all(c["passed"] for c in r["dataRecovery"])
+          print("PROJECT T phase6 tests passed")
+          PY
