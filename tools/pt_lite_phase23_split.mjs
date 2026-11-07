@@ -105,10 +105,10 @@ try{
   html=html.slice(0,at)+'<script src="assets/js/'+dev+'_sheet-loader.js?v='+version+'"></script>\n'+html.slice(at);
   fs.writeFileSync(file,html);
   const routeFile=path.join(targetDir,dev+'_route-loader.js');
-  const route=fs.readFileSync(routeFile,'utf8'),old='    prefetch.then(()=>loadOne(code)).then(';
+  const route=fs.readFileSync(routeFile,'utf8'),old='prefetch.then(';
   if(route.split(old).length!==2)throw Error('Feature router dependency anchor missing');
   fs.writeFileSync(routeFile,route.replace(old,
-    '    const runtime=window.PT_SHEET_RUNTIME?window.PT_SHEET_RUNTIME.ready():Promise.resolve();\n    runtime.then(()=>prefetch).then(()=>loadOne(code)).then('));
+    'window.PT_SHEET_RUNTIME.ready().then(()=>prefetch).then('));
   info.originalJsBytes=Buffer.byteLength(src);
   info.initialBootBytes=Buffer.byteLength(pieces.head);
   info.sheetRuntimeBytes=Buffer.byteLength(pieces.tail);
