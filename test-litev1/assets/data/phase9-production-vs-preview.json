@@ -1,0 +1,2544 @@
+{
+  "phase": 9,
+  "at": "2026-11-07T02:54:21.130Z",
+  "source": {
+    "production": "https://www.project-t-god.com/",
+    "preview": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/"
+  },
+  "scope": "read-only, anonymous, isolated localStorage",
+  "passed": false,
+  "devices": {
+    "pc": {
+      "production": {
+        "url": "https://www.project-t-god.com/pc.html#home",
+        "httpStatus": 200,
+        "contentType": "text/html; charset=utf-8",
+        "states": {
+          "home": {
+            "route": "home",
+            "currentPage": "home",
+            "title": "鉄拳8 技チェックシート",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "sheet": {
+            "error": "page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+            "route": "sheet",
+            "currentPage": null,
+            "title": "技チェックシート",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "combo": {
+            "error": "page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+            "route": "combo",
+            "currentPage": "combo",
+            "title": "コンボ集",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "cbHost",
+              "exists": true,
+              "shadow": true,
+              "children": 20,
+              "textLength": 129256,
+              "controls": 279
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "glossary": {
+            "route": "glossary",
+            "currentPage": "glossary",
+            "title": "格ゲー用語集",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "glHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 39023,
+              "controls": 830
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "stage": {
+            "route": "stage",
+            "currentPage": "stage",
+            "title": "ステージギミック一覧",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "sgHost",
+              "exists": true,
+              "shadow": true,
+              "children": 3,
+              "textLength": 14757,
+              "controls": 28
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "vs": {
+            "route": "vs",
+            "currentPage": "vs",
+            "title": "VS",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "vsHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 645368,
+              "controls": 222
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "gallery": {
+            "route": "gallery",
+            "currentPage": "gallery",
+            "title": "ギャラリー",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 1
+            },
+            "host": {
+              "id": "gaHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 24,
+              "controls": 1
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "update": {
+            "route": "update",
+            "currentPage": "update",
+            "title": "アップデート内容",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "updHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 1858,
+              "controls": 4
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          }
+        },
+        "shots": {
+          "home": "phase9-compare-screenshots/pc-production-home.png",
+          "vs": "phase9-compare-screenshots/pc-production-vs.png"
+        },
+        "timings": {
+          "homeNavigationMs": 5104,
+          "navResource": [
+            {
+              "transferSize": 35315604,
+              "encodedBodySize": 35315304,
+              "decodedBodySize": 50110793,
+              "domContentLoadedEventEnd": 3363,
+              "duration": 3758
+            }
+          ],
+          "glossaryMs": 741,
+          "stageMs": 645,
+          "vsMs": 646,
+          "galleryMs": 647,
+          "updateMs": 635
+        },
+        "errors": [],
+        "requestFailures": [
+          {
+            "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
+            "error": "net::ERR_CONNECTION_RESET"
+          }
+        ],
+        "firstPartyHttpErrors": [],
+        "thirdPartyHttpErrors": [
+          {
+            "status": 401,
+            "url": "https://api.project-t-god.com/api/v1/me/matches",
+            "type": "fetch"
+          }
+        ],
+        "warnings": [
+          "sheet: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+          "combo: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16"
+        ]
+      },
+      "preview": {
+        "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/pc.html#home",
+        "httpStatus": 200,
+        "contentType": "text/html; charset=utf-8",
+        "states": {
+          "home": {
+            "route": "home",
+            "currentPage": "home",
+            "title": "鉄拳8 技チェックシート",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": null,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 0,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 0
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [],
+            "loadedCharacterData": [],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "sheet": {
+            "error": "page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+            "route": "sheet",
+            "currentPage": null,
+            "title": "技チェックシート",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": null,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "combo": {
+            "error": "page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+            "route": "combo",
+            "currentPage": "combo",
+            "title": "コンボ集",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "cbHost",
+              "exists": true,
+              "shadow": true,
+              "children": 20,
+              "textLength": 44574,
+              "controls": 117
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "glossary": {
+            "route": "glossary",
+            "currentPage": "glossary",
+            "title": "格ゲー用語集",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "glHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 39023,
+              "controls": 830
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "stage": {
+            "route": "stage",
+            "currentPage": "stage",
+            "title": "ステージギミック一覧",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "sgHost",
+              "exists": true,
+              "shadow": true,
+              "children": 3,
+              "textLength": 14757,
+              "controls": 28
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "vs": {
+            "route": "vs",
+            "currentPage": "vs",
+            "title": "VS",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "vsHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 42431,
+              "controls": 222
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          },
+          "gallery": {
+            "route": "gallery",
+            "currentPage": "gallery",
+            "title": "ギャラリー",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 1
+            },
+            "host": {
+              "id": "gaHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 24,
+              "controls": 1
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15",
+              "12"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          },
+          "update": {
+            "route": "update",
+            "currentPage": "update",
+            "title": "アップデート内容",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": 34,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "updHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 1858,
+              "controls": 4
+            },
+            "html": {
+              "width": 1440,
+              "viewport": 1440,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 56,
+              "height": 56,
+              "left": 1384,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15",
+              "12",
+              "20"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          }
+        },
+        "shots": {
+          "home": "phase9-compare-screenshots/pc-preview-home.png",
+          "vs": "phase9-compare-screenshots/pc-preview-vs.png"
+        },
+        "timings": {
+          "homeNavigationMs": 2876,
+          "navResource": [
+            {
+              "transferSize": 5145,
+              "encodedBodySize": 4845,
+              "decodedBodySize": 14932,
+              "domContentLoadedEventEnd": 1154,
+              "duration": 1731
+            }
+          ],
+          "glossaryMs": 1494,
+          "stageMs": 1248,
+          "vsMs": 1231,
+          "galleryMs": 634,
+          "updateMs": 1592
+        },
+        "errors": [],
+        "requestFailures": [
+          {
+            "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
+            "error": "net::ERR_CONNECTION_RESET"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+            "error": "net::ERR_BLOCKED_BY_ORB"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+            "error": "net::ERR_BLOCKED_BY_ORB"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+            "error": "net::ERR_BLOCKED_BY_ORB"
+          }
+        ],
+        "firstPartyHttpErrors": [
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json",
+            "type": "fetch"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/homing.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/tornado.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/heatengage.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardfloorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/powercrush.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/balconybreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardfloorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbound.webp",
+            "type": "image"
+          }
+        ],
+        "thirdPartyHttpErrors": [],
+        "warnings": [
+          "sheet: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+          "combo: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19"
+        ]
+      },
+      "comparison": {
+        "issues": [
+          "preview sheet failed: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+          "preview combo failed: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+          "preview HTTP failures: [{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json\",\"type\":\"fetch\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/homing.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/tornado.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp\",\"type\":\"image\"}]"
+        ],
+        "warnings": [
+          "production sheet unavailable: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at a",
+          "production combo unavailable: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at a"
+        ],
+        "diff": [
+          {
+            "kind": "nav",
+            "production": 14,
+            "preview": 14,
+            "missing": [],
+            "added": []
+          },
+          {
+            "kind": "sheet",
+            "key": "sheetRows",
+            "production": 228,
+            "preview": 228
+          },
+          {
+            "kind": "combo",
+            "key": "combo",
+            "production": 0,
+            "preview": 0
+          },
+          {
+            "kind": "glossary",
+            "key": "glossary",
+            "production": 280,
+            "preview": 280
+          },
+          {
+            "kind": "stage",
+            "key": "stages",
+            "production": 21,
+            "preview": 21
+          },
+          {
+            "kind": "gallery",
+            "key": "galleryCards",
+            "production": 1,
+            "preview": 1
+          },
+          {
+            "kind": "update",
+            "key": "updates",
+            "production": null,
+            "preview": 34
+          }
+        ]
+      },
+      "screenshotDiffs": {
+        "home": {
+          "differentPixels": 35773,
+          "totalPixels": 1296000,
+          "differentPercent": 2.76,
+          "diffImage": "phase9-compare-screenshots/pc-diff-home.png"
+        },
+        "vs": {
+          "differentPixels": 6618,
+          "totalPixels": 1296000,
+          "differentPercent": 0.51,
+          "diffImage": "phase9-compare-screenshots/pc-diff-vs.png"
+        }
+      }
+    },
+    "sp": {
+      "production": {
+        "url": "https://www.project-t-god.com/sp.html#home",
+        "httpStatus": 200,
+        "contentType": "text/html; charset=utf-8",
+        "states": {
+          "home": {
+            "route": "home",
+            "currentPage": "home",
+            "title": "鉄拳8 技チェックシート（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "sheet": {
+            "error": "page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+            "route": "sheet",
+            "currentPage": null,
+            "title": "技チェックシート（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "combo": {
+            "error": "page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+            "route": "combo",
+            "currentPage": "combo",
+            "title": "コンボ集（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "cbHost",
+              "exists": true,
+              "shadow": true,
+              "children": 20,
+              "textLength": 128239,
+              "controls": 279
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "glossary": {
+            "route": "glossary",
+            "currentPage": "glossary",
+            "title": "格ゲー用語集（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "glHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 39023,
+              "controls": 830
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "stage": {
+            "route": "stage",
+            "currentPage": "stage",
+            "title": "ステージギミック一覧（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "sgHost",
+              "exists": true,
+              "shadow": true,
+              "children": 3,
+              "textLength": 14757,
+              "controls": 28
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "vs": {
+            "route": "vs",
+            "currentPage": "vs",
+            "title": "VS（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "vsHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 645368,
+              "controls": 222
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "gallery": {
+            "route": "gallery",
+            "currentPage": "gallery",
+            "title": "ギャラリー（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 1
+            },
+            "host": {
+              "id": "gaHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 24,
+              "controls": 1
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          },
+          "update": {
+            "route": "update",
+            "currentPage": "update",
+            "title": "アップデート内容（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": 30,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "updHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 1858,
+              "controls": 4
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": null,
+            "loadedCharacterData": null,
+            "previewBanner": false,
+            "authGuard": false,
+            "vsMounted": true
+          }
+        },
+        "shots": {
+          "home": "phase9-compare-screenshots/sp-production-home.png",
+          "vs": "phase9-compare-screenshots/sp-production-vs.png"
+        },
+        "timings": {
+          "homeNavigationMs": 4980,
+          "navResource": [
+            {
+              "transferSize": 35305306,
+              "encodedBodySize": 35305006,
+              "decodedBodySize": 50093131,
+              "domContentLoadedEventEnd": 3250,
+              "duration": 3338
+            }
+          ],
+          "glossaryMs": 717,
+          "stageMs": 625,
+          "vsMs": 625,
+          "galleryMs": 621,
+          "updateMs": 615
+        },
+        "errors": [],
+        "requestFailures": [
+          {
+            "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
+            "error": "net::ERR_CONNECTION_RESET"
+          }
+        ],
+        "firstPartyHttpErrors": [],
+        "thirdPartyHttpErrors": [
+          {
+            "status": 401,
+            "url": "https://api.project-t-god.com/api/v1/me/matches",
+            "type": "fetch"
+          }
+        ],
+        "warnings": [
+          "sheet: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16",
+          "combo: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:200:16"
+        ]
+      },
+      "preview": {
+        "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/sp.html#home",
+        "httpStatus": 200,
+        "contentType": "text/html; charset=utf-8",
+        "states": {
+          "home": {
+            "route": "home",
+            "currentPage": "home",
+            "title": "鉄拳8 技チェックシート（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": null,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 0,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 0
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [],
+            "loadedCharacterData": [],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "sheet": {
+            "error": "page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+            "route": "sheet",
+            "currentPage": null,
+            "title": "技チェックシート（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": null,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "exists": false,
+              "shadow": false,
+              "children": 0,
+              "textLength": 0,
+              "controls": 0
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "combo": {
+            "error": "page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+            "route": "combo",
+            "currentPage": "combo",
+            "title": "コンボ集（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": null,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "cbHost",
+              "exists": true,
+              "shadow": true,
+              "children": 20,
+              "textLength": 44574,
+              "controls": 117
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "glossary": {
+            "route": "glossary",
+            "currentPage": "glossary",
+            "title": "格ゲー用語集（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": null,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "glHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 39023,
+              "controls": 830
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "stage": {
+            "route": "stage",
+            "currentPage": "stage",
+            "title": "ステージギミック一覧（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "sgHost",
+              "exists": true,
+              "shadow": true,
+              "children": 3,
+              "textLength": 14757,
+              "controls": 28
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": false
+          },
+          "vs": {
+            "route": "vs",
+            "currentPage": "vs",
+            "title": "VS（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "vsHost",
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "textLength": 42431,
+              "controls": 222
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          },
+          "gallery": {
+            "route": "gallery",
+            "currentPage": "gallery",
+            "title": "ギャラリー（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": null,
+              "sheetRows": 228,
+              "galleryCards": 1
+            },
+            "host": {
+              "id": "gaHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 24,
+              "controls": 1
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15",
+              "12"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          },
+          "update": {
+            "route": "update",
+            "currentPage": "update",
+            "title": "アップデート内容（スマホ版）",
+            "nav": [
+              "combo",
+              "download",
+              "gallery",
+              "glossary",
+              "guide",
+              "home",
+              "login",
+              "price",
+              "privacy",
+              "punish",
+              "sheet",
+              "stage",
+              "update",
+              "vs"
+            ],
+            "counts": {
+              "characters": null,
+              "combo": 0,
+              "glossary": 280,
+              "punish": null,
+              "stages": 21,
+              "updates": 34,
+              "sheetRows": 228,
+              "galleryCards": 0
+            },
+            "host": {
+              "id": "updHost",
+              "exists": true,
+              "shadow": false,
+              "children": 1,
+              "textLength": 1858,
+              "controls": 4
+            },
+            "html": {
+              "width": 390,
+              "viewport": 390,
+              "overflow": 0
+            },
+            "sheet": {
+              "visible": true,
+              "rows": 228
+            },
+            "mainMenu": {
+              "width": 52,
+              "height": 52,
+              "left": 338,
+              "top": 0
+            },
+            "loadedModules": [
+              "06",
+              "07",
+              "09",
+              "15",
+              "12",
+              "20"
+            ],
+            "loadedCharacterData": [
+              "alisa"
+            ],
+            "previewBanner": true,
+            "authGuard": true,
+            "vsMounted": true
+          }
+        },
+        "shots": {
+          "home": "phase9-compare-screenshots/sp-preview-home.png",
+          "vs": "phase9-compare-screenshots/sp-preview-vs.png"
+        },
+        "timings": {
+          "homeNavigationMs": 2723,
+          "navResource": [
+            {
+              "transferSize": 5443,
+              "encodedBodySize": 5143,
+              "decodedBodySize": 17082,
+              "domContentLoadedEventEnd": 999,
+              "duration": 1191
+            }
+          ],
+          "glossaryMs": 1758,
+          "stageMs": 1174,
+          "vsMs": 1278,
+          "galleryMs": 607,
+          "updateMs": 1733
+        },
+        "errors": [],
+        "requestFailures": [
+          {
+            "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
+            "error": "net::ERR_CONNECTION_RESET"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+            "error": "net::ERR_BLOCKED_BY_ORB"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+            "error": "net::ERR_BLOCKED_BY_ORB"
+          }
+        ],
+        "firstPartyHttpErrors": [
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json",
+            "type": "fetch"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/powercrush.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/homing.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardfloorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/tornado.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/heatengage.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbound.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardfloorbreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/balconybreak.webp",
+            "type": "image"
+          },
+          {
+            "status": 404,
+            "url": "https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp",
+            "type": "image"
+          }
+        ],
+        "thirdPartyHttpErrors": [],
+        "warnings": [
+          "sheet: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19",
+          "combo: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:130:29)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:201:19"
+        ]
+      },
+      "comparison": {
+        "issues": [
+          "preview sheet failed: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+          "preview combo failed: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+          "preview HTTP failures: [{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json\",\"type\":\"fetch\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/powercrush.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp\",\"type\":\"image\"}]"
+        ],
+        "warnings": [
+          "production sheet unavailable: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at a",
+          "production combo unavailable: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at a"
+        ],
+        "diff": [
+          {
+            "kind": "nav",
+            "production": 14,
+            "preview": 14,
+            "missing": [],
+            "added": []
+          },
+          {
+            "kind": "sheet",
+            "key": "sheetRows",
+            "production": 228,
+            "preview": 228
+          },
+          {
+            "kind": "combo",
+            "key": "combo",
+            "production": 0,
+            "preview": 0
+          },
+          {
+            "kind": "glossary",
+            "key": "glossary",
+            "production": 280,
+            "preview": 280
+          },
+          {
+            "kind": "stage",
+            "key": "stages",
+            "production": 21,
+            "preview": 21
+          },
+          {
+            "kind": "gallery",
+            "key": "galleryCards",
+            "production": 1,
+            "preview": 1
+          },
+          {
+            "kind": "update",
+            "key": "updates",
+            "production": null,
+            "preview": 34
+          }
+        ]
+      },
+      "screenshotDiffs": {
+        "home": {
+          "differentPixels": 14368,
+          "totalPixels": 329160,
+          "differentPercent": 4.37,
+          "diffImage": "phase9-compare-screenshots/sp-diff-home.png"
+        },
+        "vs": {
+          "differentPixels": 3607,
+          "totalPixels": 329160,
+          "differentPercent": 1.1,
+          "diffImage": "phase9-compare-screenshots/sp-diff-vs.png"
+        }
+      }
+    }
+  },
+  "failures": [
+    "pc: preview sheet failed: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+    "pc: preview combo failed: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+    "pc: preview HTTP failures: [{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json\",\"type\":\"fetch\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/homing.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/tornado.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallblast.webp\",\"type\":\"image\"}]",
+    "sp: preview sheet failed: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+    "sp: preview combo failed: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at async runOrigin (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.",
+    "sp: preview HTTP failures: [{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/combos-live.json\",\"type\":\"fetch\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/powercrush.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/recoverable.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/hardwallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/wallbreak.webp\",\"type\":\"image\"},{\"status\":404,\"url\":\"https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/icons/floorblast.webp\",\"type\":\"image\"}]"
+  ],
+  "warnings": [
+    "pc: production sheet unavailable: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at a",
+    "pc: production combo unavailable: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at a",
+    "sp: production sheet unavailable: page.waitForFunction: Timeout 45000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:74:14)\n    at a",
+    "sp: production combo unavailable: page.waitForFunction: Timeout 18000ms exceeded.\n    at navigate (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase9_comparison.mjs:88:16)\n    at a"
+  ],
+  "diffs": [],
+  "expectedDifferences": [
+    "preview adds PTPreviewNotice banner and disables real OAuth/API calls",
+    "preview fetches feature scripts, images, and character JSON lazily",
+    "production and preview may display distinct clock values, fonts timing, ad content and dynamic timestamps"
+  ]
+}
