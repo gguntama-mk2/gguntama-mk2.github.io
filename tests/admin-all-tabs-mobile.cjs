@@ -249,6 +249,27 @@ const fixtures = (u) => {
           assert(measure.doc<=width,"No viewport overflow: "+tab+" "+JSON.stringify(measure));
         }
       }
+      if(width===390){
+        // Regression for a full Bryan report: 75 additional candidates must not
+        // create a 75-card wall immediately, but remain searchable.
+        const many=fixtures(new URL("http://localhost/api/v1/admin/cloud-analysis/workspace"));
+        many.linkage.requirements=Array.from({length:75},(_,i)=>({
+          requirement_id:10000+i,source_character_id:"bryan",example_move_indexes:[1500+i],
+          matched_master_indexes:[],raw_occurrences:1,
+          candidate_move_count_reported:1,priority_score:1,parameter_samples:[]
+        }));
+        await page.route("**/api/v1/admin/cloud-analysis/workspace",async(route)=>{
+          await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(many)});
+        });
+        await page.locator('nav.tabs button[data-tab="cloud"]').click();
+        await page.locator('#secCloud .pt-cloud-controls button').filter({hasText:"再読み込み"}).click();
+        const priorityPanel=page.locator('#secCloud details[data-cloud-panel="priority"]');
+        if(!(await priorityPanel.evaluate(d=>d.open)))await priorityPanel.locator("summary").click();
+        await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="77件");
+        assert.equal(await priorityPanel.locator(".pt-cloud-id-button").count(),50,"Only first 50 candidates rendered");
+        await priorityPanel.locator(".pt-cloud-more").click();
+        assert.equal(await priorityPanel.locator(".pt-cloud-id-button").count(),77,"Additional 27 candidates rendered");
+      }
       assert.deepEqual(errors,[],"Page errors: "+errors.join("; "));
       await page.screenshot({path:"admin-all-tabs-"+width+".png",fullPage:false});
       console.log("PASS all admin tabs at "+width+"px");
