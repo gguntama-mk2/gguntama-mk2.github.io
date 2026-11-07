@@ -92,6 +92,10 @@
     const link=linkInfo(reqId),moves=payload?.linkage?.indexed_moves||{};
     return (link?.matched_master_indexes||[]).map(index=>moves[String(index)]).filter(Boolean);
   }
+  function namedMatchesFor(reqId){
+    return matchesFor(reqId).filter(move=>(move.command_list_entries||[])
+      .some(entry=>(entry.kind==="move"||entry.kind==="key_move")&&entry.name_ja));
+  }
   function normalized(v){return String(v??"").normalize("NFKC").replace(/\\s+/g,"").toLowerCase();}
   function checklistCandidates(move){
     const characters=characterProvider?.()||[];
@@ -145,7 +149,7 @@
         if(f.coverage==="bryan"&&!bryanIds.has(id))return false;
       }
       if(f.character==="bryan_source"&&!linkInfo(id))return false;
-      if(f.character==="bryan_named"&&!matchesFor(id).length)return false;
+      if(f.character==="bryan_named"&&!namedMatchesFor(id).length)return false;
       if(!["all","bryan_source","bryan_named"].includes(f.character)
           &&(!Array.isArray(row.characters)||!row.characters.includes(f.character)))return false;
       return true;
@@ -217,9 +221,11 @@
       });
       if(payload?.linkage){
         const evidence=linkInfo(rowId(scope,row));
-        const matches=matchesFor(rowId(scope,row));
+        const matches=namedMatchesFor(rowId(scope,row));
         const td=el("td",!evidence?"資料なし":matches.length?
-          "技名候補 "+matches.length+"件":"インデックス例 "+evidence.example_move_indexes.length+"件（技名未照合）");
+          "技名候補 "+matches.length+"件" +
+          (evidence.graph_edge_evidence?.length?"／遷移候補 "+evidence.graph_edge_evidence.length+"件":""):
+          "例示のみ" + (evidence.graph_edge_evidence?.length?"／遷移候補 "+evidence.graph_edge_evidence.length+"件":""));
         td.dataset.label="資料照合";tr.append(td);
       }
       const td=el("td",statusLabel(scope,row));td.dataset.label="調査状況";tr.append(td);tbody.append(tr);
@@ -242,6 +248,14 @@
       outer.append(note("ブライアンの資料には328 IDの例示があり、技名まで照合できたものは一部です。MOTBIN技インデックス、内部move_id、チェックシートのkは別の識別子です。"));
     }else{
       outer.append(note("技名紐付けデータは未配備です。既存の優先調査IDは引き続き閲覧できます。","pt-cloud-filter-info"));
+    }
+    if(payload?.linkage?.schema_version===2 && scope==="bryan"){
+      const stats=payload.linkage.stats||{};
+      outer.append(metrics([["CSV例示の照合ID",stats.requirements_with_master_sample_overlap],
+        ["CSV＋遷移候補の照合ID",stats.requirements_with_any_master_overlap],
+        ["遷移候補レコード",stats.graph_candidate_edge_records],
+        ["実機検証済み紐付け",stats.gameplay_verified_links]]));
+      outer.append(note("すべて未検証。遷移候補はMOTBINキャンセルリストの境界推定であり、ゲーム内の確定情報ではありません。","pt-cloud-evidence-warning"));
     }
     outer.append(filtersUI(scope));
     const counter=el("p",filtered(scope).length+" / "+sourceRows(scope).length+"件","pt-cloud-filter-count");
@@ -333,13 +347,14 @@
   }
   function exportRows(scope){
     const cols=FIELDS[scope],head=[...cols.map(x=>x[1]),"調査状況","調査メモ",
-      "資料上の出現候補","照合できたMOTBINインデックス","検証状態"];
+      "資料上の出現候補","照合できたMOTBINインデックス","CSVサンプル照合件数","遷移推定レコード数","検証状態"];
     const rows=filtered(scope).map(row=>{
       const id=rowId(scope,row),rev=getReview(scope,id);
       const proof=linkInfo(id),matches=matchesFor(id);
       return [...cols.map(x=>row[x[0]]),STATUS[rev.status]||STATUS.unreviewed,rev.note,
-        proof?"ブライアン構造サンプルあり":"未収録",matches.map(m=>m.motbin_move_index).join(" "),
-        "実機未検証"];
+        proof?"ブライアン構造候補あり":"未収録",matches.map(m=>m.motbin_move_index).join(" "),
+        proof?.matched_sample_indexes?.length??proof?.matched_master_indexes?.length??0,
+        proof?.graph_edge_evidence?.length??0,"実機未検証"];
     });
     downloadCsv("project-t-"+scope+"-research.csv",[head,...rows]);
   }
@@ -365,6 +380,14 @@
     section.append(note("Requirements ID "+reqId+"／ブライアンの条件解析CSV。"
       +" 例示された技インデックス："+proof.example_move_indexes.length+"件"
       +"（候補総数 "+fmt(proof.candidate_move_count_reported)+"件とは異なります）。"));
+    if(payload?.linkage?.schema_version===2){
+      section.append(metrics([
+        ["CSV例示との一致",proof.matched_sample_indexes?.length??0],
+        ["遷移グラフの候補",proof.graph_edge_evidence?.length??0],
+        ["技インデックスの重複なし合計",proof.matched_master_indexes?.length??0]
+      ]));
+      section.append(note("遷移グラフはキャンセルリスト境界の推定です。「遷移先 raw ID」と実際の内部 move_id の同一性も未確認です。","pt-cloud-evidence-warning"));
+    }
     const samples=node("div","pt-cloud-index-list");
     samples.append(el("strong","技インデックスのサンプル"));
     samples.append(el("code",(proof.example_move_indexes||[]).join("、")||"なし"));
@@ -376,16 +399,39 @@
       (proof.parameter_samples||[]).forEach(p=>list.append(el("li","["+p.values.join(", ")+"] × "+p.count)));
       params.append(list);section.append(params);
     }
+    const graphEdges=proof.graph_edge_evidence||[];
+    if(graphEdges.length){
+      const details=node("details","pt-cloud-graph-details");
+      details.append(el("summary","遷移候補の解析根拠 "+graphEdges.length+"件（すべて未検証）"));
+      const evidenceRows=node("div","pt-cloud-graph-grid");
+      for(const edge of graphEdges){
+        const box=node("div","pt-cloud-graph-edge");
+        box.append(el("strong","技インデックス "+edge.source_move_index+" → 遷移先raw "+edge.dest_move_id_raw));
+        box.append(note("キャンセル行 "+edge.cancel_index+" ／ Requirement行 "+edge.requirement_index,
+          "pt-cloud-small"));
+        box.append(note("コマンド16進 "+edge.command_hex+" ／ フレーム窓 raw "+
+          edge.frame_window_start_raw+"～"+edge.frame_window_end_raw,"pt-cloud-small"));
+        evidenceRows.append(box);
+      }
+      details.append(evidenceRows);section.append(details);
+    }
     const matched=matchesFor(reqId);
     if(!matched.length){
-      section.append(note("サンプルの技インデックスと、現在のブライアン技名資料58件との重複はありません。技名を自動で割り当てません。","pt-cloud-evidence-warning"));
+      section.append(note("CSVの例示・遷移候補と、現在のブライアン技名資料58件との重複はありません。技名を自動で割り当てません。","pt-cloud-evidence-warning"));
     }else{
       section.append(note("技インデックスが一致した資料 "+matched.length+"件。以下はMOTBIN構造上の候補であり、技の効果やRequirementsの意味は確定していません。"));
       const grid=node("div","pt-cloud-links");
       for(const m of matched){
         const item=node("article","pt-cloud-link-item");
         item.append(el("strong","MOTBIN技インデックス "+m.motbin_move_index));
-        item.append(el("div","内部move_id："+(m.motbin_move_id===null?"不明":String(m.motbin_move_id)),"pt-cloud-small"));
+        const evidenceTypes=node("div","pt-cloud-evidence-kinds");
+        const sampleIndexes=proof.matched_sample_indexes||proof.matched_master_indexes||[];
+        if(sampleIndexes.includes(m.motbin_move_index))
+          evidenceTypes.append(el("span","CSV例示と一致","pt-cloud-source-tag"));
+        if((proof.matched_graph_indexes||[]).includes(m.motbin_move_index))
+          evidenceTypes.append(el("span","遷移グラフ推定","pt-cloud-source-tag pt-cloud-source-tag-uncertain"));
+        if(evidenceTypes.childElementCount)item.append(evidenceTypes);
+        item.append(el("div","MOTBIN資料上の内部move_id："+(m.motbin_move_id===null?"不明":String(m.motbin_move_id)),"pt-cloud-small"));
         const primary=(m.command_list_entries||[]).filter(e=>e.kind==="move"||e.kind==="key_move");
         if(!primary.length){
           item.append(note("通常技名の情報なし（練習・アシスト用資料など）"));
@@ -411,7 +457,7 @@
       }
       section.append(grid);
     }
-    section.append(note("根拠：condition_graph_review.csv の example_move_indexes と bryan_master_moves.json の motbin_move_index を照合。ラベルは技コマンド資料由来。海外の参考ラベルだけでは確定しません。","pt-cloud-source"));
+    section.append(note("根拠：condition_graph_review.csv の例示、unknown_condition_edges.json の候補キャンセル行、bryan_master_moves.json の技インデックスを別々に照合。ラベルは技コマンド資料由来。海外の参考ラベルだけでは確定しません。","pt-cloud-source"));
     return section;
   }
 
