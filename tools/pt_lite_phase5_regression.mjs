@@ -26,6 +26,8 @@ async function collect(device){
   page.on('pageerror',e=>jsErrors.push(e.message));
   page.on('response',res=>{
     if(!res.url().startsWith(root+'/'))return;
+    // Local Python test server has no PROJECT T API; backend 404 is expected and not a static asset failure.
+    if(new URL(res.url()).pathname.startsWith('/api/'))return;
     const h=res.headers(),size=Number(h['content-length']);
     rows.push({path:new URL(res.url()).pathname,status:res.status(),bytes:Number.isFinite(size)?size:0,kind:group(res.url())});
     if(res.status()>=400)bad.push({path:new URL(res.url()).pathname,status:res.status()});
@@ -42,9 +44,10 @@ async function collect(device){
     groups:totals,request_count:rows.length,
     loaded_character_ids:await page.evaluate(()=>window.PT_CHAR_DATA.loaded()),
     loaded_feature_codes:await page.evaluate(()=>window.PT_ROUTE_ASSETS.loaded()),
-    top_responses:[...rows].sort((a,b)=>b.bytes-a.bytes).slice(0,14),
+    top_responses:[...rows].sort((a,b)=>b.bytes-a.bytes).slice(0,50),
     bad_responses:bad,page_errors:jsErrors
   };
+  report.network[device]=info; // Persist measurements even if a later assertion fails.
   console.log('NETWORK',device,JSON.stringify(info));
   assert.equal(bad.length,0,device+' local HTTP errors');
   assert.equal(jsErrors.length,0,device+' page errors');
