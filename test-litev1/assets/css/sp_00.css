@@ -1084,3 +1084,6 @@ html .rowact button { border-radius: 14px; }
 .mcmd,.cmdtxt{line-height:2.4}
 .mcmd.off,.cmdtxt.off{visibility:hidden}
 /*CMDICONS-END*/
+
+/* PT-FIRST-VIEW-FONT-STRATEGY */
+html[data-page="home"]:not(.pt-full-font-ready){--font-ui:"KosugiMaru","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;}

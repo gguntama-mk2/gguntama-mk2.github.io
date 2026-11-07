@@ -1,20 +1,20 @@
 {
   "schema": 5,
   "mode": "test-only",
-  "at": "2026-11-07T01:16:39.679Z",
-  "passed": false,
+  "at": "2026-11-07T01:19:07.127Z",
+  "passed": true,
   "network": {
     "pc": {
-      "total_local_bytes": 1091358,
-      "under_1mb": false,
+      "total_local_bytes": 790495,
+      "under_1mb": true,
       "groups": {
         "html": 14946,
-        "css": 112064,
-        "javascript": 437935,
-        "other_media": 508874,
+        "css": 112261,
+        "javascript": 437983,
+        "other_media": 207766,
         "pxstore_images": 17539
       },
-      "request_count": 27,
+      "request_count": 26,
       "loaded_character_ids": [],
       "loaded_feature_codes": [],
       "top_responses": [
@@ -25,15 +25,9 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/media/a512bebf66816c386edb.woff2",
-          "status": 200,
-          "bytes": 301108,
-          "kind": "other_media"
-        },
-        {
           "path": "/test-litev1/assets/css/pc_00.css",
           "status": 200,
-          "bytes": 109323,
+          "bytes": 109520,
           "kind": "css"
         },
         {
@@ -57,7 +51,7 @@
         {
           "path": "/test-litev1/assets/js/pc_17.js",
           "status": 200,
-          "bytes": 33647,
+          "bytes": 33695,
           "kind": "javascript"
         },
         {
@@ -163,13 +157,13 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/js/pc_02.js",
+          "path": "/test-litev1/assets/js/pc_01.js",
           "status": 200,
           "bytes": 0,
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/js/pc_01.js",
+          "path": "/test-litev1/assets/js/pc_02.js",
           "status": 200,
           "bytes": 0,
           "kind": "javascript"
@@ -185,16 +179,16 @@
       "page_errors": []
     },
     "sp": {
-      "total_local_bytes": 1073973,
-      "under_1mb": false,
+      "total_local_bytes": 773110,
+      "under_1mb": true,
       "groups": {
         "html": 17096,
-        "css": 101018,
-        "javascript": 430132,
-        "other_media": 508188,
+        "css": 101215,
+        "javascript": 430180,
+        "other_media": 207080,
         "pxstore_images": 17539
       },
-      "request_count": 25,
+      "request_count": 24,
       "loaded_character_ids": [],
       "loaded_feature_codes": [],
       "top_responses": [
@@ -205,15 +199,9 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/media/a512bebf66816c386edb.woff2",
-          "status": 200,
-          "bytes": 301108,
-          "kind": "other_media"
-        },
-        {
           "path": "/test-litev1/assets/css/sp_00.css",
           "status": 200,
-          "bytes": 101018,
+          "bytes": 101215,
           "kind": "css"
         },
         {
@@ -237,7 +225,7 @@
         {
           "path": "/test-litev1/assets/js/sp_17.js",
           "status": 200,
-          "bytes": 33648,
+          "bytes": 33696,
           "kind": "javascript"
         },
         {
@@ -353,9 +341,52 @@
       "page_errors": []
     }
   },
-  "storage": {},
-  "errors": [
-    "AssertionError [ERR_ASSERTION]: legacy note\n+ actual - expected\n\n+ undefined\n- '保存互換テスト・あいうえお'\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:97:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:124:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:146:18"
-  ],
+  "storage": {
+    "chosen": {
+      "id": "alisa",
+      "k": 0,
+      "moveName": "リードジャブ",
+      "idx": 0
+    },
+    "pc1": {
+      "actual": {
+        "check": true,
+        "memo": "保存互換テスト・あいうえお",
+        "review": true,
+        "last": "alisa"
+      },
+      "visible": {
+        "checked": true,
+        "reviewClass": true
+      }
+    },
+    "sp": {
+      "actual": {
+        "check": true,
+        "memo": "保存互換テスト・あいうえお",
+        "review": true,
+        "last": "alisa"
+      },
+      "visible": {
+        "card": true,
+        "progress": "0%（1/2251）"
+      }
+    },
+    "pc2": {
+      "actual": {
+        "check": true,
+        "memo": "保存互換テスト・あいうえお",
+        "review": true,
+        "last": "alisa"
+      },
+      "visible": {
+        "checked": true,
+        "reviewClass": true
+      }
+    },
+    "clickedAndPersisted": true,
+    "errors": []
+  },
+  "errors": [],
   "notes": []
 }

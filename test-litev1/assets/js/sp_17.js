@@ -284,6 +284,7 @@ html.chd-on .totop-bar{visibility:hidden}
   function hydrate(){
     const page=root.dataset.page||"sheet";
     if(page!=="home"){
+      root.classList.add("pt-full-font-ready");
       document.querySelectorAll("#chars img[data-pt-src], #chdGrid img[data-pt-src]").forEach(img=>{
         img.src=img.dataset.ptSrc;
         delete img.dataset.ptSrc;

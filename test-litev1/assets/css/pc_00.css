@@ -1164,3 +1164,6 @@ html .tgc .tg { border-width: 2px; border-radius: 999px; padding: 1px 0; }
 @media (prefers-reduced-motion: reduce) { html .pagenav button[data-go], html .panel, html .themesel, html .reset, html .cmdtgl, html .ichip, html .jchip, html .njchip, html .njfilter, html .nfp-st, html .nfp-del, html .nfp-sdel, html .nfp-add, html .nfp-sadd, html .nfp-clear, html .plink, html .iodlg button, html dialog .row button, html .menulist button, html .rowact button, html .tools .cmdtgl, html .nfp-chip, html .njx { transition: none !important; transform: none !important; } }
 /*POP-END*/
 /*REDESIGN-END*/
+
+/* PT-FIRST-VIEW-FONT-STRATEGY */
+html[data-page="home"]:not(.pt-full-font-ready){--font-ui:"KosugiMaru","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;}

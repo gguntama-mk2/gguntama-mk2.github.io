@@ -1,0 +1,17 @@
+{
+  "schema": 5,
+  "mode": "test-only",
+  "strategy": "defer original full UI font until first non-home page, keep same-family rounded fallback on home",
+  "files": [
+    {
+      "device": "pc",
+      "css_bytes": 109520,
+      "body_font": "KosugiMaru on first home view, MaruGoKawa after feature navigation"
+    },
+    {
+      "device": "sp",
+      "css_bytes": 101215,
+      "body_font": "KosugiMaru on first home view, MaruGoKawa after feature navigation"
+    }
+  ]
+}
