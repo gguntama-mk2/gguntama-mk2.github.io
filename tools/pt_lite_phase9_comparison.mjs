@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 
 const SOURCE={
   production:'https://www.project-t-god.com/',
-  preview:'https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/'
+  preview:'https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/'
 };
 const OUT='test-litev1/assets/data/phase9-production-vs-preview.json';
 const SHOTS='phase9-compare-screenshots';
@@ -71,9 +71,12 @@ async function getState(page,device,route){
 }
 async function navigate(page,route,device){
   await page.evaluate(route=>{if(typeof window.setPage!=='function')throw Error('setPage unavailable');window.setPage(route);},route);
-  await page.waitForFunction(r=>document.documentElement.dataset.page===r,route,{timeout:45000});
+  // The sheet is intentionally a blank dataset.page route in both existing versions.
+  // Treat populated move rows, not the HTML route marker, as the readiness signal.
   if(route==='sheet'){
-    await page.waitForFunction(d=>d==='pc'?document.querySelectorAll('#body tr[data-k]').length>0:document.querySelectorAll('#list .card[data-i]').length>0,device,{timeout:65000});
+    await page.waitForFunction(d=>d==='pc'?document.querySelectorAll('#body tr[data-k]').length>0:document.querySelectorAll('#list .card[data-i]').length>0,device,{timeout:45000});
+  } else {
+    await page.waitForFunction(r=>document.documentElement.dataset.page===r,route,{timeout:35000});
   }
   if(route==='vs'){
     await page.waitForFunction(()=>!!document.getElementById('vsHost')?.shadowRoot&&!!window.VS,{timeout:55000});
@@ -85,7 +88,7 @@ async function navigate(page,route,device){
     await page.waitForFunction(()=>typeof window.SG?.count==='function'&&window.SG.count()>0,{timeout:40000});
   }
   if(route==='combo'){
-    await page.waitForFunction(()=>!!document.getElementById('cbHost')&&(document.getElementById('cbHost').textContent||'').trim().length>20,{timeout:60000});
+    await page.waitForFunction(()=>{const h=document.getElementById('cbHost');const r=h?.shadowRoot||h;return !!r&&r.children.length>0;},{timeout:25000});
   }
   if(route==='update' && !!(await page.evaluate(()=>!!window.PT_ROUTE_ASSETS))){
     await page.waitForFunction(()=>typeof PT_FULL_UPDATES!=='undefined'&&PT_FULL_UPDATES?.length>0,{timeout:50000});
@@ -177,9 +180,11 @@ function check(device,prod,preview){
   }
   for(const route of ['sheet','combo','glossary','stage','vs','gallery','update']){
     const p=prod.states[route]||{},q=preview.states[route]||{};
-    if(q.error||!q.currentPage)issues.push('preview '+route+' failed: '+String(q.error||'missing').slice(0,250));
-    if(p.error||!p.currentPage)warnings.push('production '+route+' unavailable: '+String(p.error||'missing').slice(0,180));
-    if(p.currentPage&&q.currentPage&&p.currentPage!==q.currentPage)issues.push(route+' page mismatch '+p.currentPage+'/'+q.currentPage);
+    const qReady=route==='sheet'?Number(q.counts?.sheetRows||0)>0:!!q.currentPage;
+    const pReady=route==='sheet'?Number(p.counts?.sheetRows||0)>0:!!p.currentPage;
+    if(q.error||!qReady)issues.push('preview '+route+' failed: '+String(q.error||'missing').slice(0,250));
+    if(p.error||!pReady)warnings.push('production '+route+' unavailable: '+String(p.error||'missing').slice(0,180));
+    if(route!=='sheet'&&p.currentPage&&q.currentPage&&p.currentPage!==q.currentPage)issues.push(route+' page mismatch '+p.currentPage+'/'+q.currentPage);
     const pairs=route==='sheet'?['sheetRows']:route==='glossary'?['glossary']:route==='stage'?['stages']:route==='combo'?['combo']:route==='update'?['updates']:route==='gallery'?['galleryCards']:[];
     for(const key of pairs){
       const left=p.counts?.[key],right=q.counts?.[key];
