@@ -1,0 +1,89 @@
+name: PROJECT T Phase13 Separate Assets and HTML Review Candidates (NO PRODUCTION DEPLOY)
+on:
+  push:
+    branches: [project-t-preview-20261107]
+    paths:
+      - tools/pt_lite_phase13_preflight.py
+      - .github/workflows/pt-lite-phase13-stage-html.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pt-lite-phase13-stage-html
+  cancel-in-progress: true
+jobs:
+  build-test-stage:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - name: Checkout isolated, non-production source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch and verify both release staging branches and baseline
+        run: |
+          test "$GITHUB_REF_NAME" = "project-t-preview-20261107"
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/release/pt-lite-assets-phase13:refs/remotes/origin/release/pt-lite-assets-phase13' \
+            '+refs/heads/release/pt-lite-html-phase13:refs/remotes/origin/release/pt-lite-html-phase13'
+          test "$(git rev-parse origin/main)" = "5c947b5bca83d502d004539c50b54ceaaf9709a1"
+          test "$(git rev-parse origin/release/pt-lite-assets-phase13)" = "$(git rev-parse origin/release/pt-lite-html-phase13)"
+      - name: Build same-origin production-like candidate without deploying
+        run: |
+          python3 tools/pt_lite_phase11_pages_bundle.py --out phase11-pages-package
+          python3 tools/pt_lite_phase13_preflight.py
+      - name: Install headless Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node --check tools/pt_lite_phase11_pages_smoke.mjs
+      - name: Recheck all PC and SP routes and localStorage on bundled candidate
+        run: |
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          phase11=json.loads(Path('phase11-pages-package/browser-report.json').read_text())
+          phase13=json.loads(Path('phase13-staged-release/phase13-preflight.json').read_text())
+          assert phase11['passed'],phase11['failures']
+          assert phase13['passed'],phase13['errors']
+          assert phase13['added_asset_count']==439
+          assert phase13['asset_package_byte_exact']
+          assert all(phase11['devices'][d]['routes']['sheet']['rows']==228 for d in ('pc','sp'))
+          print('PHASE13_BUNDLE_CI_OK: 439 identical stage1 assets + staged HTML candidate')
+          PY
+      - name: Prepare the three HTML files in a separate release branch — NEVER main
+        run: |
+          mkdir -p /tmp/pt-phase13-html
+          cp phase11-pages-package/site/pc.html /tmp/pt-phase13-html/pc.html
+          cp phase11-pages-package/site/sp.html /tmp/pt-phase13-html/sp.html
+          cp phase11-pages-package/site/index.html /tmp/pt-phase13-html/index.html
+          branch_path=/tmp/pt-phase13-html-worktree
+          git worktree add --detach "$branch_path" origin/release/pt-lite-html-phase13
+          cp /tmp/pt-phase13-html/*.html "$branch_path/"
+          git -C "$branch_path" config user.name "github-actions[bot]"
+          git -C "$branch_path" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$branch_path" add -- pc.html sp.html index.html
+          actual="$(git -C "$branch_path" diff --cached --name-only)"
+          expected="$(printf 'index.html\npc.html\nsp.html')"
+          test "$actual" = "$expected"
+          base="$(git rev-parse origin/release/pt-lite-assets-phase13)"
+          test "$(git -C "$branch_path" rev-parse HEAD)" = "$base"
+          git -C "$branch_path" commit -m "chore(release candidate): prepare versioned PC/SP HTML switch behind assets-first approval gate"
+          # No --force; a changed PR branch or rejected push must stop.
+          git -C "$branch_path" push origin HEAD:refs/heads/release/pt-lite-html-phase13
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "5c947b5bca83d502d004539c50b54ceaaf9709a1"
+          echo "PHASE13_STAGED_HTML_BRANCH_READY (MAIN UNTOUCHED)"
+      - name: Preserve read-only Phase13 safety and browser reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase13-staged-review-audit
+          path: |
+            phase13-staged-release/phase13-preflight.json
+            phase11-pages-package/browser-report.json
+            phase11-pages-package/manifest.json
+          retention-days: 14
+          if-no-files-found: warn
