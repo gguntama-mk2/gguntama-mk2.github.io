@@ -1,0 +1,236 @@
+name: PROJECT T Lite Phase22 - Deferred Technique JS and Move Masks (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase21-font-delivery-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase22-test-only
+  cancel-in-progress: true
+jobs:
+  phase22-lazy-sheet-regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Checkout test PR only, no write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check no production branch, static syntax and test fixtures
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html
+          node --check tools/pt_lite_phase20_unicode_css.mjs
+          node --check tools/pt_lite_phase21_optimize.mjs
+          node --check tools/pt_lite_phase21_perf.mjs
+          node --check tools/pt_lite_phase21_visual.mjs
+          node --check tools/pt_lite_phase21_characters.mjs
+          node --check tools/pt_lite_phase21_intent.mjs
+          node --check tools/pt_lite_phase22_split.mjs
+          node --check tools/pt_lite_phase22_perf.mjs
+          node --check tools/pt_lite_phase22_visual.mjs
+          node --check tools/pt_lite_phase22_characters.mjs
+          node --check tools/pt_lite_phase22_integrity.mjs
+          node --check tools/pt_lite_phase22_intent.mjs
+          node --check tools/pt_lite_phase20_perf.mjs
+          node --check tools/pt_lite_phase20_visual.mjs
+          node --check tools/pt_lite_phase20_characters.mjs
+          python3 -m py_compile tools/pt_lite_phase18_font_split.py
+          node --check admin.js
+          node --check tests/admin-all-tabs-mobile.cjs
+      - name: Install isolated browser and local font/image utilities
+        run: |
+          npm install --no-save playwright terser sharp
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Rebuild passing Phase19 from source into disposable test copies
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance phase18-performance phase19-performance phase20-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          cp -a phase17-performance/optimized-site phase18-performance/baseline-site
+          cp -a phase17-performance/optimized-site phase18-performance/optimized-site
+          node tools/pt_lite_phase18_glyphs.mjs
+          python3 tools/pt_lite_phase18_font_split.py
+          node tools/pt_lite_phase18_avif.mjs
+          cp -a phase18-performance/optimized-site phase19-performance/baseline-site
+          cp -a phase18-performance/optimized-site phase19-performance/optimized-site
+          node tools/pt_lite_phase19_css.mjs
+          cp -a phase19-performance/optimized-site phase20-performance/baseline-site
+          cp -a phase19-performance/optimized-site phase20-performance/optimized-site
+      - name: Compact disjoint unicode-range CSS and add navigation intent hint
+        run: |
+          node tools/pt_lite_phase20_unicode_css.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase20-performance/unicode-css-report.json').read_text())
+          assert r['passed'] and r['allOriginalCodepointsRetained'],r
+          assert r['homeInteractionHint'] and r['fontBinaryFilesUntouched'],r
+          assert r['cssBytesSaved']>0,r
+          assert sum(x['supportedCodepoints'] for x in r['faces'])==1674,r
+          print('PHASE20_CSS_COMPRESSION_PASS',r['oldCssBytes'],r['newCssBytes'])
+          PY
+      - name: Build Phase21 from independently reconstructed Phase20 golden test site
+        run: |
+          mkdir -p phase21-performance
+          cp -a phase20-performance/optimized-site phase21-performance/baseline-site
+          cp -a phase20-performance/optimized-site phase21-performance/optimized-site
+          node tools/pt_lite_phase21_optimize.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase21-performance/css-delivery-report.json').read_text())
+          assert r['passed'],r
+          assert r['css']['exactOnDemandCodepoints']==1038,r
+          assert r['css']['unchangedFontFiles'] and r['css']['removedOnlyRedundantDefaultDescriptors'],r
+          assert r['css']['savedBytes']>=60,r
+          assert r['html']['pc']['savedBytes']>200 and r['html']['sp']['savedBytes']>200,r
+          print('PHASE21_DELIVERY_GENERATION_PASS',r['css'],r['html'])
+          PY
+      - name: Isolate passing Phase21 baseline and split duplicate masks from Phase22 test copy
+        run: |
+          mkdir -p phase22-performance
+          cp -a phase21-performance/optimized-site phase22-performance/baseline-site
+          cp -a phase21-performance/optimized-site phase22-performance/optimized-site
+          node tools/pt_lite_phase22_split.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase22-performance/js-split-report.json').read_text())
+          assert r['passed'],r.get('errors')
+          for d in ('pc','sp'):
+            x=r['devices'][d]
+            assert x['characters']==44 and x['originalKeys']==9569,x
+            assert x['savedBytes']>=50000,x
+            assert x['sourceVsCharacterJSONVerified'],x
+          print('PHASE22_TECHNIQUE_DATA_SPLIT_PASS',r['devices'])
+          PY
+      - name: Benchmark Phase21 reference (PC, smartphone and 4G)
+        run: node tools/pt_lite_phase22_perf.mjs --site=phase22-performance/baseline-site --out=phase22-performance/baseline-network.json
+      - name: Benchmark Phase22 deferred technique masks (PC, smartphone and 4G)
+        run: node tools/pt_lite_phase22_perf.mjs --site=phase22-performance/optimized-site --out=phase22-performance/optimized-network.json
+      - name: Validate true cold/home font CSS savings, lazy routing and exact assets
+        run: |
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('phase22-performance')
+          base=p/'baseline-site'
+          target=p/'optimized-site'
+          r=json.loads((p/'js-split-report.json').read_text())
+          a=json.loads((p/'baseline-network.json').read_text())
+          b=json.loads((p/'optimized-network.json').read_text())
+          assert r['passed'] and a['passed'] and b['passed']
+          assert r['passed'] and r['devices']['pc']['savedBytes']>50000 and r['devices']['sp']['savedBytes']>50000
+          for folder,pattern,minimum in [
+            ('assets/data','*.json',44),
+            ('assets/media','*.webp',1),
+            ('assets/media','*.woff2',1),
+            ('icons','*.webp',1),
+            ('assets/pxstore','*.avif',1)]:
+            original=base/folder
+            if not original.exists():
+              assert minimum==0,(folder,'missing')
+              continue
+            files=list(original.rglob(pattern))
+            assert len(files)>=minimum,(folder,len(files))
+            for f in files:
+              other=target/f.relative_to(base)
+              assert other.is_file() and hashlib.sha256(f.read_bytes()).digest()==hashlib.sha256(other.read_bytes()).digest(),str(f)
+          measurements={}
+          for profile in a['devices']:
+            for dev in ('pc','sp'):
+              before=a['devices'][profile][dev]
+              after=b['devices'][profile][dev]
+              b_home=before['coldHome']['network']['transferBytes']
+              n_home=after['coldHome']['network']['transferBytes']
+              b_sheet=before['sheet']['network']['transferBytes']
+              n_sheet=after['sheet']['network']['transferBytes']
+              typ0=before['sheet']['network']['bytesByType']
+              typ1=after['sheet']['network']['bytesByType']
+              assert b_home-n_home>=50000,(profile,dev,'eager technique JavaScript savings missing',b_home,n_home)
+              assert after['coldHome']['performance']['loadedCharacters']==[],(profile,dev,'eager character JSON')
+              assert after['coldHome']['performance']['loadedRoutes']==[],(profile,dev,'eager feature')
+              assert after['warmHome']['network']['transferBytes']<=1500,(profile,dev,'cache regression')
+              for kind in ('Font','Fetch'):
+                assert typ1.get(kind,0)==typ0.get(kind,0),(profile,dev,kind,typ0,typ1)
+              css_saved=typ0.get('Stylesheet',0)-typ1.get('Stylesheet',0)
+              assert abs(css_saved)<=200,(profile,dev,'unexpected stylesheet change',css_saved,r)
+              # The same character JSON and WOFF2 must be read at sheet open.
+              assert n_sheet<=b_sheet+30000,(profile,dev,'unexpected sheet transfer regression',b_sheet,n_sheet)
+              image_variance=typ1.get('Image',0)-typ0.get('Image',0)
+              assert abs(image_variance)<=90000,(profile,dev,'unexpected image variance',image_variance)
+              measurements[profile+'-'+dev]={
+                'homeBeforeBytes':b_home,'homeAfterBytes':n_home,
+                'sheetBeforeBytes':b_sheet,'sheetAfterBytes':n_sheet,
+                'sheetCssBytesSaved':css_saved,'imageVarianceBytes':image_variance,
+                'homeSavedBytes':b_home-n_home,
+                'homeBeforeMs':before['coldHome']['elapsedMs'],
+                'homeAfterMs':after['coldHome']['elapsedMs'],
+                'sheetBeforeMs':before['sheet']['elapsedMs'],
+                'sheetAfterMs':after['sheet']['elapsedMs'],
+                'cacheBytes':after['warmHome']['network']['transferBytes']}
+          (p/'network-compare.json').write_text(json.dumps(measurements,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE22_NETWORK_COMPARE',json.dumps(measurements,ensure_ascii=False))
+          print('PHASE22_ALL_ASSETS_IDENTITY_PASS')
+          PY
+      - name: Compare PC and smartphone screenshot parity after font load
+        run: node tools/pt_lite_phase22_visual.mjs
+      - name: Verify all 44 character sheets, original counts and both font shards
+        run: node tools/pt_lite_phase22_characters.mjs
+      - name: Verify direct /#sheet, SHA256 tamper rejection and original JSON retry
+        run: node tools/pt_lite_phase22_integrity.mjs
+      - name: Verify pointer hover, keyboard focus, touch and keypress prewarm without eager home fonts
+        run: node tools/pt_lite_phase22_intent.mjs
+      - name: Regression tests for PC/SP move data, persistence, mocked APIs and admin UI
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase22-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
+      - name: Final gate - all reports green, no deployment
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for name in (
+            'phase22-performance/js-split-report.json',
+            'phase22-performance/integrity-report.json',
+            'phase22-performance/intent-prewarm.json',
+            'phase22-performance/visual-report.json',
+            'phase22-performance/44-character-audit.json',
+            'phase11-pages-package/browser-report.json',
+            'phase12-release-audit/phase12-api-mock-browser.json'):
+            r=json.loads(Path(name).read_text())
+            assert r['passed'],(name,r.get('errors'),r.get('failures'))
+          print('PHASE22_TEST_ONLY_ALL_PASS')
+          PY
+      - name: Upload Phase22 audit and screen comparisons, test only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase22-unicode-css-audit
+          path: |
+            phase22-performance/*.json
+            phase22-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Upload Phase22 isolated website, never deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase22-optimized-site-test-only
+          path: phase22-performance/optimized-site/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
