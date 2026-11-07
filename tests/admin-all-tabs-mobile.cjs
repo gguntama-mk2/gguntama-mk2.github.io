@@ -173,10 +173,31 @@ const fixtures = (u) => {
           }
           await page.keyboard.press("Escape");
           assert(!(await modal.isVisible()),"Escape closes research detail");
+          if(width===390){
+            const filterStatus=priority.locator(".pt-cloud-filter-label select").nth(1);
+            await filterStatus.selectOption("investigating");
+            assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Review status filter");
+            await filterStatus.selectOption("all");
+            const [csv]=await Promise.all([
+              page.waitForEvent("download"),priority.locator(".pt-cloud-list-actions button").click()
+            ]);
+            assert(csv.suggestedFilename().endsWith(".csv"),"Filtered CSV is downloadable");
+          }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
           assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて開く"}).click();
           assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),4,"Expand all sections");
+          if(width===390){
+            const compare=page.locator('#secCloud details[data-cloud-panel="sync"] .pt-cloud-compare');
+            assert((await compare.innerText()).includes("追加された上位ID"),"Snapshot difference visible");
+            const [diffCsv]=await Promise.all([
+              page.waitForEvent("download"),compare.getByRole("button",{name:"差分をCSV出力"}).click()
+            ]);
+            assert(diffCsv.suggestedFilename().endsWith("-diff.csv"),"Difference CSV can be exported");
+            const coverage=page.locator('#secCloud details[data-cloud-panel="crossPriority"] select').last();
+            await coverage.selectOption("single");
+            assert.equal(await page.locator('#secCloud details[data-cloud-panel="crossPriority"] .pt-cloud-id-button').count(),1,"Coverage filtering");
+          }
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて閉じる"}).click();
           assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),0,"Collapse all sections");
           await cross.locator("summary").click();
