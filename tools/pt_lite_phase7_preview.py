@@ -55,7 +55,7 @@ guard=r'''/* PROJECT T staging proxy safety: no production login/API operations.
 })();
 '''
 (assets/"pt-preview-guard.js").write_text(guard,"utf-8")
-report={"mode":"test-only","proxy":"raw.githack.com","preview_branch":"project-t-preview-20261107","html":{},"real_auth_disabled":True,"api_calls_mocked":True}
+report={"mode":"test-only","proxy":"githubraw.com","preview_branch":"project-t-preview-20261107","html":{},"real_auth_disabled":True,"api_calls_mocked":True}
 for device in ("pc","sp"):
  p=base/(device+".html")
  html=p.read_text("utf-8")
@@ -68,7 +68,7 @@ for device in ("pc","sp"):
  if tag not in html:
   if "<head>" not in html:raise ValueError("Missing html head "+device)
   html=html.replace("<head>","<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n"+tag,1)
-  p.write_text(html,"utf-8")
+ p.write_text(html,"utf-8")
  report["html"][device]={"bytes":p.stat().st_size,"guard":True}
 (base/"assets"/"data"/"phase7-preview-build.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n","utf-8")
 print(json.dumps(report,ensure_ascii=False,indent=2))
