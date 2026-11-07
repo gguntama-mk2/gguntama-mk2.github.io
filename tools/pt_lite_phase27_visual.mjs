@@ -69,7 +69,8 @@ async function capture(port,dev,route){
     return r.width>0&&r.height>0&&r.top<innerHeight&&r.bottom>0&&r.left<innerWidth&&r.right>0&&s.visibility!=='hidden'&&s.display!=='none';
    }).map(img=>Promise.race([img.decode().catch(()=>{}),new Promise(res=>setTimeout(res,5000))])));
   });
-  if(route==='sheet-middle'){await page.locator(dev==='pc'?'#body tr[data-k]':'#list .card[data-i]').nth(113).scrollIntoViewIfNeeded({timeout:30000});await page.evaluate(()=>document.fonts.ready);}\n  if(route==='sheet-bottom'){
+  if(route==='sheet-middle'){await page.locator(dev==='pc'?'#body tr[data-k]':'#list .card[data-i]').nth(113).scrollIntoViewIfNeeded({timeout:30000});await page.evaluate(()=>document.fonts.ready);} 
+  if(route==='sheet-bottom'){
     await page.locator(dev==='pc'?'#body tr[data-k]':'#list .card[data-i]').last().scrollIntoViewIfNeeded({timeout:30000});
     await page.evaluate(()=>document.fonts.ready);
   }
