@@ -37,7 +37,7 @@ try{
     loaded:PT_SHEET_RUNTIME.state().loaded,
     theme:document.documentElement.getAttribute('data-theme'),
     loadedCharacterJSON:PT_CHAR_DATA.loaded(),
-    hasIcon:!!window.PTMoveIcons,hasVideo:!!window.PTMoveMedia,
+    hasIcon:!!window.PTIcons,hasVideo:!!window.PTMoveMedia,
     boot:window.PT23_BOOT?.ready}));
    if(idle.characterCount!==44||idle.loaded||idle.hasIcon||idle.hasVideo||!idle.boot||
       idle.theme!=='jade'||idle.loadedCharacterJSON.length)
@@ -50,7 +50,7 @@ try{
    await page.waitForFunction(dev=>dev==='pc'
     ?document.querySelectorAll('#body tr[data-k]').length===228
     :document.querySelectorAll('#list .card[data-i]').length===228,dev,{timeout:60000});
-   const sheet=await page.evaluate(()=>({icon:!!window.PTMoveIcons,
+   const sheet=await page.evaluate(()=>({icon:!!window.PTIcons,
     video:!!window.PTMoveMedia,
     loaded:PT_SHEET_RUNTIME.state().loaded,
     loadedJSON:PT_CHAR_DATA.loaded(),
