@@ -65,7 +65,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: project-t-phase9-production-preview-diffs
-          path: phase9-compare-screenshots/
+          path: |
+            phase9-compare-screenshots/
+            test-litev1/assets/data/phase9-production-vs-preview.json
           if-no-files-found: ignore
           retention-days: 7
       - name: Save comparison report only to test branch
@@ -74,11 +76,15 @@ jobs:
           if test -f test-litev1/assets/data/phase9-production-vs-preview.json; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            # CI may run from an older test-branch SHA. Keep the latest report,
+            # reset this ephemeral runner to branch tip, then commit only that report.
+            cp test-litev1/assets/data/phase9-production-vs-preview.json /tmp/pt-phase9-parity.json
+            git fetch origin project-t-preview-20261107
+            git reset --hard origin/project-t-preview-20261107
+            cp /tmp/pt-phase9-parity.json test-litev1/assets/data/phase9-production-vs-preview.json
             git add test-litev1/assets/data/phase9-production-vs-preview.json
             if ! git diff --cached --quiet; then
               git commit -m "test: phase9 production/preview UI comparison report"
-              git fetch origin project-t-preview-20261107
-              git rebase origin/project-t-preview-20261107
               git push origin HEAD:project-t-preview-20261107
             fi
           fi
