@@ -35,7 +35,7 @@ async function check(page, width) {
   await page.goto("http://127.0.0.1:" + server.address().port + "/admin.html");
   await page.locator("#tabs:not([hidden])").waitFor();
   await page.locator('button[data-tab="users"]').click();
-  await page.locator(".pt-user-card").first().waitFor();
+  await page.locator(".pt-user-card").first().waitFor({ state: "attached" });
   await page.waitForFunction(() => document.querySelectorAll(".pt-user-card").length === 2);
   const measurements = await page.evaluate(() => {
     const first = document.querySelector(".pt-user-card");
