@@ -42,7 +42,7 @@ async function test(device){
   const response=await page.goto(ROOT+device+'.html#home',{waitUntil:'load',timeout:65000});
   await page.waitForFunction(()=>!!window.PT_ROUTE_ASSETS&&!!window.PT_CHAR_DATA,{timeout:30000});
   await pause(950);
-  const home=await page.evaluate(()=>{
+  const home=await page.evaluate(device=>{
     return {
       title:document.title,
       preview:!!window.__PROJECT_T_PREVIEW,
@@ -56,7 +56,7 @@ async function test(device){
       jsResources:performance.getEntriesByType('resource').filter(n=>n.name.includes('/assets/js/')).map(n=>new URL(n.name).searchParams.get('v')),
       sourceIntegrity:document.querySelector('script[src*="/' + device + '_04.js"]')?.getAttribute('src')||''
     };
-  });
+  },device);
   assert.equal(response.status(),200,'HTML');
   assert.ok(!home.preview&&!home.banner&&!/noindex/.test(home.robots),'no preview interlock in release');
   assert.ok(/^[a-z0-9-]{7,20}$/i.test(home.version),'release version embedded');
