@@ -1,0 +1,32 @@
+name: PROJECT T Stage7 Static Proxy Diagnostics
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - tools/pt_lite_phase7_proxy_probe.py
+      - .github/workflows/pt-lite-phase7-proxy.yml
+concurrency:
+  group: project-t-proxy-probe
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public origin HTTP responses
+        run: python3 tools/pt_lite_phase7_proxy_probe.py
+      - name: Save HTTP probe report only to test branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/assets/data/phase7-proxy-probe.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: stage7 public proxy diagnostics"
+            git fetch origin project-t-preview-20261107
+            git rebase origin/project-t-preview-20261107
+            git push origin HEAD:project-t-preview-20261107
+          fi
