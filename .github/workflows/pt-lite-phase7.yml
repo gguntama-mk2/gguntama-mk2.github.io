@@ -1,0 +1,102 @@
+name: PROJECT T Live Preview HTTPS - TEST ONLY
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - tools/pt_lite_phase7_preview.py
+      - tools/pt_lite_phase7_https_check.mjs
+      - .github/workflows/pt-lite-phase7.yml
+concurrency:
+  group: project-t-live-preview-phase7
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  live-preview:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated preview HTML without touching real Pages
+        run: |
+          python3 tools/pt_lite_phase7_preview.py
+          node --check test-litev1/assets/js/pt-preview-guard.js
+      - name: Publish only to the dedicated preview branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/pc.html test-litev1/sp.html test-litev1/assets/js/pt-preview-guard.js test-litev1/assets/data/phase7-preview-build.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: build safe third-party preview (not Pages)"
+            git fetch origin project-t-preview-20261107
+            git rebase origin/project-t-preview-20261107
+            git push origin HEAD:project-t-preview-20261107
+          fi
+      - name: Verify public preview is live with the correct HTML MIME
+        run: |
+          set -e
+          for device in pc sp; do
+            url="https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/${device}.html"
+            echo "Checking preview ${device}"
+            for attempt in 1 2 3 4 5 6; do
+              curl -fsSL --max-time 25 --compressed "${url}" -o "/tmp/pt-preview-${device}.html" || true
+              if grep -q "pt-preview-guard.js" "/tmp/pt-preview-${device}.html"; then break; fi
+              sleep 10
+            done
+            grep -q "pt-preview-guard.js" "/tmp/pt-preview-${device}.html"
+            curl -fsSI --max-time 25 "${url}" | grep -i '^content-type:.*text/html'
+          done
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Exercise real HTTPS preview and browser cache
+        run: |
+          set +e
+          node tools/pt_lite_phase7_https_check.mjs > /tmp/pt-lite-phase7.log 2>&1
+          rc=$?
+          set -e
+          tail -c 12000 /tmp/pt-lite-phase7.log
+          test -f test-litev1/assets/data/phase7-public-preview-report.json
+          echo "Preview test script exit status: $rc"
+      - name: Save preview report back to test branch
+        if: always()
+        run: |
+          if [ -f test-litev1/assets/data/phase7-public-preview-report.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add test-litev1/assets/data/phase7-public-preview-report.json
+            if ! git diff --cached --quiet; then
+              git commit -m "test: measured HTTPS preview checks"
+              git fetch origin project-t-preview-20261107
+              git rebase origin/project-t-preview-20261107
+              git push origin HEAD:project-t-preview-20261107
+            fi
+          fi
+      - name: Upload preview screenshot samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pt-phase7-preview-screenshots
+          path: phase7-preview-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Enforce HTTPS browser validation
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('test-litev1/assets/data/phase7-public-preview-report.json').read_text())
+          assert r['passed'],r['issues']
+          assert set(r['devices'])=={'pc','sp'}
+          for device,d in r['devices'].items():
+              assert d['initial']['http_status']==200
+              assert 'text/html' in d['initial']['html_content_type']
+              assert not d['jsErrors']
+              assert not d['httpErrors']
+              assert d['apiGuard']['status']==401
+              assert d['vs']['present']
+          print('HTTPS preview verified for PC and smartphone without deploying GitHub Pages.')
+          PY
