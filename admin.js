@@ -109,7 +109,10 @@
       return showMsg("サーバーにつながりませんでした", "しばらくしてから、もう一度開いてください。（" + e.message + "）");
     }
     if (!S.me.is_admin) return showMsg("このページは管理者専用です", "このアカウントには管理者の権限がありません。");
-    $("#who").textContent = "ログイン中：" + (S.me.display_name || "（名前なし）") + "　PROJECT T ID " + S.me.project_t_id;
+    $("#who").replaceChildren(
+      h("span", { class: "who-name", text: "ログイン中：" + (S.me.display_name || "（名前なし）") }),
+      h("span", { class: "who-id", text: "PROJECT T ID " + S.me.project_t_id }),
+      copyUserIdButton(S.me.project_t_id, "PROJECT T IDをコピー"));
     $("#tabs").hidden = false;
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
     app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.cloud);
@@ -597,39 +600,165 @@
   }
 
   // ------------------------------------------------------------ 管理者の一覧
-  var usersNote = function (kind, text) { if (S.usersMsg) S.usersMsg.replaceChildren(text ? h("div", { class: "banner " + kind, text: text }) : ""); };
-  async function loadUsers(q, keepNote) {
-    var box = sec.users, note = keepNote && S.usersMsg ? S.usersMsg.firstChild : null;
-    box.replaceChildren(h("div", { class: "muted", text: "読み込み中…" }));
+  // Desktop: comparison table / Mobile: each account as a full-width card.
+  // Keeping the toolbar mounted preserves the keyboard/focus while filtering on phones.
+  var USERS_PAGE_SIZE = 50, usersRequest = 0, usersSearchTimer = null;
+  var usersNote = function (kind, text) {
+    if (S.usersMsg) S.usersMsg.replaceChildren(text ? h("div", { class: "banner " + kind, text: text }) : "");
+  };
+  async function copyAdminText(value, button) {
     try {
-      var r = await api("/api/v1/admin/users?limit=100" + (q ? "&q=" + encodeURIComponent(q) : ""));
-      var idIn = h("input", { id: "grantId", placeholder: "PROJECT T ID（36文字）を貼って管理者にする", style: "flex:1 1 220px;max-width:420px" });
-      var tbl = h("table", null, h("thead", null, h("tr", null, ["PROJECT T ID", "TEKKEN ID", "連携状態", "名前", "ログイン方法", "登録日", "権限", ""].map(function (t) { return h("th", { text: t }); }))));
-      var tb = h("tbody");
-      r.users.forEach(function (u) {
-        var mine = u.project_t_id === S.me.project_t_id;
-        tb.appendChild(h("tr", null, h("td", null, h("code", { text: u.project_t_id })),
-          h("td", null, u.tekken_id ? h("code", { text: u.tekken_id }) : h("span", { class: "muted", text: "未連携" })),
-          h("td", null, u.tekken_id ? h("span", { class: u.tekken_id_enabled ? "badge pub" : "badge stale", text: u.tekken_id_enabled ? "有効" : "無効" }) : h("span", { class: "muted", text: "—" })),
-          h("td", { text: u.display_name || "" }), h("td", { text: u.providers.join("・") }), h("td", { text: fmtAt(u.created_at) }),
-          h("td", null, u.is_admin ? h("span", { class: "badge pub", text: "管理者" }) : h("span", { class: "muted", text: "一般" })),
-          h("td", null, u.is_admin
-            ? h("button", { type: "button", class: "btn danger", "data-revoke": u.project_t_id, text: "管理者を解除", disabled: mine, title: mine ? "自分自身の権限は外せません" : "", onclick: function () { changeRole(u.project_t_id, "revoke"); } })
-            : h("button", { type: "button", class: "btn", "data-grant": u.project_t_id, text: "管理者にする", onclick: function () { changeRole(u.project_t_id, "grant"); } }))));
-      });
-      tbl.appendChild(tb);
-      S.usersMsg = h("div", { id: "usersMsg", role: "status" });
-      if (note) S.usersMsg.appendChild(note);
-      var warn = [];
-      if (r.admins < 2) warn.push(h("div", { class: "banner warn", id: "adminCountWarn", text: "管理者が" + r.admins + "人だけです。万一のため、予備の管理者（Backup Admin）をもう1人置くことをおすすめします。" }));
-      box.replaceChildren(h("div", { class: "card" }, h("div", { class: "row" }, h("b", { text: "管理者の管理" }), h("span", { class: "muted", text: "管理者 " + r.admins + " 人／登録 " + r.total + " 人。自分自身と、最後の1人の管理者は外せません。" })),
-        warn, S.usersMsg,
-        h("div", { class: "muted", text: "運用ルール：管理者のアカウント（Discord／Google）は二段階認証（2FA）を必ず有効にする／アカウントを共有しない／必要以上に管理者を増やさない。" }),
-        h("div", { class: "row", style: "margin:8px 0" }, h("input", { type: "search", placeholder: "PROJECT T ID・TEKKEN ID・名前で検索", style: "max-width:320px", onchange: function (ev) { loadUsers(ev.target.value.trim()); } }), idIn,
-          h("button", { type: "button", class: "btn", id: "grantBtn", text: "付与", onclick: function () { var v = idIn.value.trim(); if (v) changeRole(v, "grant"); } })), h("div", { class: "tw" }, tbl)));
-    } catch (e) { box.replaceChildren(h("div", { class: "banner err", text: e.message })); }
+      if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(value);
+      button.textContent = "コピー済み";
+      button.setAttribute("aria-label", "コピーしました");
+      setTimeout(function () {
+        if (button.isConnected) { button.textContent = "コピー"; button.setAttribute("aria-label", "IDをコピー"); }
+      }, 1600);
+    } catch (_) { usersNote("err", "コピーできませんでした。IDを長押ししてコピーしてください。"); }
   }
-  // 付与・解除の前に、対象のアカウントの情報（PROJECT T ID・表示名・Discord・Google）をサーバーから取り直して見せる
+  function copyUserIdButton(value, label) {
+    var b = h("button", { type: "button", class: "btn pt-copy", "aria-label": label, title: label,
+      text: "コピー", onclick: function () { copyAdminText(value, b); } });
+    return b;
+  }
+  function identityStatus(u) {
+    if (!u.tekken_id) return h("span", { class: "badge", text: "未連携" });
+    return h("span", { class: u.tekken_id_enabled ? "badge pub" : "badge stale", text: u.tekken_id_enabled ? "有効" : "無効" });
+  }
+  function roleAction(u, mine) {
+    if (u.is_admin && mine)
+      return h("button", { type: "button", class: "btn", disabled: true, title: "自分自身の管理者権限は解除できません", text: "自分の権限は変更不可" });
+    return u.is_admin
+      ? h("button", { type: "button", class: "btn danger", "data-revoke": u.project_t_id, text: "管理者を解除",
+          onclick: function () { changeRole(u.project_t_id, "revoke"); } })
+      : h("button", { type: "button", class: "btn", "data-grant": u.project_t_id, text: "管理者にする",
+          onclick: function () { changeRole(u.project_t_id, "grant"); } });
+  }
+  function userField(label, content, extraClass) {
+    return h("div", { class: "pt-user-field" + (extraClass ? " " + extraClass : "") },
+      h("dt", { text: label }), h("dd", null, content));
+  }
+  function userCard(u) {
+    var mine = u.project_t_id === S.me.project_t_id;
+    return h("article", { class: "pt-user-card", "aria-label": (u.display_name || "名前なし") + " のアカウント" },
+      h("div", { class: "pt-user-head" },
+        h("div", null, h("div", { class: "pt-user-name", text: u.display_name || "（名前なし）" }),
+          mine ? h("div", { class: "pt-user-self", text: "ログイン中のアカウント" }) : null),
+        h("span", { class: u.is_admin ? "badge pub" : "badge", text: u.is_admin ? "管理者" : "一般" })),
+      h("dl", { class: "pt-user-fields" },
+        userField("TEKKEN ID", h("div", { class: "pt-user-id-row" },
+          u.tekken_id ? h("code", { text: u.tekken_id }) : h("span", { class: "muted", text: "未連携" }),
+          u.tekken_id ? identityStatus(u) : null,
+          u.tekken_id ? copyUserIdButton(u.tekken_id, "TEKKEN IDをコピー") : null)),
+        userField("PROJECT T ID", h("div", { class: "pt-user-id-row" },
+          h("code", { text: u.project_t_id }), copyUserIdButton(u.project_t_id, "PROJECT T IDをコピー"))),
+        h("div", { class: "pt-user-extra" },
+          userField("ログイン方法", u.providers && u.providers.length ? u.providers.join("・") : "不明"),
+          userField("登録日", fmtAt(u.created_at) || "不明"))),
+      h("div", { class: "pt-user-action" }, roleAction(u, mine)));
+  }
+  function userRow(u) {
+    var mine = u.project_t_id === S.me.project_t_id;
+    return h("tr", null,
+      h("td", null, h("code", { text: u.project_t_id })),
+      h("td", null, u.tekken_id ? h("code", { text: u.tekken_id }) : h("span", { class: "muted", text: "未連携" })),
+      h("td", null, identityStatus(u)),
+      h("td", { text: u.display_name || "（名前なし）" }),
+      h("td", { text: (u.providers || []).join("・") }),
+      h("td", { text: fmtAt(u.created_at) }),
+      h("td", null, h("span", { class: u.is_admin ? "badge pub" : "badge", text: u.is_admin ? "管理者" : "一般" })),
+      h("td", null, roleAction(u, mine)));
+  }
+  function buildUsersUI() {
+    var input = h("input", { type: "search", id: "ptUsersSearch", autocomplete: "off",
+      placeholder: "PROJECT T ID・TEKKEN ID・名前", "aria-label": "ユーザーを検索",
+      oninput: function (ev) {
+        S.usersQuery = ev.target.value.trim();
+        S.usersOffset = 0;
+        clearTimeout(usersSearchTimer);
+        usersSearchTimer = setTimeout(function () { loadUsers(); }, 320);
+      },
+      onkeydown: function (ev) {
+        if (ev.key === "Enter") {
+          ev.preventDefault(); clearTimeout(usersSearchTimer);
+          S.usersQuery = ev.target.value.trim(); S.usersOffset = 0;
+          loadUsers();
+        }
+      } });
+    input.value = S.usersQuery || "";
+    var grantInput = h("input", { type: "text", id: "grantId", autocomplete: "off",
+      placeholder: "PROJECT T ID（36文字）", "aria-label": "管理者にするPROJECT T ID" });
+    var grantBtn = h("button", { type: "button", class: "btn", id: "grantBtn", text: "管理者権限を付与",
+      onclick: function () { var v = grantInput.value.trim(); if (v) changeRole(v, "grant"); } });
+    grantInput.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); grantBtn.click(); } });
+    var counter = h("span", { class: "pt-users-count" });
+    var warning = h("div", { class: "banner warn", id: "adminCountWarn", hidden: true });
+    var message = h("div", { id: "usersMsg", role: "status", "aria-live": "polite" });
+    var resultLabel = h("p", { class: "pt-users-result-label", role: "status" });
+    var tableBody = h("tbody");
+    var table = h("table", { "aria-label": "管理者とTEKKEN IDの一覧" },
+      h("thead", null, h("tr", null,
+        ["PROJECT T ID", "TEKKEN ID", "連携状態", "名前", "ログイン方法", "登録日", "権限", "操作"].map(function (t) { return h("th", { text: t }); }))),
+      tableBody);
+    var cards = h("div", { class: "pt-users-cards", "aria-label": "ユーザー一覧" });
+    var empty = h("p", { class: "pt-users-empty", hidden: true, text: "該当するユーザーはいません。" });
+    var pages = h("div", { class: "pt-users-pagination" });
+    S.usersMsg = message;
+    S.usersUI = { search: input, count: counter, warn: warning, msg: message,
+      label: resultLabel, tbody: tableBody, cards: cards, empty: empty, pages: pages };
+    sec.users.replaceChildren(h("div", { class: "card" },
+      h("div", { class: "pt-users-title" }, h("h2", { text: "ユーザー管理" }), counter),
+      warning, message,
+      h("div", { class: "pt-users-controls" },
+        h("div", { class: "pt-users-search" }, h("label", { for: "ptUsersSearch", text: "ユーザーを検索" }), input),
+        h("details", { class: "pt-users-grant" },
+          h("summary", { text: "管理者を追加する" }),
+          h("div", { class: "row" }, grantInput, grantBtn))),
+      h("details", { class: "pt-users-policy" },
+        h("summary", { text: "管理者の運用ルール" }),
+        h("p", { text: "管理者アカウントは二段階認証（2FA）を有効にし、アカウントを共有せず、必要以上に権限を付与しないでください。自分自身と最後の管理者は解除できません。" })),
+      resultLabel,
+      h("div", { class: "pt-users-desktop tw" }, table), cards, empty, pages));
+  }
+  async function loadUsers(q, keepNote, offset) {
+    if (!S.usersUI) buildUsersUI();
+    if (typeof q === "string") {
+      S.usersQuery = q.trim();
+      S.usersOffset = 0;
+      S.usersUI.search.value = q;
+    }
+    if (typeof offset === "number") S.usersOffset = Math.max(0, offset);
+    if (!keepNote) usersNote("", "");
+    var ui = S.usersUI, seq = ++usersRequest;
+    ui.label.textContent = "ユーザーを読み込み中…";
+    var query = (S.usersQuery || "").slice(0, 64), skip = S.usersOffset || 0;
+    try {
+      var url = "/api/v1/admin/users?limit=" + USERS_PAGE_SIZE + "&offset=" + skip + (query ? "&q=" + encodeURIComponent(query) : "");
+      var r = await api(url);
+      if (seq !== usersRequest) return;
+      ui.count.textContent = query ? "検索結果 " + r.total + " 人 ／ 管理者 " + r.admins + " 人" : "登録 " + r.total + " 人 ／ 管理者 " + r.admins + " 人";
+      ui.warn.hidden = r.admins >= 2;
+      if (!ui.warn.hidden) ui.warn.textContent = "管理者が" + r.admins + "人だけです。予備の管理者をもう1人置くことをおすすめします。";
+      ui.tbody.replaceChildren.apply(ui.tbody, r.users.map(userRow));
+      ui.cards.replaceChildren.apply(ui.cards, r.users.map(userCard));
+      ui.empty.hidden = r.users.length !== 0;
+      ui.label.textContent = r.total ? (skip + 1) + "～" + (skip + r.users.length) + " 件を表示（全 " + r.total + " 件）" : "検索結果はありません";
+      var page = Math.floor(skip / USERS_PAGE_SIZE) + 1, totalPages = Math.max(1, Math.ceil(r.total / USERS_PAGE_SIZE));
+      ui.pages.replaceChildren(
+        h("button", { type: "button", class: "btn", disabled: skip === 0, text: "前のページ",
+          onclick: function () { loadUsers(undefined, false, skip - USERS_PAGE_SIZE); } }),
+        h("span", { class: "muted", text: page + " / " + totalPages + " ページ" }),
+        h("button", { type: "button", class: "btn", disabled: skip + r.users.length >= r.total, text: "次のページ",
+          onclick: function () { loadUsers(undefined, false, skip + USERS_PAGE_SIZE); } }));
+    } catch (e) {
+      if (seq === usersRequest) {
+        ui.label.textContent = "ユーザーを取得できませんでした";
+        usersNote("err", e.message);
+      }
+    }
+  }
+  // 付与・解除前には対象アカウントを必ずサーバーから読み直す。
   async function changeRole(pid, act) {
     var u;
     try { u = await api("/api/v1/admin/users/" + encodeURIComponent(pid)); }
@@ -638,6 +767,8 @@
     var others = (u.providers || []).filter(function (p) { return p !== "discord" && p !== "google"; });
     var dl = h("dl", { class: "who-dl", id: "targetInfo" },
       h("dt", { text: "PROJECT T ID" }), h("dd", null, h("code", { text: u.project_t_id })),
+      h("dt", { text: "TEKKEN ID" }), h("dd", { text: u.tekken_id || "未連携" }),
+      h("dt", { text: "連携状態" }), h("dd", { text: u.tekken_id ? (u.tekken_id_enabled ? "有効" : "無効") : "未連携" }),
       h("dt", { text: "表示名" }), h("dd", { text: u.display_name || "（名前なし）" }),
       h("dt", { text: "Discord" }), h("dd", { text: has("discord") }),
       h("dt", { text: "Google" }), h("dd", { text: has("google") }),
@@ -646,12 +777,12 @@
     if (act === "grant" && u.is_admin) return usersNote("ok", "このユーザーは、すでに管理者です。");
     if (act === "revoke" && !u.is_admin) return usersNote("ok", "このユーザーは、管理者ではありません。");
     var ok = act === "grant"
-      ? await confirmModal("管理者権限の付与", [MSG_GRANT_CONFIRM, dl, "管理者は、技チェックシートを編集して、一般公開に反映できます。付与する相手は、二段階認証（2FA）を有効にしたアカウントにしてください。"], "管理者権限を付与する", true)
+      ? await confirmModal("管理者権限の付与", [MSG_GRANT_CONFIRM, dl, "管理者は技チェックシートを編集・公開できます。付与先は二段階認証（2FA）を有効にしたアカウントにしてください。"], "管理者権限を付与する", true)
       : await confirmModal("管理者権限の解除", ["このユーザーから管理者権限を外しますか？", dl], "管理者権限を解除する", true);
     if (!ok) return;
     try {
-      var r = await api("/api/v1/admin/users/" + encodeURIComponent(u.project_t_id) + "/" + act, { method: "POST" });
-      usersNote("ok", r.changed ? (act === "grant" ? "管理者にしました。" : "管理者から外しました。") : "変更はありませんでした（すでにその状態です）。");
+      var result = await api("/api/v1/admin/users/" + encodeURIComponent(u.project_t_id) + "/" + act, { method: "POST" });
+      usersNote("ok", result.changed ? (act === "grant" ? "管理者にしました。" : "管理者から外しました。") : "変更はありませんでした（すでにその状態です）。");
     } catch (e) { usersNote("err", e.message); }
     loadUsers(undefined, true);
   }
