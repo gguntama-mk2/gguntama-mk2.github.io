@@ -7,6 +7,11 @@ import json
 BASE=Path("test-litev1/assets")
 JS=BASE/"js"
 report={"schema":5,"mode":"test-only","devices":{}}
+if (BASE/"data"/"phase5-home-defer.json").exists() and all(
+    "PT-HOME-DEFER" in (JS/(device+"_17.js")).read_text("utf-8") for device in ("pc","sp")
+):
+    print("Home-only lazy loading already applied; no duplicate observers added.")
+    raise SystemExit(0)
 for device in ("pc","sp"):
     src=JS/(device+"_04.js")
     data=src.read_text("utf-8")
