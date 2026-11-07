@@ -116,7 +116,26 @@ const fixtures = (u) => {
           }
         }
         if(tab==="media")await page.locator("#secMedia .pt-mobile-table tbody tr").first().waitFor();
-        if(tab==="cloud")await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
+        if(tab==="cloud"){
+          const accordion=page.locator("#secCloud details[data-cloud-panel]");
+          assert.equal(await accordion.count(),4,"Four independently collapsible analysis sections");
+          const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
+          const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
+          await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
+          assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
+          assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
+          await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて開く"}).click();
+          assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),4,"Expand all sections");
+          await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて閉じる"}).click();
+          assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),0,"Collapse all sections");
+          await cross.locator("summary").click();
+          assert(await cross.evaluate(node=>node.open),"Individual section opens independently");
+          assert(!(await priority.evaluate(node=>node.open)),"Other section stays collapsed");
+          await page.locator("#secCloud .pt-cloud-controls button", {hasText:"再読み込み"}).click();
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="1件");
+          assert(await cross.evaluate(node=>node.open),"Reload preserves opened sections");
+          assert(!(await priority.evaluate(node=>node.open)),"Reload preserves closed sections");
+        }
         if(tab==="audit")await page.locator("#secAudit .pt-mobile-table tbody tr").first().waitFor();
         if(mobile){
           const measure=await page.evaluate(()=>{
