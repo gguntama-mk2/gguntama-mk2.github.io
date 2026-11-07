@@ -1,0 +1,71 @@
+{
+  "mode": "test-only",
+  "providers": {
+    "github_raw": {
+      "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/plain; charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    },
+    "githack_dev": {
+      "url": "https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    },
+    "githack_immutable": {
+      "url": "https://rawcdn.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    },
+    "githubraw_dev": {
+      "url": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/html;charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    },
+    "githubraw_immutable": {
+      "url": "https://cdn.githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/html;charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    },
+    "jsdelivr": {
+      "url": "https://cdn.jsdelivr.net/gh/gguntama-mk2/gguntama-mk2.github.io@project-t-preview-20261107/test-litev1/pc.html",
+      "http_status": "200",
+      "content_type": "text/plain; charset=utf-8",
+      "bytes": 15058,
+      "html_signature": true,
+      "looks_like_site": true,
+      "head": "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n<script src=\"assets/js/pt-preview-guard.js\"></script>\n<meta charset=\"UTF-8\">\n<meta",
+      "curl_code": 0,
+      "stderr": ""
+    }
+  }
+}
