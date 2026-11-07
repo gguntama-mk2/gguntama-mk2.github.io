@@ -80,7 +80,8 @@ jobs:
           r=json.loads(Path('phase21-performance/css-delivery-report.json').read_text())
           assert r['passed'],r
           assert r['css']['exactOnDemandCodepoints']==1038,r
-          assert r['css']['unchangedFontFiles'],r
+          assert r['css']['unchangedFontFiles'] and r['css']['removedOnlyRedundantDefaultDescriptors'],r
+          assert r['css']['savedBytes']>=60,r
           assert r['html']['pc']['savedBytes']>200 and r['html']['sp']['savedBytes']>200,r
           print('PHASE21_DELIVERY_GENERATION_PASS',r['css'],r['html'])
           PY
