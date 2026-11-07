@@ -83,8 +83,24 @@ async function run(device){
     }
     await page.evaluate(()=>setPage('sheet'));
     await page.waitForFunction(d=>d==='pc'?document.querySelectorAll('#body tr[data-k]').length===228:document.querySelectorAll('#list .card[data-i]').length===228,device,{timeout:45000});
-    await page.waitForFunction(d=>d==='pc'?!!document.querySelector('#body tr[data-k="0"] button.pt-thumb')
-      :!!document.querySelector('#list .card[data-i="0"] button.pt-thumb'),device,{timeout:40000});
+    try{
+      await page.waitForFunction(d=>d==='pc'?!!document.querySelector('#body tr[data-k="0"] button.pt-thumb')
+      :!!document.querySelector('#list .card[data-i="0"] button.pt-thumb'),device,{timeout:12000});
+    }catch(_){
+      const diag=await page.evaluate(d=>{
+        const el=document.querySelector(d==='pc'?'#body tr[data-k="0"]':'#list .card[data-i="0"]');
+        const nm=el?.querySelector('.nt')?.textContent||'';
+        return {rowExists:!!el,name:nm,htmlSnippet:el?.outerHTML.slice(0,800),mockWithActual:window.PTMoveMedia?PTMoveMedia._mediaFor('alisa','0',nm):null,
+          mockWithExpected:window.PTMoveMedia?PTMoveMedia._mediaFor('alisa','0','リードジャブ'):null,
+          movieColumn:document.querySelectorAll('th.pt-mv').length,movieCells:document.querySelectorAll('td.pt-mv').length,
+          current:typeof current!=='undefined'?current:null,
+          charId:typeof C!=='undefined'&&C?.id?C.id:null,
+          status:window.PTOVR?.status,
+          modules:window.PT_ROUTE_ASSETS?.loaded(),scriptBase:window.PROJECT_T_AUTH_API_BASE};
+      },device);
+      console.log('THUMBNAIL_DIAG',device,JSON.stringify({diag,mockRoutes:requests.filter(x=>x.mock),blockedExternal:requests.filter(x=>x.blockedExternal),jsErrors}).slice(0,7500));
+      throw Error('no thumbnail: '+JSON.stringify(diag).slice(0,1500));
+    }
     const movie=await page.evaluate(device=>({
       rowCount:device==='pc'?document.querySelectorAll('#body tr[data-k]').length:document.querySelectorAll('#list .card[data-i]').length,
       movieHeader:document.querySelectorAll('#headRow th.pt-mv').length,
