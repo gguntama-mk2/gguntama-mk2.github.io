@@ -292,6 +292,7 @@
     const record=note(rev.updated_at?"最終更新："+new Date(rev.updated_at).toLocaleString("ja-JP"):"未記録");
     const feedback=el("p","","pt-cloud-dialog-feedback");feedback.setAttribute("role","status");
     const save=el("button","調査状況を保存","btn primary");save.type="button";
+    if(payload?.compat_mode){save.disabled=true;feedback.textContent="サーバー更新後に保存できます。";}
     save.addEventListener("click",async()=>{
       save.disabled=true;feedback.textContent="保存中…";
       try{
@@ -324,14 +325,28 @@
       try{
         const res=await fetch(API+"/api/v1/admin/cloud-analysis/workspace",{
           method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/json"}});
-        const data=await res.json().catch(()=>({}));
-        if(!res.ok)throw Error(typeof data.detail==="string"?data.detail:"HTTP "+res.status);
+        let data=await res.json().catch(()=>({}));
+        if(res.status===404){
+          // While the backend release is propagating, keep the prior read-only view usable.
+          const endpoints=[["bryan","/api/v1/admin/cloud-analysis"],
+            ["cross","/api/v1/admin/cloud-analysis/all-characters"]];
+          const legacy=await Promise.all(endpoints.map(async([scope,path])=>{
+            try{
+              const answer=await fetch(API+path,{credentials:"include",cache:"no-store"});
+              if(!answer.ok)throw Error("HTTP "+answer.status);
+              return [scope,await answer.json(),null];
+            }catch(err){return [scope,null,"取得できませんでした："+err.message];}
+          }));
+          data={reports:{},errors:{},reviews:[],history:{},compat_mode:true};
+          legacy.forEach(([scope,report,error])=>{if(report)data.reports[scope]=report;else data.errors[scope]=error;});
+        }else if(!res.ok)throw Error(typeof data.detail==="string"?data.detail:"HTTP "+res.status);
         payload=data;reviews={};(data.reviews||[]).forEach(v=>{reviews[reviewKey(v.scope,v.req_id)]=v;});
         lastFetch=Date.now();applyData();
         const present=Object.keys(data.reports||{}).length;
-        setMessage(present===2?"読み込み完了。未検証候補は確定情報ではありません。":
+        setMessage(data.compat_mode?"サーバー更新待ちです。解析の閲覧・検索は利用できますが、調査記録と差分履歴はまだ利用できません。":
+          present===2?"読み込み完了。未検証候補は確定情報ではありません。":
           present?"一部の解析レポートが取得できませんでした。":"解析レポートを取得できませんでした。",
-          present===2?"":present?"warn":"err");
+          data.compat_mode?"warn":present===2?"":present?"warn":"err");
       }catch(e){setMessage("クラウド解析を取得できませんでした："+e.message,"err");}
       finally{reloadButton.disabled=false;pending=null;}
     })();
