@@ -1,19 +1,19 @@
 {
   "phase": 9,
-  "status": "staging-deployed-and-asset-verified",
+  "status": "visual-parity-validated-in-Chromium; final CI report persistence pending",
   "production_unchanged": true,
   "vercel": {
     "project": "project-t-lite-preview-20261107",
     "team": "guntama1205-4982",
     "project_id": "prj_a1BgRtFCGf05wMYyXO18TmceV60E",
-    "deployment_id": "dpl_Camc3BfFvQ4kcR98QUA6NWNFdruR",
+    "deployment_id": "dpl_DeVnDXU8mWat7wGfkVbgwwBYtsZr",
     "environment": "staging",
     "domain": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app"
   },
   "github": {
     "repository": "gguntama-mk2/gguntama-mk2.github.io",
     "test_branch": "project-t-preview-20261107",
-    "source_commit": "0e7b96a71ef3710160a6d9f233b3f30c74e33199"
+    "source_commit": "87cd916d934edba9779a3f31773c2dbeea38fc98"
   },
   "deployed_files": {
     "html": [
@@ -47,15 +47,34 @@
     "config": [
       "vercel.json"
     ],
-    "file_count": 20
+    "file_count": 22,
+    "preview_display_modules": [
+      "move-icons.js",
+      "move-media-preview.js"
+    ]
   },
   "external_assets": {
     "from": "/assets/:path*",
-    "to": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/:path*",
+    "to": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/87cd916d934edba9779a3f31773c2dbeea38fc98/test-litev1/assets/:path*",
     "source": "GitHub raw proxy",
     "remark": "Temporary preview transport, not a production CDN SLA"
   },
   "security": "Anonymous preview only: OAuth/API guard intercepts account actions; no production domain was assigned.",
-  "diagnostics": "Root icons (15 files) and combos-live.json were initially missing. Both fixed by uploading the original files to isolated Vercel staging. The Phase9 browser parity workflow verifies them.",
-  "next_steps": "Use production/preview comparisons, inspect screenshot diffs, then decide on final production CDN migration after explicit authorization."
+  "diagnostics": "Missing root icons and combos JSON fixed via inline deployment. Then missing parallax caused by CSS-relative background image URL: pc_17/sp_17 now resolve new URL(PXS.url(id), document.baseURI). Production MOVIE column parity restored by local preview-only 401-mocked module; move-icons module loaded with local root icons; no production API traffic.",
+  "next_steps": "Use production/preview comparisons, inspect screenshot diffs, then decide on final production CDN migration after explicit authorization.",
+  "visual_parity": {
+    "verified_in_browser": true,
+    "failed_cases": 0,
+    "pc": {
+      "sheet_diff_pixels_pct": 0.27,
+      "home_diff_pixels_pct": 2.76,
+      "vs_diff_pixels_pct": 0.51
+    },
+    "sp": {
+      "sheet_diff_pixels_pct": 4.28,
+      "home_diff_pixels_pct": 4.35,
+      "vs_diff_pixels_pct": 1.09
+    },
+    "warning": "Pixel differences include test-only banner and transient rendering, not semantic feature loss"
+  }
 }
