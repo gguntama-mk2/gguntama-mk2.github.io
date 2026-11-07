@@ -19,6 +19,8 @@ try{
  if(!html||!html[2].startsWith('<span class="nm"></span><span class="mbadge" hidden>'))
   throw Error('Immutable heading template sibling order not verified');
  // Target the actual AST nodes, not whitespace-sensitive source snippets.
+ // Acorn ExpressionStatement.end is exclusive. The next expression is allowed
+ // to start exactly at that byte offset in minified JavaScript.
  // Guard that two firstElementChild reads occur inside cardEl only, and that
  // both are reached after the existing static template clone statement.
  const edits=[];
@@ -46,7 +48,7 @@ try{
  }
  visit(card.body,null);
  if(!cloneStatement||edits.length!==2
-   ||edits.some(e=>e.a<=cloneStatement.end))
+   ||edits.some(e=>e.a<cloneStatement.end))
   throw Error('Unsafe heading access shape: '+JSON.stringify({clone:!!cloneStatement,reads:edits.length,positions:edits.map(e=>e.a)}));
  const modifications=[
   ...edits,
