@@ -62,6 +62,16 @@ try{
     return {id:c.id,expected:c.moves.length,shown:count,
       loaded:!!c.__ptLoaded,header:display.slice(0,70),font:getComputedStyle(document.body).fontFamily};
    },{id,dev});
+   // Smartphone renders card chunks (60 per animation frame). Wait for
+   // its final frame rather than treating the first partial chunk as data loss.
+   await page.waitForFunction(({dev,expected})=>{
+    const count=dev==='pc'?document.querySelectorAll('#body tr[data-k]').length
+      :document.querySelectorAll('#list .card[data-i]').length;
+    return count===expected;
+   },{dev,expected},{timeout:30000});
+   tested.shown=await page.evaluate(dev=>dev==='pc'
+    ?document.querySelectorAll('#body tr[data-k]').length
+    :document.querySelectorAll('#list .card[data-i]').length,dev);
    if(!tested.loaded||tested.shown!==expected)
     throw Error(dev+' '+id+' visible rows mismatch '+JSON.stringify(tested));
    audit.push({...tested,elapsedMs:Date.now()-before});
