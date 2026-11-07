@@ -1,0 +1,35 @@
+name: PROJECT T Phase9 Visual Diagnosis (read only)
+on:
+  push:
+    branches: [project-t-preview-20261107]
+    paths:
+      - tools/pt_lite_phase9_visual_diagnosis.mjs
+      - .github/workflows/pt-lite-phase9-diagnosis.yml
+concurrency:
+  group: pt-phase9-visual-diag
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Read-only live diagnosis
+        run: node tools/pt_lite_phase9_visual_diagnosis.mjs
+      - name: Publish diagnosis report only to test branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/assets/data/phase9-visual-diagnosis.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: phase9 runtime background/gallery diagnostics"
+            git fetch origin project-t-preview-20261107
+            git rebase origin/project-t-preview-20261107
+            git push origin HEAD:project-t-preview-20261107
+          fi
