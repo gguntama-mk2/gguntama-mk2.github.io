@@ -26,7 +26,7 @@ let server, browser;
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function serve(){
-  server=spawn('python3',['-m','http.server','8776','--bind','127.0.0.1','--directory',SITE],{stdio:'ignore'});
+  server=spawn('python3',['tools/pt_lite_phase16_static_server.py','--port','8776','--directory',SITE],{stdio:'ignore'});
   for(let i=0;i<90;i++){
     try{const response=await fetch(ROOT+'pc.html');if(response.status===200)return;}catch{}
     await sleep(150);
@@ -144,12 +144,12 @@ async function run(device,profile){
       device,{timeout:90000});
     await sleep(200);
     snapshots.returnToSheet={elapsedMs:Date.now()-t3,network:delta(marker,snapshot())};
+    // Navigate to a DIFFERENT document first. Returning to the same URL now
+    // performs a full navigation (not a hash change and not a forced reload).
+    await page.goto(ROOT+'index.html?choose=1',{waitUntil:'load',timeout:90000});
     marker=snapshot();
     const t4=Date.now();
     await page.goto(ROOT+device+'.html#home',{waitUntil:'load',timeout:90000});
-    // A hash-only navigation does not test HTTP/browser caching.
-    // Force a true full-document reload on the same origin.
-    await page.reload({waitUntil:'load',timeout:90000});
     await page.waitForFunction(()=>!!window.PT_ROUTE_ASSETS&&!!window.PT_CHAR_DATA,{timeout:45000});
     await sleep(500);
     snapshots.warmHome={elapsedMs:Date.now()-t4,network:delta(marker,snapshot())};
