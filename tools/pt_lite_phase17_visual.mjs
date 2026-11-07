@@ -68,7 +68,7 @@ async function capture(port,dev,route){
    const sheet=document.documentElement.dataset.page==='sheet';
    const font=getComputedStyle(document.body).fontFamily;
    return {
-    route:document.documentElement.dataset.page,characters:els,
+    route:document.documentElement.dataset.page||'sheet',characters:els,
     fontFamily:font,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
     firstPaint:performance.getEntriesByType('paint').map(p=>({name:p.name,ms:Math.round(p.startTime)})),
     sheetRows:sheet?document.querySelectorAll('#body tr[data-k],#list .card[data-i]').length:null,
