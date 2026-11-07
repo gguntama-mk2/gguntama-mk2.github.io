@@ -38,12 +38,31 @@ const server = http.createServer(async (req,res)=>{
   res.writeHead(404);res.end();
 });
 
+const savedReviews = new Map();
 const fixtures = (u) => {
   if(u.pathname==="/api/v1/me") return {is_admin:true,display_name:"管理者テスト",project_t_id:"11111111-2222-4333-8444-555555555555",csrf_token:"test"};
   if(u.pathname==="/api/v1/admin/checksheet") return {characters:[]};
   if(u.pathname.startsWith("/api/v1/admin/checksheet/"))return {exists:false,current_base_hash:null,manifest_ok:true,moves:[],published:null};
   if(u.pathname==="/api/v1/admin/move-icons")return {entries:[]};
   if(u.pathname==="/api/v1/admin/move-media")return {entries};
+  if(u.pathname==="/api/v1/admin/cloud-analysis/workspace"){
+    const bryan={moves_count:250,unique_ids:55,unlabeled_ids:10,rows_with_candidate_edges:8,
+      top_unknown_ids:[{id:1021,raw_occurrences:100,candidate_moves:25,priority_score:75},
+        {id:439,raw_occurrences:50,candidate_moves:17,priority_score:90}]};
+    const cross={characters_found:35,requirements_records_parsed_total:3000,
+      requirements_unique_ids_global:200,ids_in_all_analyzed_characters:10,ids_in_exactly_one_character:20,
+      bryan_unlabeled_found_in_overview:15,top_priority_ids:[
+        {req_id:1021,characters_present:35,records_all_characters:100,parameter_variants:5,investigation_score_heuristic:72},
+        {req_id:439,characters_present:1,records_all_characters:8,parameter_variants:2,investigation_score_heuristic:90}
+      ]};
+    return {reports:{bryan,cross},reviews:[...savedReviews.values()],errors:{},history:{
+      bryan:{snapshots:[
+        {generated_utc:"2026-11-07",data:{summary:{moves_count:250},ids:bryan.top_unknown_ids}},
+        {generated_utc:"2026-11-06",data:{summary:{moves_count:249},ids:[{id:1021,raw_occurrences:99,candidate_moves:25,priority_score:69}]}}
+      ]},
+      cross:{snapshots:[]}
+    }};
+  }
   if(u.pathname==="/api/v1/admin/cloud-analysis")return {moves_count:250,unique_ids:55,unlabeled_ids:10,rows_with_candidate_edges:8,
      top_unknown_ids:[{id:1021,raw_occurrences:100,candidate_moves:25,priority_score:75}]};
   if(u.pathname==="/api/v1/admin/cloud-analysis/all-characters")return {characters_found:35,requirements_records_parsed_total:3000,
@@ -61,7 +80,16 @@ const fixtures = (u) => {
       const page=await browser.newPage({viewport:{width,height:850}});
       const errors=[];page.on("pageerror",e=>errors.push(e.message));
       await page.route("**/api/v1/**", async(route)=>{
-        const data=fixtures(new URL(route.request().url()));
+        const u=new URL(route.request().url());
+        if(u.pathname==="/api/v1/admin/cloud-analysis/review"&&route.request().method()==="POST"){
+          assert.equal(route.request().headers()["x-csrf-token"],"test");
+          const body=JSON.parse(route.request().postData());
+          const saved={...body,updated_by:"11111111-2222-4333-8444-555555555555",updated_at:"2026-11-07T02:00:00Z"};
+          savedReviews.set(body.scope+":"+body.req_id,saved);
+          await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(saved)});
+          return;
+        }
+        const data=fixtures(u);
         if(data===null){await route.fulfill({status:404,body:"{}"});return;}
         await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
       });
@@ -122,17 +150,61 @@ const fixtures = (u) => {
           const priority=page.locator('#secCloud details[data-cloud-panel="priority"]');
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
+          assert.equal(await priority.locator(".pt-cloud-id-button").count(),2,"Research IDs visible");
+          const search=priority.locator('input[type="search"]');
+          await search.fill("1021");
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===1);
+          assert(await search.evaluate(el=>el===document.activeElement),"Filter retains input focus");
+          await search.fill("");
+          await page.waitForFunction(()=>document.querySelectorAll('#secCloud details[data-cloud-panel="priority"] .pt-cloud-id-button').length===2);
+          await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Occurrence sorting works");
+          await priority.locator(".pt-cloud-id-button").first().click();
+          const modal=page.locator(".pt-cloud-dialog");
+          await modal.waitFor({state:"visible"});
+          assert((await modal.innerText()).includes("Requirements ID"),"Detailed ID drawer opens");
+          if(width===390){
+            await modal.locator("select").selectOption("investigating");
+            await modal.locator("textarea").fill("解析中・テスト記録");
+            await modal.getByRole("button",{name:"調査状況を保存"}).click();
+            await page.waitForFunction(()=>document.querySelector(".pt-cloud-dialog-feedback")?.textContent.includes("保存しました"));
+            assert.equal(savedReviews.get("bryan:1021").status,"investigating","Server-shared review saved");
+            assert.equal(savedReviews.get("bryan:1021").note,"解析中・テスト記録");
+          }
+          await page.keyboard.press("Escape");
+          assert(!(await modal.isVisible()),"Escape closes research detail");
+          if(width===390){
+            const filterStatus=priority.locator(".pt-cloud-filter-label select").nth(1);
+            await filterStatus.selectOption("investigating");
+            assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Review status filter");
+            await filterStatus.selectOption("all");
+            const [csv]=await Promise.all([
+              page.waitForEvent("download"),priority.locator(".pt-cloud-list-actions button").click()
+            ]);
+            assert(csv.suggestedFilename().endsWith(".csv"),"Filtered CSV is downloadable");
+          }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
           assert(!(await cross.evaluate(node=>node.open)),"Cross-character summary is initially collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて開く"}).click();
           assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),4,"Expand all sections");
+          if(width===390){
+            const compare=page.locator('#secCloud details[data-cloud-panel="sync"] .pt-cloud-compare');
+            assert((await compare.innerText()).includes("追加された上位ID"),"Snapshot difference visible");
+            const [diffCsv]=await Promise.all([
+              page.waitForEvent("download"),compare.getByRole("button",{name:"差分をCSV出力"}).click()
+            ]);
+            assert(diffCsv.suggestedFilename().endsWith("-diff.csv"),"Difference CSV can be exported");
+            const coverage=page.locator('#secCloud details[data-cloud-panel="crossPriority"] select').last();
+            await coverage.selectOption("single");
+            assert.equal(await page.locator('#secCloud details[data-cloud-panel="crossPriority"] .pt-cloud-id-button').count(),1,"Coverage filtering");
+          }
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"すべて閉じる"}).click();
           assert.equal(await accordion.evaluateAll(nodes=>nodes.filter(x=>x.open).length),0,"Collapse all sections");
           await cross.locator("summary").click();
           assert(await cross.evaluate(node=>node.open),"Individual section opens independently");
           assert(!(await priority.evaluate(node=>node.open)),"Other section stays collapsed");
           await page.locator("#secCloud .pt-cloud-controls button", {hasText:"再読み込み"}).click();
-          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="1件");
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="priority"] .pt-cloud-count')?.textContent==="2件");
           assert(await cross.evaluate(node=>node.open),"Reload preserves opened sections");
           assert(!(await priority.evaluate(node=>node.open)),"Reload preserves closed sections");
         }
