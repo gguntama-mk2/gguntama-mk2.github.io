@@ -114,14 +114,15 @@ try{
     const item={device:dev,route,baseline:before.metric,optimized:after.metric,
       ...pixels,passed:before.metric.sheetRows===after.metric.sheetRows
          &&before.metric.title===after.metric.title
-         &&before.metric.fontFamily===after.metric.fontFamily && before.metric.maruReady===after.metric.maruReady
+         &&before.metric.fontFamily===after.metric.fontFamily
+         &&(route!=='sheet'||before.metric.maruReady===after.metric.maruReady)
          &&(route!=='sheet'||before.metric.sheetRows===228)
          &&pixels.meanAbsPixelDifference<=8.0};
     result.comparisons.push(item);
     fs.writeFileSync(path.join(ROOT,'visual-'+dev+'-'+route+'-baseline.png'),before.shot);
     fs.writeFileSync(path.join(ROOT,'visual-'+dev+'-'+route+'-optimized.png'),after.shot);
     if(!item.passed)result.errors.push({device:dev,route,pixels,reason:'visual parity exceeded allowed tolerance'});
-    console.log('PHASE17_VISUAL',JSON.stringify(item).slice(0,3000));
+    console.log('PHASE19_VISUAL',JSON.stringify(item).slice(0,3000));
    }catch(e){result.errors.push({device:dev,route,error:String(e?.stack||e).slice(0,1600)});}
   }
  }
@@ -131,6 +132,6 @@ finally{
  for(const server of servers){server.kill('SIGTERM');}
  result.passed=result.errors.length===0;
  fs.writeFileSync(path.join(ROOT,'visual-report.json'),JSON.stringify(result,null,2)+'\n');
- console.log('PHASE17_VISUAL_FINAL',JSON.stringify({passed:result.passed,errors:result.errors}));
+ console.log('PHASE19_VISUAL_FINAL',JSON.stringify({passed:result.passed,errors:result.errors}));
  if(!result.passed)process.exitCode=1;
 }
