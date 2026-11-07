@@ -604,11 +604,14 @@
     try {
       var r = await api("/api/v1/admin/users?limit=100" + (q ? "&q=" + encodeURIComponent(q) : ""));
       var idIn = h("input", { id: "grantId", placeholder: "PROJECT T ID（36文字）を貼って管理者にする", style: "flex:1 1 220px;max-width:420px" });
-      var tbl = h("table", null, h("thead", null, h("tr", null, ["PROJECT T ID", "名前", "ログイン方法", "登録日", "権限", ""].map(function (t) { return h("th", { text: t }); }))));
+      var tbl = h("table", null, h("thead", null, h("tr", null, ["PROJECT T ID", "TEKKEN ID", "連携状態", "名前", "ログイン方法", "登録日", "権限", ""].map(function (t) { return h("th", { text: t }); }))));
       var tb = h("tbody");
       r.users.forEach(function (u) {
         var mine = u.project_t_id === S.me.project_t_id;
-        tb.appendChild(h("tr", null, h("td", null, h("code", { text: u.project_t_id })), h("td", { text: u.display_name || "" }), h("td", { text: u.providers.join("・") }), h("td", { text: fmtAt(u.created_at) }),
+        tb.appendChild(h("tr", null, h("td", null, h("code", { text: u.project_t_id })),
+          h("td", null, u.tekken_id ? h("code", { text: u.tekken_id }) : h("span", { class: "muted", text: "未連携" })),
+          h("td", null, u.tekken_id ? h("span", { class: u.tekken_id_enabled ? "badge pub" : "badge stale", text: u.tekken_id_enabled ? "有効" : "無効" }) : h("span", { class: "muted", text: "—" })),
+          h("td", { text: u.display_name || "" }), h("td", { text: u.providers.join("・") }), h("td", { text: fmtAt(u.created_at) }),
           h("td", null, u.is_admin ? h("span", { class: "badge pub", text: "管理者" }) : h("span", { class: "muted", text: "一般" })),
           h("td", null, u.is_admin
             ? h("button", { type: "button", class: "btn danger", "data-revoke": u.project_t_id, text: "管理者を解除", disabled: mine, title: mine ? "自分自身の権限は外せません" : "", onclick: function () { changeRole(u.project_t_id, "revoke"); } })
@@ -622,7 +625,7 @@
       box.replaceChildren(h("div", { class: "card" }, h("div", { class: "row" }, h("b", { text: "管理者の管理" }), h("span", { class: "muted", text: "管理者 " + r.admins + " 人／登録 " + r.total + " 人。自分自身と、最後の1人の管理者は外せません。" })),
         warn, S.usersMsg,
         h("div", { class: "muted", text: "運用ルール：管理者のアカウント（Discord／Google）は二段階認証（2FA）を必ず有効にする／アカウントを共有しない／必要以上に管理者を増やさない。" }),
-        h("div", { class: "row", style: "margin:8px 0" }, h("input", { type: "search", placeholder: "PROJECT T ID の先頭・名前で検索", style: "max-width:320px", onchange: function (ev) { loadUsers(ev.target.value.trim()); } }), idIn,
+        h("div", { class: "row", style: "margin:8px 0" }, h("input", { type: "search", placeholder: "PROJECT T ID・TEKKEN ID・名前で検索", style: "max-width:320px", onchange: function (ev) { loadUsers(ev.target.value.trim()); } }), idIn,
           h("button", { type: "button", class: "btn", id: "grantBtn", text: "付与", onclick: function () { var v = idIn.value.trim(); if (v) changeRole(v, "grant"); } })), h("div", { class: "tw" }, tbl)));
     } catch (e) { box.replaceChildren(h("div", { class: "banner err", text: e.message })); }
   }
