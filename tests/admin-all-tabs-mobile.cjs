@@ -1,0 +1,119 @@
+/* Mobile integration smoke test for all admin tabs. Uses synthetic fixture data only. */
+const assert = require("node:assert/strict");
+const http = require("node:http");
+const fs = require("node:fs/promises");
+const path = require("node:path");
+const { chromium } = require("playwright");
+
+const chars = Array.from({length:35}, (_,i) => ({
+  id: i===0 ? "alisa" : i===1 ? "bryan" : "fighter"+i,
+  name: i===0 ? "アリサ" : i===1 ? "ブライアン" : "キャラクター"+i,
+  en: i===0 ? "Alisa" : i===1 ? "Bryan" : "Fighter "+i,
+  moves: Array.from({length:18}, (_,k) => ({
+    k, name: k === 0 ? "リードジャブ" : "ストップビットの長い技名" + k,
+    a: {command:k===0 ? "LP" : "LP LP WP DF+"+k}
+  }))
+}));
+const preview = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+var CHARACTERS = ${JSON.stringify(chars)};
+var COLS = [{id:"command",label:"コマンド"},{id:"hit",label:"ヒット時"}];
+var INFO_TAGS = [{id:"test",label:"テストタグ",full:"テスト"}];
+function moveInfo(){return {tags:[]};}
+var PTIcons = {catalog:[{id:"homing",label:"ホーミング",cmd:true},{id:"tornado",label:"トルネード",cmd:false}], autoSplit:function(){return {c:[],g:[],a:[]};}};
+</script></body></html>`;
+const entries = [
+  { character_id:"alisa",move_name:"リードジャブ",site_k:0,status:"published",media:{video:"/videos/example.mp4"}},
+  { character_id:"bryan",move_name:"ストップビット",site_k:1,status:"draft",media:{} }
+];
+const server = http.createServer(async (req,res)=>{
+  const pathname = new URL(req.url,"http://localhost").pathname;
+  if(pathname === "/pc.html" || pathname === "/sp.html"){
+    res.writeHead(200,{"Content-Type":"text/html;charset=utf-8"});res.end(preview);return;
+  }
+  if(/^\/(admin\.html|admin\.js|admin-move-icons\.js|admin-move-media\.js|admin-cloud-analysis\.js)$/.test(pathname)){
+    const body = await fs.readFile(path.join(process.cwd(), pathname.slice(1)));
+    res.writeHead(200,{"Content-Type":pathname.endsWith(".html")?"text/html;charset=utf-8":"text/javascript;charset=utf-8"});res.end(body);return;
+  }
+  if(pathname.startsWith("/icons/")){res.writeHead(404);res.end();return;}
+  res.writeHead(404);res.end();
+});
+
+const fixtures = (u) => {
+  if(u.pathname==="/api/v1/me") return {is_admin:true,display_name:"管理者テスト",project_t_id:"11111111-2222-4333-8444-555555555555",csrf_token:"test"};
+  if(u.pathname==="/api/v1/admin/checksheet") return {characters:[]};
+  if(u.pathname.startsWith("/api/v1/admin/checksheet/"))return {exists:false,current_base_hash:null,manifest_ok:true,moves:[],published:null};
+  if(u.pathname==="/api/v1/admin/move-icons")return {entries:[]};
+  if(u.pathname==="/api/v1/admin/move-media")return {entries};
+  if(u.pathname==="/api/v1/admin/cloud-analysis")return {moves_count:250,unique_ids:55,unlabeled_ids:10,rows_with_candidate_edges:8,
+     top_unknown_ids:[{id:1021,raw_occurrences:100,candidate_moves:25,priority_score:75}]};
+  if(u.pathname==="/api/v1/admin/cloud-analysis/all-characters")return {characters_found:35,requirements_records_parsed_total:3000,
+    requirements_unique_ids_global:200,ids_in_all_analyzed_characters:10,ids_in_exactly_one_character:20,bryan_unlabeled_found_in_overview:15,
+    top_priority_ids:[{req_id:1021,characters_present:35,records_all_characters:100,parameter_variants:5,investigation_score_heuristic:72}]};
+  if(u.pathname==="/api/v1/admin/audit")return {entries:[{at:"2026-11-07T05:00:00",action:"admin_grant",actor:"11111111",target:"22222222",object_type:"user",details:{reason:"test"}}]};
+  return null;
+};
+
+(async()=>{
+  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+  const browser=await chromium.launch({headless:true});
+  try{
+    for(const width of [320,390,768,1366]){
+      const page=await browser.newPage({viewport:{width,height:850}});
+      const errors=[];page.on("pageerror",e=>errors.push(e.message));
+      await page.route("**/api/v1/**", async(route)=>{
+        const data=fixtures(new URL(route.request().url()));
+        if(data===null){await route.fulfill({status:404,body:"{}"});return;}
+        await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
+      });
+      await page.goto("http://127.0.0.1:"+server.address().port+"/admin.html");
+      await page.locator("#ptSheetCharPicker option").first().waitFor({state:"attached"});
+      await page.waitForFunction(()=>document.querySelector("#ptSheetMovePicker")&&document.querySelectorAll("#ptSheetMovePicker option").length>1);
+      const charPicker=page.locator("#ptSheetCharPicker");
+      assert.equal(await charPicker.locator("option").count(),35);
+      const mobile=width<=800;
+      assert.equal(await page.locator("#chars").isVisible(),!mobile);
+      assert.equal(await charPicker.isVisible(),mobile);
+      const moveSearch=page.locator("#ptSheetMoveSearch");
+      await moveSearch.fill("ストップ");
+      assert(await moveSearch.evaluate(el=>document.activeElement===el),"Move search should retain focus");
+      assert.equal(await page.locator("#ptSheetMovePicker option").count(),18);
+      if(mobile){
+        const p=page.locator("#ptSheetMovePicker");await p.selectOption("2");
+        assert.equal(await p.inputValue(),"2");
+      }
+      for(const tab of ["icons","media","cloud","audit"]){
+        await page.locator('nav.tabs button[data-tab="'+tab+'"]').click();
+        const sec=page.locator("#sec"+tab[0].toUpperCase()+tab.slice(1));
+        await sec.waitFor({state:"visible"});
+        if(tab==="icons"){
+          await page.locator("#secIcons .pt-mi-list tbody tr").first().waitFor();
+          const row=page.locator("#secIcons .pt-mi-list tbody tr").first();
+          assert.equal(await row.evaluate(el=>getComputedStyle(el).display),mobile?"grid":"table-row");
+          if(mobile){
+            const cmd=await row.locator("td:nth-child(3)").boundingBox();
+            assert(cmd.width>130,"Command should have a readable width");
+            await row.locator("td:nth-child(6) button").click();
+            await page.locator("#secIcons .pt-mi-editor[data-open]").waitFor({state:"visible"});
+            assert(await page.locator("#secIcons .pt-mi-backdrop").isVisible(),"Drawer backdrop should be visible");
+            await page.keyboard.press("Escape");
+            assert(!(await page.locator("#secIcons .pt-mi-backdrop").isVisible()),"Escape closes drawer");
+          }
+        }
+        if(tab==="media")await page.locator("#secMedia .pt-mobile-table tbody tr").first().waitFor();
+        if(tab==="cloud")await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
+        if(tab==="audit")await page.locator("#secAudit .pt-mobile-table tbody tr").first().waitFor();
+        if(mobile){
+          const measure=await page.evaluate(()=>{
+            const sec=Array.from(document.querySelectorAll("main > section")).find(x=>!x.hidden);
+            return {viewport:innerWidth,doc:document.documentElement.scrollWidth,section:sec.scrollWidth};
+          });
+          assert(measure.doc<=width,"No viewport overflow: "+tab+" "+JSON.stringify(measure));
+        }
+      }
+      assert.deepEqual(errors,[],"Page errors: "+errors.join("; "));
+      await page.screenshot({path:"admin-all-tabs-"+width+".png",fullPage:false});
+      console.log("PASS all admin tabs at "+width+"px");
+      await page.close();
+    }
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+})().catch(e=>{console.error(e);process.exitCode=1;});
