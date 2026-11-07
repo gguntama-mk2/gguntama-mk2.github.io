@@ -93,6 +93,26 @@ async function network(device){
   out.network[device]={firstNavMs,reloadMs:Date.now()-t0,cold,warm,ready};
   await ctx.close();
 }
+async function cacheHeaders(){
+  const ctx=await browser.newContext();
+  const paths=[
+    'pc.html','sp.html','assets/js/pc_17.js','assets/js/sp_17.js',
+    'assets/css/pc_00.css','assets/css/sp_00.css',
+    'assets/data/characters/alisa.json','icons/homing.webp','combos-live.json'
+  ];
+  out.cacheAudit={tested:[],policy:'short revalidation for current unversioned code and data'};
+  for(const path of paths){
+    try{
+      const res=await ctx.request.get(BASE+path,{timeout:35000});
+      const h=res.headers(),item={path,status:res.status(),cacheControl:h['cache-control']||'',robots:h['x-robots-tag']||'',mime:h['content-type']||'',etag:h.etag||''};
+      out.cacheAudit.tested.push(item);
+      check('stage10 HTTP cache revalidation '+path,
+        item.status===200 && /max-age=0/.test(item.cacheControl)&&/must-revalidate/.test(item.cacheControl),item);
+      check('stage10 noindex header '+path,/noindex/.test(item.robots),item);
+    }catch(e){out.failures.push({name:'cache audit '+path,error:String(e)});}
+  }
+  await ctx.close();
+}
 async function storage(){
   // Discover a move in a disposable context, then seed a fresh browser profile before any app initialization.
   let ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
@@ -173,6 +193,7 @@ try{
   browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   for(const dev of ['pc','sp'])try{await network(dev);}catch(e){out.failures.push({name:dev+' network setup',error:String(e?.stack||e).slice(0,1800)});}
   try{await storage();}catch(e){out.failures.push({name:'storage setup',error:String(e?.stack||e).slice(0,1800)});}
+  try{await cacheHeaders();}catch(e){out.failures.push({name:'cache headers setup',error:String(e?.stack||e).slice(0,1800)});}
 }catch(e){out.failures.push({name:'browser startup',error:String(e?.stack||e).slice(0,1800)});}
 finally{
   await browser?.close();
