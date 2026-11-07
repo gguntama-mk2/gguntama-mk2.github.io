@@ -34,11 +34,13 @@ jobs:
             git rebase origin/project-t-preview-20261107
             git push origin HEAD:project-t-preview-20261107
           fi
+          echo "PT_PREVIEW_REF=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "PT_PREVIEW_BASE=https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/$(git rev-parse HEAD)/test-litev1/" >> "$GITHUB_ENV"
       - name: Verify public preview is live with the correct HTML MIME
         run: |
           set -e
           for device in pc sp; do
-            url="https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/${device}.html"
+            url="${PT_PREVIEW_BASE}${device}.html"
             echo "Checking preview ${device}"
             for attempt in 1 2 3 4 5 6; do
               curl -fsSL --max-time 25 --compressed "${url}" -o "/tmp/pt-preview-${device}.html" || true
