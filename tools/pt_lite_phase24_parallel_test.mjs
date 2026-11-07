@@ -22,12 +22,13 @@ try{
     viewport:dev==='pc'?{width:1440,height:900}:{width:390,height:844},
     isMobile:dev==='sp',serviceWorkers:'block'
    });
-   const page=await context.newPage(),events=[],errors=[];
+   const page=await context.newPage(),events=[],jsonRequests=[],errors=[];
    page.on('pageerror',e=>errors.push(String(e)));
    const files=['/move-icons.js','/move-media.js','/assets/js/'+dev+'_04_runtime.js'];
    page.on('request',r=>{
     const path=new URL(r.url()).pathname;
     if(files.includes(path))events.push({path,at:Date.now()});
+    if(path==='/assets/data/characters/alisa.json')jsonRequests.push({path,at:Date.now()});
    });
    await page.route('**/*',async r=>{
     const req=r.request(),u=new URL(req.url());
@@ -46,7 +47,7 @@ try{
      ready:PT_SHEET_RUNTIME.state().loaded,
      fontCss:!!document.querySelector('link[href*="pt19-maru-shards.css"]')
     }));
-    if(before.page!=='home'||before.ready||before.fontCss||events.length)
+    if(before.page!=='home'||before.ready||before.fontCss||events.length||jsonRequests.length)
      throw Error(dev+' scripts/fonts loaded without sheet intent '+JSON.stringify(before));
     const t0=Date.now();
     await page.evaluate(event=>{
@@ -70,13 +71,18 @@ try{
     const spread=Math.max(...events.map(e=>e.at))-Math.min(...events.map(e=>e.at));
     if(spread>220)throw Error(dev+' script requests remained sequential; spread='+spread+'ms '+JSON.stringify(events));
     if(current.fontCssCount!==1)throw Error(dev+' fonts CSS not fetched once');
+    if(jsonRequests.length!==1)throw Error(dev+' character JSON not prewarmed once on '+event+' '+JSON.stringify(jsonRequests));
+    const jsonStartDelta=Math.abs(jsonRequests[0].at-Math.min(...events.map(e=>e.at)));
+    if(jsonStartDelta>220)throw Error(dev+' character JSON did not start alongside sheet runtime '+jsonStartDelta+'ms');
     await page.evaluate(()=>window.setPage('sheet'));
     await page.waitForFunction(dev=>dev==='pc'
       ?document.querySelectorAll('#body tr[data-k]').length===228
       :document.querySelectorAll('#list .card[data-i]').length===228,dev,{timeout:50000});
+    if(jsonRequests.length!==1)throw Error(dev+' character JSON requested twice after sheet render');
     if(errors.length)throw Error(dev+' page exceptions: '+errors.join(';'));
     const test={device:dev,event,passed:true,scriptRequestSpreadMs:spread,
-      scriptRequests:events.map(e=>e.path),prewarmCompletedMs:Date.now()-t0,
+      scriptRequests:events.map(e=>e.path),characterJsonStartDeltaMs:jsonStartDelta,
+      characterJsonFetches:jsonRequests.length,prewarmCompletedMs:Date.now()-t0,
       noEagerHome:true,samePageAfterIntent:true,sheetRenderedRows:228};
     result.checks.push(test);
     console.log('PHASE24_PARALLEL_INTENT',JSON.stringify(test));
