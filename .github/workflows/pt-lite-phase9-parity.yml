@@ -23,13 +23,28 @@ jobs:
           test "$(git branch --show-current)" = "project-t-preview-20261107"
           python3 - <<'PY'
           import urllib.request
-          paths=['https://www.project-t-god.com/pc.html','https://www.project-t-god.com/sp.html','https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/pc.html','https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/sp.html']
+          paths=['https://www.project-t-god.com/pc.html','https://www.project-t-god.com/sp.html','https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/pc.html','https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/sp.html']
           for p in paths:
               req=urllib.request.Request(p,method='HEAD',headers={'User-Agent':'PT-Parity-Audit/1'})
               try:
                   with urllib.request.urlopen(req,timeout=30) as r:
                       print('URL',r.status,r.headers.get('Content-Type'),r.headers.get('Content-Length'),p)
               except Exception as e: print('URL_HEAD_WARNING',p,type(e).__name__,str(e)[:180])
+          PY
+      - name: Require fixed root icons and combo data
+        run: |
+          base="https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app"
+          for name in homing wallbreak hardwallbreak powercrush floorblast tornado; do
+            status="$(curl -LfsS -o /dev/null -w '%{http_code}' --max-time 25 "$base/icons/$name.webp")"
+            test "$status" = 200 || exit 1
+          done
+          python3 - <<'PY'
+          import json,urllib.request
+          url="https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/combos-live.json"
+          with urllib.request.urlopen(url, timeout=30) as r:
+            c=json.load(r)
+          assert c.get("format")=="tekken-combo-live",str(c)[:200]
+          print("Live combo JSON present and valid")
           PY
       - name: Install Chromium and image comparison tools
         run: |
