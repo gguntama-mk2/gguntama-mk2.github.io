@@ -29,9 +29,23 @@
     prefetch.then(()=>loadOne(code)).then(()=>{loaded.add(code); if(document.documentElement.dataset.page===page){const api=window[apis[page]];if(api&&typeof api.show==="function")api.show();if(page==="update"&&window.UPD&&typeof window.UPD.render==="function")window.UPD.render();} }).catch(err=>{
       console.error("[PROJECT T] feature load failed",page,err);
       if(document.documentElement.dataset.page!==page)return;
-      const targets={combo:"cbHost",glossary:"glHost",punish:"pnHost",stage:"sgHost",gallery:"gaHost",login:"lgHost",vs:"vsHost",privacy:"prHost",price:"pcHost",download:"dlHost",guide:"gdHost"};
+      /* PT_PHASE6_RETRY: same-page retry with a visible and keyboard-accessible button. */
+      const targets={combo:"cbHost",glossary:"glHost",punish:"pnHost",stage:"sgHost",gallery:"gaHost",login:"lgHost",vs:"vsHost",privacy:"prHost",price:"pcHost",download:"dlHost",guide:"gdHost",update:"updHost"};
       const host=document.getElementById(targets[page]);
-      if(host && !host.shadowRoot)host.textContent="ページの読み込みに失敗しました。別のページへ移動してから再試行してください。";
+      if(host && !host.shadowRoot){
+        const notice=document.createElement("p");
+        notice.setAttribute("role","alert");
+        notice.textContent="ページの読み込みに失敗しました。ネットワークを確認して再試行してください。";
+        const retry=document.createElement("button");
+        retry.type="button";
+        retry.className="pt-route-retry";
+        retry.textContent="再試行";
+        retry.addEventListener("click",()=>{
+          host.textContent="再読み込み中…";
+          ensure(page);
+        });
+        host.replaceChildren(notice,retry);
+      }
     });
   }
   const root=document.documentElement;

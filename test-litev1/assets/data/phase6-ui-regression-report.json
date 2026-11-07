@@ -1,0 +1,493 @@
+{
+  "schema": 6,
+  "mode": "test-only",
+  "timestamp": "2026-11-07T01:31:10.117Z",
+  "passed": true,
+  "devices": {
+    "pc": {
+      "cases": [
+        {
+          "name": "pc home/cache",
+          "passed": true,
+          "duration_ms": 40,
+          "detail": {
+            "same": true,
+            "width": 1400,
+            "height": 788,
+            "url": "assets/pxstore/6e03c50eb1baa73e9a5c7951.avif",
+            "id": "anna",
+            "characterFetched": [],
+            "featuresFetched": [],
+            "fetchCount": 1
+          }
+        },
+        {
+          "name": "pc combo",
+          "passed": true,
+          "duration_ms": 226,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 20,
+            "chars": 44574,
+            "buttons": 99,
+            "inputs": 12,
+            "search": "9LP",
+            "api": "function"
+          }
+        },
+        {
+          "name": "pc glossary",
+          "passed": true,
+          "duration_ms": 249,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 39023,
+            "buttons": 828,
+            "inputs": 1,
+            "termCount": 280,
+            "search": "フレーム"
+          }
+        },
+        {
+          "name": "pc punish",
+          "passed": true,
+          "duration_ms": 185,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 14370,
+            "buttons": 6,
+            "inputs": 0,
+            "punishCount": 30,
+            "loadedCharacters": 44
+          }
+        },
+        {
+          "name": "pc stage",
+          "passed": true,
+          "duration_ms": 112,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 3,
+            "chars": 14757,
+            "buttons": 27,
+            "inputs": 1,
+            "stageCount": 21
+          }
+        },
+        {
+          "name": "pc gallery/lightbox",
+          "passed": true,
+          "duration_ms": 122,
+          "detail": {
+            "exists": true,
+            "shadow": false,
+            "children": 1,
+            "chars": 24,
+            "buttons": 1,
+            "inputs": 0,
+            "id": "xiaoyu",
+            "cardCount": 1,
+            "lightboxOpenedAndClosed": true
+          }
+        },
+        {
+          "name": "pc login (unauthenticated)",
+          "passed": true,
+          "duration_ms": 67,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 7559,
+            "buttons": 13,
+            "inputs": 2,
+            "status": "未ログイン",
+            "actions": 2
+          }
+        },
+        {
+          "name": "pc VS search/detail (mock data)",
+          "passed": true,
+          "duration_ms": 185,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 42398,
+            "buttons": 213,
+            "inputs": 7,
+            "count": 1,
+            "filtered": "0",
+            "opened": true
+          }
+        },
+        {
+          "name": "pc privacy",
+          "passed": true,
+          "duration_ms": 43,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 11267,
+            "buttons": 8,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "pc price",
+          "passed": true,
+          "duration_ms": 26,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 12390,
+            "buttons": 0,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "pc download",
+          "passed": true,
+          "duration_ms": 26,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 8125,
+            "buttons": 2,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "pc guide",
+          "passed": true,
+          "duration_ms": 30,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 9951,
+            "buttons": 5,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "pc update + sheet",
+          "passed": true,
+          "duration_ms": 393,
+          "detail": {
+            "exists": true,
+            "shadow": false,
+            "children": 1,
+            "chars": 1864,
+            "buttons": 2,
+            "inputs": 2,
+            "updateCount": 34,
+            "sheetLoaded": true
+          }
+        },
+        {
+          "name": "pc route cache",
+          "passed": true,
+          "duration_ms": 153,
+          "detail": {
+            "vsScriptElements": 1
+          }
+        },
+        {
+          "name": "pc JS errors",
+          "passed": true,
+          "duration_ms": 1,
+          "detail": {
+            "pageErrors": 0
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "name": "pc route failure/retry",
+          "passed": true,
+          "duration_ms": 233,
+          "detail": {
+            "simulatedFailures": 1,
+            "retryWorked": true,
+            "host": {
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "chars": 42398,
+              "buttons": 213,
+              "inputs": 7
+            }
+          }
+        }
+      ]
+    },
+    "sp": {
+      "cases": [
+        {
+          "name": "sp home/cache",
+          "passed": true,
+          "duration_ms": 25,
+          "detail": {
+            "same": true,
+            "width": 1400,
+            "height": 788,
+            "url": "assets/pxstore/6e03c50eb1baa73e9a5c7951.avif",
+            "id": "anna",
+            "characterFetched": [],
+            "featuresFetched": [],
+            "fetchCount": 1
+          }
+        },
+        {
+          "name": "sp combo",
+          "passed": true,
+          "duration_ms": 117,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 20,
+            "chars": 44574,
+            "buttons": 99,
+            "inputs": 12,
+            "search": "9LP",
+            "api": "function"
+          }
+        },
+        {
+          "name": "sp glossary",
+          "passed": true,
+          "duration_ms": 231,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 39023,
+            "buttons": 828,
+            "inputs": 1,
+            "termCount": 280,
+            "search": "フレーム"
+          }
+        },
+        {
+          "name": "sp punish",
+          "passed": true,
+          "duration_ms": 134,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 14370,
+            "buttons": 6,
+            "inputs": 0,
+            "punishCount": 30,
+            "loadedCharacters": 44
+          }
+        },
+        {
+          "name": "sp stage",
+          "passed": true,
+          "duration_ms": 74,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 3,
+            "chars": 14757,
+            "buttons": 27,
+            "inputs": 1,
+            "stageCount": 21
+          }
+        },
+        {
+          "name": "sp gallery/lightbox",
+          "passed": true,
+          "duration_ms": 99,
+          "detail": {
+            "exists": true,
+            "shadow": false,
+            "children": 1,
+            "chars": 24,
+            "buttons": 1,
+            "inputs": 0,
+            "id": "xiaoyu",
+            "cardCount": 1,
+            "lightboxOpenedAndClosed": true
+          }
+        },
+        {
+          "name": "sp login (unauthenticated)",
+          "passed": true,
+          "duration_ms": 64,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 7559,
+            "buttons": 13,
+            "inputs": 2,
+            "status": "未ログイン",
+            "actions": 2
+          }
+        },
+        {
+          "name": "sp VS search/detail (mock data)",
+          "passed": true,
+          "duration_ms": 126,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 42398,
+            "buttons": 213,
+            "inputs": 7,
+            "count": 1,
+            "filtered": "0",
+            "opened": true
+          }
+        },
+        {
+          "name": "sp privacy",
+          "passed": true,
+          "duration_ms": 37,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 11267,
+            "buttons": 8,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "sp price",
+          "passed": true,
+          "duration_ms": 24,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 12390,
+            "buttons": 0,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "sp download",
+          "passed": true,
+          "duration_ms": 26,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 8125,
+            "buttons": 2,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "sp guide",
+          "passed": true,
+          "duration_ms": 35,
+          "detail": {
+            "exists": true,
+            "shadow": true,
+            "children": 2,
+            "chars": 9951,
+            "buttons": 5,
+            "inputs": 0
+          }
+        },
+        {
+          "name": "sp update + sheet",
+          "passed": true,
+          "duration_ms": 152,
+          "detail": {
+            "exists": true,
+            "shadow": false,
+            "children": 1,
+            "chars": 1864,
+            "buttons": 2,
+            "inputs": 2,
+            "updateCount": 34,
+            "sheetLoaded": true
+          }
+        },
+        {
+          "name": "sp route cache",
+          "passed": true,
+          "duration_ms": 61,
+          "detail": {
+            "vsScriptElements": 1
+          }
+        },
+        {
+          "name": "sp JS errors",
+          "passed": true,
+          "duration_ms": 0,
+          "detail": {
+            "pageErrors": 0
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "name": "sp route failure/retry",
+          "passed": true,
+          "duration_ms": 209,
+          "detail": {
+            "simulatedFailures": 1,
+            "retryWorked": true,
+            "host": {
+              "exists": true,
+              "shadow": true,
+              "children": 2,
+              "chars": 42398,
+              "buttons": 213,
+              "inputs": 7
+            }
+          }
+        }
+      ]
+    }
+  },
+  "failures": [],
+  "notes": [
+    "API interactions are mocked as unauthorized. OAuth and authenticated destructive operations are NOT tested.",
+    "Test uses local static server and an isolated browser profile; it does not alter production user data."
+  ],
+  "images": [
+    {
+      "name": "forced no-AVIF fallback",
+      "passed": true,
+      "duration_ms": 23,
+      "detail": {
+        "fallback": true,
+        "id": "xiaoyu",
+        "width": 1000,
+        "height": 563
+      }
+    }
+  ],
+  "dataRecovery": [
+    {
+      "name": "character JSON failure/retry",
+      "passed": true,
+      "duration_ms": 18,
+      "detail": {
+        "failed": true,
+        "loaded": true,
+        "moveCount": 199,
+        "firstMove": "リードジャブ"
+      }
+    }
+  ]
+}

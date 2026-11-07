@@ -1,0 +1,16 @@
+{
+  "schema": 6,
+  "test_only": true,
+  "devices": {
+    "pc": {
+      "file": "test-litev1/assets/js/pc_route-loader.js",
+      "bytes": 3148,
+      "retry_control": "button.pt-route-retry"
+    },
+    "sp": {
+      "file": "test-litev1/assets/js/sp_route-loader.js",
+      "bytes": 3148,
+      "retry_control": "button.pt-route-retry"
+    }
+  }
+}
