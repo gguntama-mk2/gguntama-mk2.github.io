@@ -6,6 +6,7 @@ on:
     paths:
       - tools/pt_lite_phase5_regression.mjs
       - tools/pt_lite_phase5_lazy_updates.cjs
+      - tools/pt_lite_phase5_home_defer.py
       - .github/workflows/pt-lite-phase5.yml
 concurrency:
   group: project-t-lite-phase5
@@ -24,6 +25,9 @@ jobs:
       - name: Move full update archive behind its own route
         run: |
           node tools/pt_lite_phase5_lazy_updates.cjs
+          python3 tools/pt_lite_phase5_home_defer.py
+          node --check test-litev1/assets/js/pc_04.js
+          node --check test-litev1/assets/js/sp_04.js
           node --check test-litev1/assets/js/pc_17.js
           node --check test-litev1/assets/js/sp_17.js
           node --check test-litev1/assets/js/pc_20.js
@@ -47,7 +51,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add test-litev1/assets/data/phase5-regression-report.json test-litev1/assets/data/phase5-update-optimization.json test-litev1/assets/js/pc_17.js test-litev1/assets/js/sp_17.js test-litev1/assets/js/pc_20.js test-litev1/assets/js/sp_20.js test-litev1/assets/js/pc_route-loader.js test-litev1/assets/js/sp_route-loader.js
+          git add test-litev1/assets/data/phase5-regression-report.json test-litev1/assets/data/phase5-update-optimization.json test-litev1/assets/data/phase5-home-defer.json test-litev1/assets/js/pc_04.js test-litev1/assets/js/sp_04.js test-litev1/assets/js/pc_17.js test-litev1/assets/js/sp_17.js test-litev1/assets/js/pc_20.js test-litev1/assets/js/sp_20.js test-litev1/assets/js/pc_route-loader.js test-litev1/assets/js/sp_route-loader.js
           if ! git diff --cached --quiet; then
             git commit -m "test: phase5 first-load and persistence regression report"
             git push origin HEAD:test/lite-regression-20261107
