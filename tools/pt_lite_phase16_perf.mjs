@@ -147,8 +147,11 @@ async function run(device,profile){
     marker=snapshot();
     const t4=Date.now();
     await page.goto(ROOT+device+'.html#home',{waitUntil:'load',timeout:90000});
+    // A hash-only navigation does not test HTTP/browser caching.
+    // Force a true full-document reload on the same origin.
+    await page.reload({waitUntil:'load',timeout:90000});
     await page.waitForFunction(()=>!!window.PT_ROUTE_ASSETS&&!!window.PT_CHAR_DATA,{timeout:45000});
-    await sleep(350);
+    await sleep(500);
     snapshots.warmHome={elapsedMs:Date.now()-t4,network:delta(marker,snapshot())};
 
     assert.equal(pageErrors.length,0,'uncaught JS errors');
@@ -181,7 +184,13 @@ try{
 }catch(e){result.failures.push({setup:String(e?.stack||e)});}
 finally{
   await browser?.close();
-  server?.kill();
+  if(server && server.exitCode===null) {
+    await new Promise(resolve=>{
+      server.once('exit',resolve);
+      server.kill('SIGTERM');
+      setTimeout(resolve,2500).unref();
+    });
+  }
   result.passed=result.failures.length===0;
   fs.mkdirSync('phase16-performance',{recursive:true});
   fs.writeFileSync(OUTPUT,JSON.stringify(result,null,2)+'\n');
