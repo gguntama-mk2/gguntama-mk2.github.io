@@ -135,7 +135,16 @@ const fixtures = (u) => {
       full_extraction_verified:false,source_status:"partial_known_master_only",
       known_move_indexes:[1444,1550],
       source_motbin_sha256:"15c673d2699985c1854568a021e5cb2de4c3f92dbf5fa87b9c81a0e580b6bee0",
-      structural:{requirements_total_in_review:328}
+      structural:{requirements_total_in_review:328},
+      candidate_graph_preview:{
+        candidate_cancel_rows_loaded:2664,
+        candidate_edges_attached_to_known_58_move_records:40,
+        candidate_edges_skipped_missing_move_records:5593,
+        distinct_requirement_ids_attached_to_known_records:18,
+        move_records_fabricated:0,
+        source_status:"inferred_cancel_list_boundaries",
+        gameplay_verified:false,full_motbin_extraction:false
+      }
     };
     return {reports:{bryan,cross},linkage,motbin_coverage,reviews:[...savedReviews.values()],errors:{},history:{
       bryan:{snapshots:[
@@ -244,6 +253,21 @@ const fixtures = (u) => {
           assert((await focusCards.nth(1).innerText()).includes("ID 88"),"Priority 88 shown");
           assert((await focusCards.nth(2).innerText()).includes("ID 682"),"Priority 682 shown");
           if(width===390){
+            await motbin.locator("summary").first().click();
+            const graphPreview=motbin.locator(".pt-motbin-graph-preview");
+            await graphPreview.waitFor({state:"visible"});
+            const previewText=await graphPreview.innerText();
+            assert(previewText.includes("2,664"),"Raw candidate graph size displayed");
+            assert(previewText.includes("5,593"),"Missing move record links reported");
+            assert(previewText.includes("実機確認とは異なります"),"Raw candidates not treated as verified");
+            const [graphCsv]=await Promise.all([
+              page.waitForEvent("download"),
+              graphPreview.getByRole("button",{name:"照合状況の根拠CSVを出力"}).click()
+            ]);
+            const graphCsvText=await fs.readFile(await graphCsv.path(),"utf8");
+            assert(graphCsvText.includes("キャンセル行の候補") &&
+              graphCsvText.includes("未取得・未検証"),"Evidence CSV labels scope");
+            await motbin.locator("summary").first().click();
             const [focusCsv]=await Promise.all([
               page.waitForEvent("download"),priority.getByRole("button",{name:"重点3 IDの候補インデックスCSV"}).click()
             ]);
