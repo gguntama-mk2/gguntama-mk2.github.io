@@ -232,6 +232,7 @@ const fixtures = (u) => {
           const cross=page.locator('#secCloud details[data-cloud-panel="cross"]');
           const motbin=page.locator('#secCloud details[data-cloud-panel="motbin"]');
           assert(!(await motbin.evaluate(node=>node.open)),"MOTBIN coverage collapsed by default");
+          await page.waitForFunction(()=>document.querySelector('#secCloud details[data-cloud-panel="motbin"] .pt-cloud-count')?.textContent==="2 / 2304件");
           assert((await motbin.locator("summary").innerText()).includes("2 / 2304件"),
             "Exact individual-record coverage in summary");
           await page.locator("#secCloud .pt-mobile-table tbody tr").first().waitFor();
