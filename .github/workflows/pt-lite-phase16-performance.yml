@@ -1,0 +1,84 @@
+name: PROJECT T Lite Phase16 - Performance and Regression (TEST ONLY)
+on:
+  push:
+    branches: [test/pt-lite-phase16-performance-20261107]
+  pull_request:
+    branches: [test/pt-lite-phase15-main-sync-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase16-metrics
+  cancel-in-progress: true
+jobs:
+  benchmark:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/test/pt-lite-phase16-performance-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout isolated test branch, without write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Confirm read-only production boundary
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html && test -f admin.html
+          node --check tools/pt_lite_phase16_perf.mjs
+          node --check admin.js
+          node --check tests/admin-mobile-layout.cjs
+      - name: Install isolated Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run cold / warm / route network measurement (localhost only)
+        run: node tools/pt_lite_phase16_perf.mjs
+      - name: Check local transfer, loaded feature parity and profiling report
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase16-performance/baseline.json').read_text())
+          assert r['passed'],r['failures']
+          for profile,ds in r['devices'].items():
+            for device,m in ds.items():
+              assert m['coldHome']['network']['requestCount']>5,(profile,device)
+              assert m['coldHome']['performance']['loadedCharacters']==[]
+              assert m['coldHome']['performance']['loadedRoutes']==[]
+              assert m['sheet']['network']['requestCount']>=1,(profile,device)
+              assert m['glossary']['network']['requestCount']>=1,(profile,device)
+              assert m['returnToSheet']['network']['requestCount']<=4,(profile,device)
+              print('PERF_REPORT',profile,device,'cold',m['coldHome']['network']['transferBytes'],
+                    'sheet',m['sheet']['network']['transferBytes'],
+                    'glossary',m['glossary']['network']['transferBytes'],
+                    'warm',m['warmHome']['network']['transferBytes'])
+          PY
+      - name: Recheck Phase15 functional parity (same origin)
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s .. phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+      - name: Check browser regression reports
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for f in ('phase11-pages-package/browser-report.json',
+                    'phase12-release-audit/phase12-api-mock-browser.json'):
+            r=json.loads(Path(f).read_text())
+            assert r['passed'],r.get('failures')
+          print('PHASE16_REGRESSION_PASS')
+          PY
+      - name: Save reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase16-local-performance
+          path: |
+            phase16-performance/*.json
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
