@@ -32,6 +32,7 @@ jobs:
           node --check tools/pt_lite_phase22_visual.mjs
           node --check tools/pt_lite_phase22_characters.mjs
           node --check tools/pt_lite_phase22_integrity.mjs
+          node --check tools/pt_lite_phase22_intent.mjs
           node --check tools/pt_lite_phase20_perf.mjs
           node --check tools/pt_lite_phase20_visual.mjs
           node --check tools/pt_lite_phase20_characters.mjs
@@ -184,7 +185,7 @@ jobs:
       - name: Verify direct /#sheet, SHA256 tamper rejection and original JSON retry
         run: node tools/pt_lite_phase22_integrity.mjs
       - name: Verify pointer hover, keyboard focus, touch and keypress prewarm without eager home fonts
-        run: node tools/pt_lite_phase21_intent.mjs
+        run: node tools/pt_lite_phase22_intent.mjs
       - name: Regression tests for PC/SP move data, persistence, mocked APIs and admin UI
         run: |
           mkdir -p phase11-pages-package phase12-release-audit
