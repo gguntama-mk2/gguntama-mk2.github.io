@@ -226,7 +226,7 @@ const fixtures = (u) => {
               page.waitForEvent("download"),compare.getByRole("button",{name:"差分をCSV出力"}).click()
             ]);
             assert(diffCsv.suggestedFilename().endsWith("-diff.csv"),"Difference CSV can be exported");
-            const coverage=page.locator('#secCloud details[data-cloud-panel="crossPriority"] select').last();
+            const coverage=page.locator('#secCloud details[data-cloud-panel="crossPriority"] .pt-cloud-filter-label').filter({hasText:"出現範囲"}).locator("select");
             await coverage.selectOption("single");
             assert.equal(await page.locator('#secCloud details[data-cloud-panel="crossPriority"] .pt-cloud-id-button').count(),1,"Coverage filtering");
           }
