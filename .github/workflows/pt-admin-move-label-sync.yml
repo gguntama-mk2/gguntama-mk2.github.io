@@ -1,0 +1,50 @@
+name: PROJECT T Admin Move Label Command Sync (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase24-parallel-sheet-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-admin-move-label-sync-test-only
+  cancel-in-progress: true
+jobs:
+  admin-move-label-sync:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Static checks and ensure test-only changes
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          node --check admin.js
+          node --check admin-move-icons.js
+          node --check admin-move-media.js
+          node --check tests/admin-move-label-sync.cjs
+          node --check tests/admin-all-tabs-mobile.cjs
+          node --check tests/admin-mobile-layout.cjs
+      - name: Install isolated Chromium browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify edited technique labels and commands in icon/video registration
+        run: node tests/admin-move-label-sync.cjs
+      - name: Existing admin mobile/table/analysis regression
+        run: |
+          node tests/admin-all-tabs-mobile.cjs
+          node tests/admin-mobile-layout.cjs
+      - name: Final test-only gate
+        run: |
+          echo 'PT_ADMIN_MOVE_LABEL_SYNC_PASS: edited/saved names+commands, stable site_k, PC/mobile all-tabs checks passed'
+      - name: Store test screenshots, never deploy
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-admin-move-label-sync-test-screens
+          path: |
+            admin-all-tabs-*.png
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
