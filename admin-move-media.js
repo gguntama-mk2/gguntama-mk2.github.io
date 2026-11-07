@@ -38,9 +38,9 @@
     const data=await request("/api/v1/admin/move-media");
     listing.replaceChildren();
     if(!data.entries||!data.entries.length){listing.appendChild(make("p","登録済みの動画はありません。"));return;}
-    const table=make("table"),h=make("tr");
+    const table=make("table"),thead=make("thead"),tbody=make("tbody"),h=make("tr");table.className="pt-mobile-table";
     for(const col of ["キャラクター","技名 / k","状態","確認","操作"])h.appendChild(make("th",col));
-    table.appendChild(h);
+    thead.appendChild(h);table.append(thead,tbody);
     for(const item of data.entries){
       const row=make("tr");
       row.appendChild(make("td",item.character_id));
@@ -63,7 +63,9 @@
           message("公開状態を更新しました。","ok");await refresh();
         }catch(e){message(e.message,"error");btn.disabled=false;}
       });
-      action.appendChild(btn);row.appendChild(action);table.appendChild(row);
+      action.appendChild(btn);row.appendChild(action);
+      ["キャラクター","技名 / k","状態","確認","操作"].forEach((label,i)=>{row.children[i].dataset.label=label;});
+      tbody.appendChild(row);
     }
     listing.appendChild(table);
   }
@@ -106,7 +108,7 @@
     panel.append(form,notice);host.appendChild(panel);
     const second=make("section");second.className="card";second.appendChild(make("h2","登録済み動画"));
     const reload=make("button","一覧を更新");reload.type="button";reload.className="btn";reload.addEventListener("click",()=>refresh().catch(e=>message(e.message,"error")));
-    second.appendChild(reload);listing=make("div");listing.className="tw";second.appendChild(listing);host.appendChild(second);
+    second.appendChild(reload);listing=make("div");listing.className="tw pt-mobile-table-wrap";second.appendChild(listing);host.appendChild(second);
     setCharacters(context.characters?context.characters():[]);
     refresh().catch(e=>message("一覧を取得できませんでした："+e.message,"error"));
   }
