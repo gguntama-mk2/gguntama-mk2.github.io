@@ -95,7 +95,14 @@ const fixtures = (u) => {
         const sec=page.locator("#sec"+tab[0].toUpperCase()+tab.slice(1));
         await sec.waitFor({state:"visible"});
         if(tab==="icons"){
-          await page.locator("#secIcons .pt-mi-list tbody tr").first().waitFor();
+          await page.locator("#secIcons .pt-mi-list tbody tr").first().waitFor({timeout:9000}).catch(async err=>{
+            console.log("ICONS DEBUG",JSON.stringify({errors,dom:await page.evaluate(()=>({
+              text:document.querySelector("#secIcons")?.innerText.slice(0,800),
+              char:document.querySelector("#secIcons select")?.value,
+              options:document.querySelector("#secIcons select")?.options.length,
+              table:!!document.querySelector("#secIcons .pt-mi-list")
+            }))})); throw err;
+          });
           const row=page.locator("#secIcons .pt-mi-list tbody tr").first();
           assert.equal(await row.evaluate(el=>getComputedStyle(el).display),mobile?"grid":"table-row");
           if(mobile){
