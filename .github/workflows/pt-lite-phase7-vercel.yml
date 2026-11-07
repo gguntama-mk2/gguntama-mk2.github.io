@@ -1,0 +1,36 @@
+name: PROJECT T Vercel Preview Preflight (test only)
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - vercel.json
+      - tools/pt_lite_phase7_vercel_preflight.py
+      - .github/workflows/pt-lite-phase7-vercel.yml
+permissions:
+  contents: write
+concurrency:
+  group: project-t-vercel-preflight
+  cancel-in-progress: true
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check isolated Vercel static preview configuration
+        run: |
+          python3 tools/pt_lite_phase7_vercel_preflight.py
+          python3 -m json.tool vercel.json > /dev/null
+      - name: Save signed-off preflight report to test branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-litev1/assets/data/phase7-vercel-preflight.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test: verified isolated static Vercel configuration"
+            git fetch origin project-t-preview-20261107
+            git rebase origin/project-t-preview-20261107
+            git push origin HEAD:project-t-preview-20261107
+          fi
