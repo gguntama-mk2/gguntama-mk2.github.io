@@ -2,181 +2,19 @@
   "schema": 7,
   "mode": "isolated-external-HTTPS-preview",
   "source_branch": "project-t-preview-20261107",
-  "preview_base": "https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/",
-  "at": "2026-11-07T01:42:40.049Z",
+  "preview_base": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/",
+  "at": "2026-11-07T01:44:36.227Z",
   "passed": false,
   "browser": "Chromium",
   "devices": {},
   "issues": [
     {
-      "device": "pc-debug",
-      "response": {
-        "status": 200,
-        "type": "text/html"
-      },
-      "state": {
-        "ready": "complete",
-        "title": "External Content Notice | rawgit.hack",
-        "html": "<html lang=\"en\"><head>\n\n<meta charset=\"utf-8\">\n<title>External Content Notice | rawgit.hack</title>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<meta name=\"description\" content=\"You are about to view a page hosted in a third-party Git repository.\">\n\n\n\n<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"//rawcdn.githack.com/neoascetic/rawgithack/9c6ff04/web/internal/opensearch.xml\" title=\"rawgit.hack\">\n<link rel=\"icon\" href=\"//rawcdn.githack.com/neoascetic/rawgithack/2358462/web/internal/sushi.svg\">\n\n<style>\n:root {\n  --color-bg:               #fff;\n  --color-text:             #333;\n  --color-text-muted:       #555;\n  --color-link:             #0000ff;\n  --color-border:           #efefef;\n  --color-border-ui:        #dfdfdf;\n  --color-surface:          #f8f8f8;\n  --color-active:           #badeff;\n  --color-invalid-bg:       #FFF7F7;\n  --color-valid-bg:         #F2FFEB;\n  --color-highlight-bg:     rgba(255, 255, 0, 0.10);\n  --color-highlight-border: rgba(255, 255, 0, 0.50);\n  --color-success:          #2a7a2a;\n  --color-error:            #c0392b;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    --color-bg:               #1e1e1e;\n    -",
-        "PT_CHAR_DATA": false,
-        "PT_ROUTE_ASSETS": false,
-        "guard": false,
-        "banner": false
-      },
-      "errors": [],
-      "network": [
-        {
-          "url": "https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/pc.html",
-          "status": 200,
-          "kind": "document",
-          "type": "text/html",
-          "cache": "no-store",
-          "compressed": "zstd"
-        }
-      ],
-      "other": [
-        {
-          "url": "https://cdn.carbonads.com/carbon.js",
-          "status": 200,
-          "kind": "script",
-          "type": "text/javascript",
-          "cache": "",
-          "compressed": "gzip"
-        },
-        {
-          "url": "https://srv.carbonads.net/ads/CEADPK3U.json",
-          "status": 200,
-          "kind": "fetch",
-          "type": "application/json; charset=utf-8",
-          "cache": "",
-          "compressed": "br"
-        },
-        {
-          "url": "https://ad.doubleclick.net/ddm/trackimp/N5295.3091281BUYSELLADS/B34721851.453481133;dc",
-          "status": 302,
-          "kind": "image",
-          "type": "text/html; charset=UTF-8",
-          "cache": "no-cache, must-revalidate",
-          "compressed": ""
-        },
-        {
-          "url": "https://srv.carbonads.net/static/30242/e1130b06f0096fbbd01a8d15bca68e6092cdebef",
-          "status": 200,
-          "kind": "image",
-          "type": "image/png",
-          "cache": "public, max-age=604800, immutable",
-          "compressed": "gzip"
-        },
-        {
-          "url": "https://ad.doubleclick.net/ddm/trackimp/N5295.3091281BUYSELLADS/B34721851.453481133;dc",
-          "status": 200,
-          "kind": "image",
-          "type": "image/gif",
-          "cache": "no-cache, must-revalidate",
-          "compressed": ""
-        },
-        {
-          "url": "https://srv.carbonads.net/ads/viewable/x/GTND4277CEYDCK7ECT7LYKQUF67IP2J7FTSDCZ3JCAAI",
-          "status": 200,
-          "kind": "fetch",
-          "type": "text/plain; charset=utf-8",
-          "cache": "no-cache, must-revalidate, post-check=0, pre-check=0",
-          "compressed": ""
-        }
-      ]
-    },
-    {
       "device": "pc",
-      "error": "page.waitForFunction: Timeout 20000ms exceeded.\n    at verify (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:36:16)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
-    },
-    {
-      "device": "sp-debug",
-      "response": {
-        "status": 200,
-        "type": "text/html"
-      },
-      "state": {
-        "ready": "complete",
-        "title": "External Content Notice | rawgit.hack",
-        "html": "<html lang=\"en\"><head>\n\n<meta charset=\"utf-8\">\n<title>External Content Notice | rawgit.hack</title>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<meta name=\"description\" content=\"You are about to view a page hosted in a third-party Git repository.\">\n\n\n\n<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"//rawcdn.githack.com/neoascetic/rawgithack/9c6ff04/web/internal/opensearch.xml\" title=\"rawgit.hack\">\n<link rel=\"icon\" href=\"//rawcdn.githack.com/neoascetic/rawgithack/2358462/web/internal/sushi.svg\">\n\n<style>\n:root {\n  --color-bg:               #fff;\n  --color-text:             #333;\n  --color-text-muted:       #555;\n  --color-link:             #0000ff;\n  --color-border:           #efefef;\n  --color-border-ui:        #dfdfdf;\n  --color-surface:          #f8f8f8;\n  --color-active:           #badeff;\n  --color-invalid-bg:       #FFF7F7;\n  --color-valid-bg:         #F2FFEB;\n  --color-highlight-bg:     rgba(255, 255, 0, 0.10);\n  --color-highlight-border: rgba(255, 255, 0, 0.50);\n  --color-success:          #2a7a2a;\n  --color-error:            #c0392b;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    --color-bg:               #1e1e1e;\n    -",
-        "PT_CHAR_DATA": false,
-        "PT_ROUTE_ASSETS": false,
-        "guard": false,
-        "banner": false
-      },
-      "errors": [],
-      "network": [
-        {
-          "url": "https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/sp.html",
-          "status": 200,
-          "kind": "document",
-          "type": "text/html",
-          "cache": "no-store",
-          "compressed": "zstd"
-        }
-      ],
-      "other": [
-        {
-          "url": "https://cdn.carbonads.com/carbon.js",
-          "status": 200,
-          "kind": "script",
-          "type": "text/javascript",
-          "cache": "",
-          "compressed": "gzip"
-        },
-        {
-          "url": "https://srv.carbonads.net/ads/CEADPK3U.json",
-          "status": 200,
-          "kind": "fetch",
-          "type": "application/json; charset=utf-8",
-          "cache": "",
-          "compressed": "br"
-        },
-        {
-          "url": "https://ad.doubleclick.net/ddm/trackimp/N5295.3091281BUYSELLADS/B34721851.453481133;dc",
-          "status": 302,
-          "kind": "image",
-          "type": "text/html; charset=UTF-8",
-          "cache": "no-cache, must-revalidate",
-          "compressed": ""
-        },
-        {
-          "url": "https://ad.doubleclick.net/ddm/trackimp/N5295.3091281BUYSELLADS/B34721851.453481133;dc",
-          "status": 200,
-          "kind": "image",
-          "type": "image/gif",
-          "cache": "no-cache, must-revalidate",
-          "compressed": ""
-        },
-        {
-          "url": "https://srv.carbonads.net/static/30242/400c8e2093e72466a93a26b1de86feabbcd1a9e3",
-          "status": 200,
-          "kind": "image",
-          "type": "image/png",
-          "cache": "public, max-age=604800, immutable",
-          "compressed": "gzip"
-        },
-        {
-          "url": "https://srv.carbonads.net/static/30242/a719f75f8b6a44161528117f997a5d75d3ea8145",
-          "status": 200,
-          "kind": "image",
-          "type": "image/png",
-          "cache": "public, max-age=604800, immutable",
-          "compressed": "gzip"
-        },
-        {
-          "url": "https://srv.carbonads.net/ads/viewable/x/GTND4277CEYDCK7ECT7LYKQUF67IP2JWCAYD5Z3JCAAI",
-          "status": 200,
-          "kind": "fetch",
-          "type": "text/plain; charset=utf-8",
-          "cache": "no-cache, must-revalidate, post-check=0, pre-check=0",
-          "compressed": ""
-        }
-      ]
+      "error": "Error: pc preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/pc_19.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"},{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/pc_01.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
     },
     {
       "device": "sp",
-      "error": "page.waitForFunction: Timeout 20000ms exceeded.\n    at verify (/home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:36:16)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
+      "error": "Error: sp preview asset failures: [{\"url\":\"https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/assets/js/sp_02.js\",\"status\":501,\"kind\":\"script\",\"type\":\"text/plain; charset=utf-8\",\"cache\":\"max-age=14400\",\"compressed\":\"\"}]\n    at verify (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:85:23)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase7_https_check.mjs:95:25"
     }
   ],
   "notes": [
