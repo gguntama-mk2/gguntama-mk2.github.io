@@ -45,7 +45,7 @@ jobs:
           i=json.loads(Path('phase17-performance/image-report.json').read_text())
           f=json.loads(Path('phase17-performance/font-report.json').read_text())
           assert i['passed'] and f['passed'],(i.get('errors'),f.get('error'))
-          assert len(i['scriptChanges']) == 2
+          assert len(i['scriptChanges']) == 4
           assert len(i['fontDisplayChanges']) == 2
           print('PHASE17_ASSET_GENERATION_PASS')
           PY
