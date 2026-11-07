@@ -106,7 +106,15 @@ async function stateCompatibility(){
       const progress=document.getElementById('barNum')?.textContent||'';
       return {card:!!card,progress};
     },{device,k:chosen.k});
-    report.storage[device+'_checkpoint']={actual,visible,chosen};
+    const diagnostics=await page.evaluate(({k,checkKey,reviewKey})=>{
+      const tr=document.querySelector('#body tr[data-k="'+k+'"]');
+      return {pageNow:window.pageNow?.(),current:(typeof current!=='undefined'?current:'unknown'),
+        visibleName:document.getElementById('charName')?.textContent,
+        jsState:(typeof state==='object'?state[checkKey]:'no-global-state'),
+        jsReview:(typeof reviews==='object'?reviews[reviewKey]:'no-global-review'),
+        row:tr?{className:tr.className,checked:[...tr.querySelectorAll('input[type="checkbox"]')].map(n=>({checked:n.checked,disabled:n.disabled,aria:n.getAttribute('aria-label')})).slice(0,6),name:tr.querySelector('.nt')?.textContent}:null};
+    },{k:chosen.k,checkKey,reviewKey});
+    report.storage[device+'_checkpoint']={actual,visible,chosen,diagnostics};
     console.log('STORAGE_CHECKPOINT',device,JSON.stringify({actual,visible,chosen}));
     assert.equal(device==='pc'?visible.checked:visible.card,true,'UI state visible');
     if(device==='pc')assert.equal(visible.reviewClass,true,'UI bookmark present');
