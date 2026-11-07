@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const ROOT='https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/';
+const ROOT=(process.env.PT_PREVIEW_BASE || 'https://raw.githack.com/gguntama-mk2/gguntama-mk2.github.io/project-t-preview-20261107/test-litev1/').replace(/\/?$/, '/');
 const DEST='test-litev1/assets/data/phase7-public-preview-report.json';
 const SHOTS='phase7-preview-screenshots';
 const data={schema:7,mode:'isolated-external-HTTPS-preview',source_branch:'project-t-preview-20261107',preview_base:ROOT,at:new Date().toISOString(),passed:false,browser:'Chromium',devices:{},issues:[],notes:['This is a third-party proxy, NOT a GitHub Pages deployment.','Network coverage is on the isolated preview origin; authenticated server behavior is disabled.']};
@@ -32,7 +32,13 @@ async function verify(device){
   const t0=Date.now();
   const response=await page.goto(url,{waitUntil:'load',timeout:60000});
   timing.navigation_ms=Date.now()-t0;
-  await page.waitForFunction(()=>window.PT_CHAR_DATA && window.PT_ROUTE_ASSETS && window.__PROJECT_T_PREVIEW && !!document.getElementById('ptPreviewNotice'),{timeout:30000});
+  try{
+    await page.waitForFunction(()=>window.PT_CHAR_DATA && window.PT_ROUTE_ASSETS && window.__PROJECT_T_PREVIEW && !!document.getElementById('ptPreviewNotice'),null,{timeout:20000});
+  }catch(err){
+    const state=await page.evaluate(()=>({ready:document.readyState,title:document.title,html:document.documentElement.outerHTML.slice(0,1200),PT_CHAR_DATA:!!window.PT_CHAR_DATA,PT_ROUTE_ASSETS:!!window.PT_ROUTE_ASSETS,guard:!!window.__PROJECT_T_PREVIEW,banner:!!document.getElementById('ptPreviewNotice')})).catch(e=>({error:String(e)}));
+    data.issues.push({device:device+'-debug',response:{status:response.status(),type:response.headers()['content-type']},state,errors,network:network.slice(0,100),other:external.slice(0,15)});
+    throw err;
+  }
   await sleep(1500);
   const initial={
     http_status:response.status(),
