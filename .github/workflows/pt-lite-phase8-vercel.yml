@@ -1,0 +1,82 @@
+name: PROJECT T Phase 8 - Vercel live browser verification
+on:
+  push:
+    branches:
+      - project-t-preview-20261107
+    paths:
+      - .github/workflows/pt-lite-phase8-vercel.yml
+concurrency:
+  group: pt-phase8-vercel-live
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  chromium-live:
+    if: github.ref == 'refs/heads/project-t-preview-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      PT_PREVIEW_BASE: https://project-t-lite-preview-20261107-asf281d07-guntama1205-4982.vercel.app/
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Vercel HTTP origin and all key assets
+        run: |
+          set -e
+          for path in pc.html sp.html assets/js/pc_04.js assets/js/sp_04.js assets/js/pc_route-loader.js assets/js/sp_route-loader.js assets/data/characters/alisa.json; do
+            echo "CHECK $path"
+            code="$(curl -L -s -o /dev/null -w '%{http_code}' --max-time 30 "${PT_PREVIEW_BASE}${path}")"
+            echo "HTTP $code"
+            test "$code" = 200
+          done
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run end-to-end PC and SP checks on Vercel
+        run: |
+          set +e
+          node tools/pt_lite_phase7_https_check.mjs > /tmp/pt-phase8-vercel.log 2>&1
+          rc=$?
+          set -e
+          tail -c 20000 /tmp/pt-phase8-vercel.log
+          test -f test-litev1/assets/data/phase7-public-preview-report.json
+          cp test-litev1/assets/data/phase7-public-preview-report.json test-litev1/assets/data/phase8-vercel-report.json
+          echo "Browser suite exit: $rc"
+      - name: Preserve report in test branch
+        if: always()
+        run: |
+          if test -f test-litev1/assets/data/phase8-vercel-report.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add test-litev1/assets/data/phase8-vercel-report.json
+            if ! git diff --cached --quiet; then
+              git commit -m "test: phase8 Vercel browser measurements"
+              git fetch origin project-t-preview-20261107
+              git rebase origin/project-t-preview-20261107
+              git push origin HEAD:project-t-preview-20261107
+            fi
+          fi
+      - name: Upload live preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pt-phase8-vercel-pc-sp
+          path: phase7-preview-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Require browser and network success
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('test-litev1/assets/data/phase8-vercel-report.json').read_text())
+          assert r['passed'],r['issues']
+          assert set(r['devices'])=={'pc','sp'}
+          for d,x in r['devices'].items():
+              assert x['initial']['http_status']==200
+              assert x['apiGuard']['status']==401
+              assert x['vs']['present']
+              assert not x['httpErrors']
+              assert not x['jsErrors']
+              print(d,'initial requests',x['firstLoad']['requestCount'],'load milliseconds',x['firstLoad']['navigationMs'])
+          PY
