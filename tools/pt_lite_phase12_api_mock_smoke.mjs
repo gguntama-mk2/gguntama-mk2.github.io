@@ -4,11 +4,11 @@ import {spawn} from 'node:child_process';
 import fs from 'node:fs';
 const ROOT='http://127.0.0.1:8768/';
 const FILE='phase12-release-audit/phase12-api-mock-browser.json';
-const MOCK='http://localhost:8000';
+const MOCK=ROOT.slice(0,-1);
 const test={phase:12,mode:'local fake auth/media API only',at:new Date().toISOString(),passed:false,devices:{},failures:[],guarantees:[
   'No traffic is sent to real api.project-t-god.com, Discord, Google, YouTube or production website.',
   'No POST/PATCH/PUT/DELETE request is permitted; OAuth links are inspected without clicking.',
-  'Both login and movie APIs are replaced with in-memory mock responses on isolated Chromium contexts.',
+  'Both login and movie APIs are replaced with in-memory same-origin mock responses on isolated Chromium contexts.',
   'This does not replace real OAuth, real video encoding/stream playback or authenticated administrator testing.'
 ]};
 let server,browser;
@@ -31,6 +31,15 @@ async function localServer(){
 async function run(device){
   const ctx=await browser.newContext({viewport:device==='pc'?{width:1440,height:900}:{width:390,height:844},isMobile:device==='sp',
      serviceWorkers:'block',deviceScaleFactor:1});
+  // Stage12 uses a same-origin fake API to avoid Chromium private-network
+  // and CORS policies interfering with a test-only request. The production
+  // OAuth URL itself is additionally verified in the static audit.
+  await ctx.addInitScript(()=>{
+    Object.defineProperty(window,'PROJECT_T_AUTH_API_BASE',{
+      configurable:false,enumerable:true,
+      get(){return location.origin;},set(_){ /* prevent the normal empty dev config from overriding the mock */ }
+    });
+  });
   const page=await ctx.newPage(),requests=[],failures=[],jsErrors=[];
   page.on('pageerror',e=>jsErrors.push(String(e)));
   await ctx.route('**/*',async route=>{
