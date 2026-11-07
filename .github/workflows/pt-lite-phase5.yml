@@ -56,6 +56,8 @@ jobs:
           git add test-litev1/assets/data/phase5-regression-report.json test-litev1/assets/data/phase5-update-optimization.json test-litev1/assets/data/phase5-home-defer.json test-litev1/assets/data/phase5-font-strategy.json test-litev1/assets/css/pc_00.css test-litev1/assets/css/sp_00.css test-litev1/assets/js/pc_04.js test-litev1/assets/js/sp_04.js test-litev1/assets/js/pc_17.js test-litev1/assets/js/sp_17.js test-litev1/assets/js/pc_20.js test-litev1/assets/js/sp_20.js test-litev1/assets/js/pc_route-loader.js test-litev1/assets/js/sp_route-loader.js
           if ! git diff --cached --quiet; then
             git commit -m "test: phase5 first-load and persistence regression report"
+            git fetch origin test/lite-regression-20261107
+            git rebase origin/test/lite-regression-20261107
             git push origin HEAD:test/lite-regression-20261107
           fi
       - name: Gate on browser compatibility
@@ -67,6 +69,8 @@ jobs:
           assert r["passed"], r["errors"]
           assert set(r["network"])=={"pc","sp"}
           assert r["storage"]["clickedAndPersisted"]
+          assert all(x["under_1mb"] for x in r["network"].values()),"Initial uncompressed transfer exceeded 1MB"
+          assert all(x["post_navigation"]["update"]["fullVersions"]==34 for x in r["network"].values())
           print("Phase5 verified. Initial transfer bytes:")
           for device,data in r["network"].items():
               print(device,data["total_local_bytes"],"under1mb",data["under_1mb"])
