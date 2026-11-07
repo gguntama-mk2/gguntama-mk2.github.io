@@ -1,0 +1,84 @@
+name: PROJECT T Lite Phase15 - Latest Main Compatibility (TEST ONLY)
+on:
+  push:
+    branches:
+      - test/pt-lite-phase15-main-sync-20261107
+  pull_request:
+    branches:
+      - release/pt-lite-html-phase13
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase15-readonly
+  cancel-in-progress: true
+jobs:
+  audit-and-browser:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/test/pt-lite-phase15-main-sync-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout isolated integration branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fetch source branches (read-only)
+        run: |
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/release/pt-lite-assets-phase13:refs/remotes/origin/release/pt-lite-assets-phase13' \
+            '+refs/heads/release/pt-lite-html-phase13:refs/remotes/origin/release/pt-lite-html-phase13'
+          git status --short
+      - name: Compare entire Git trees (439 assets + latest admin + three lightweight pages)
+        run: |
+          python3 tools/pt_lite_phase15_compat_gate.py
+          node --check admin.js
+          node --check tests/admin-mobile-layout.cjs
+          find assets/js -type f -name '*.js' -print0 | xargs -0 -r -n1 node --check
+      - name: Install isolated Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Expose this checkout to existing same-origin smoke tests without copying production data
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s .. phase11-pages-package/site
+          test -f phase11-pages-package/site/pc.html
+          test -f phase11-pages-package/site/sp.html
+          test -f phase11-pages-package/site/admin.html
+      - name: Browser smoke PC/SP navigation, lazy data, legacy storage
+        run: node tools/pt_lite_phase11_pages_smoke.mjs
+      - name: Browser smoke OAuth URL, mock video, icons, login gate
+        run: node tools/pt_lite_phase12_api_mock_smoke.mjs
+      - name: Browser smoke admin mobile/desktop responsive UI (synthetic users only)
+        run: node tests/admin-mobile-layout.cjs
+      - name: Verify all local test reports
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('phase15-release-audit/phase15-integrated.json').read_text())
+          b=json.loads(Path('phase11-pages-package/browser-report.json').read_text())
+          c=json.loads(Path('phase12-release-audit/phase12-api-mock-browser.json').read_text())
+          assert all(x['passed'] for x in (a,b,c)), (a.get('errors'),b.get('failures'),c.get('failures'))
+          assert b['devices']['pc']['routes']['sheet']['rows']==228
+          assert b['devices']['sp']['routes']['sheet']['rows']==228
+          assert b['devices']['pc']['routes']['characters']['loaded']==44
+          assert b['devices']['pc']['routes']['glossary']==280
+          assert b['devices']['sp']['routes']['stage']==21
+          assert b['devices']['pc']['routes']['updates']==34
+          print('PHASE15_TEST_ONLY_PASS; live OAuth/video/admin remain UNVERIFIED')
+          PY
+      - name: Save verification outputs (never deploy)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase15-main-sync-compatibility
+          path: |
+            phase15-release-audit/phase15-integrated.json
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
