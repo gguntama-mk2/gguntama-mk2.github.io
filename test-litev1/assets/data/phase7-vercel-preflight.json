@@ -5,16 +5,16 @@
   "output_dir": "test-litev1",
   "devices": {
     "pc": {
-      "html_bytes": 15058,
-      "resource_paths_in_html": 19,
+      "html_bytes": 14932,
+      "resource_paths_in_html": 16,
       "missing_assets": 0
     },
     "sp": {
-      "html_bytes": 17208,
-      "resource_paths_in_html": 18,
+      "html_bytes": 17082,
+      "resource_paths_in_html": 15,
       "missing_assets": 0
     }
   },
   "character_json_count": 44,
-  "asset_bytes_total": 40791381
+  "asset_bytes_total": 40801198
 }
