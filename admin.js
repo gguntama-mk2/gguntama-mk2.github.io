@@ -154,7 +154,11 @@
     if (t !== "icons" && t !== "media") return;
     var view = adminMoveView();
     if (t === "icons") window.PTAdminMoveIcons.updateCharacters(view);
-    else window.PTAdminMoveMedia.updateCharacters(view);
+    else {
+      window.PTAdminMoveMedia.updateCharacters(view);
+      // 登録済み動画の表示名も、別タブで変更した同じ site_k の名前へ再解決する。
+      window.PTAdminMoveMedia.refresh();
+    }
   }
   function setTab(t) {
     S.tab = t;
