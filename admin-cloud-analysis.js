@@ -496,6 +496,32 @@
       "2304件の全件取得とソース照合が完了したと報告されています。実機の技効果は未検証です。":
       "部分データです。未取得インデックスを自動生成して埋めません。"+
       "全件抽出を名乗るには2304レコードと検証済みソースの両方が必要です。","pt-cloud-evidence-warning"));
+    const inferred=coverage.candidate_graph_preview;
+    if(inferred){
+      const section=node("section","pt-motbin-graph-preview");
+      section.append(el("h3","候補キャンセル行と技レコードの照合状況"),
+        note("2,664件のキャンセル行は推定された構造情報です。"+
+          "58件の技レコードとの一致数を示しており、2304件の復号や実機確認とは異なります。","pt-cloud-evidence-warning"),
+        metrics([["全候補キャンセル行",inferred.candidate_cancel_rows_loaded],
+          ["既知58技に添付した候補関係",inferred.candidate_edges_attached_to_known_58_move_records],
+          ["元技レコード不足で未添付",inferred.candidate_edges_skipped_missing_move_records],
+          ["対応候補があるRequirements ID",inferred.distinct_requirement_ids_attached_to_known_records]]));
+      const csv=el("button","照合状況の根拠CSVを出力","btn");
+      csv.type="button";csv.addEventListener("click",()=>downloadCsv(
+        "project-t-bryan-cancel-graph-coverage.csv",[
+          ["対象","件数","情報の種類","検証状態"],
+          ["キャンセル行の候補",inferred.candidate_cancel_rows_loaded,"候補グラフraw","実機未検証"],
+          ["既知58技に付いた候補関係",inferred.candidate_edges_attached_to_known_58_move_records,
+            "推定技インデックスとの構造一致","実機未検証"],
+          ["未取得技レコードにより未添付",inferred.candidate_edges_skipped_missing_move_records,
+            "推定技インデックス／個別rawレコード不足","未取得・未検証"],
+          ["関連Requirements ID",inferred.distinct_requirement_ids_attached_to_known_records,
+            "Requirements ID（技IDとは別）","効果未検証"],
+          ["完全な個別MOTBIN技レコード",present,"元データのある技のみ",
+            inferred.full_motbin_extraction?"2304件全件取得":"部分データ"]
+        ]));
+      section.append(csv);wrapper.append(section);
+    }
     const fingerprint=coverage.source_motbin_sha256;
     if(fingerprint)wrapper.append(note("元MOTBINのSHA-256："+fingerprint,"pt-cloud-source"));
     const list=node("details","pt-cloud-graph-details pt-motbin-known");
