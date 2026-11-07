@@ -1,0 +1,61 @@
+{
+  "phase": 9,
+  "status": "staging-deployed-and-asset-verified",
+  "production_unchanged": true,
+  "vercel": {
+    "project": "project-t-lite-preview-20261107",
+    "team": "guntama1205-4982",
+    "project_id": "prj_a1BgRtFCGf05wMYyXO18TmceV60E",
+    "deployment_id": "dpl_Camc3BfFvQ4kcR98QUA6NWNFdruR",
+    "environment": "staging",
+    "domain": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app"
+  },
+  "github": {
+    "repository": "gguntama-mk2/gguntama-mk2.github.io",
+    "test_branch": "project-t-preview-20261107",
+    "source_commit": "0e7b96a71ef3710160a6d9f233b3f30c74e33199"
+  },
+  "deployed_files": {
+    "html": [
+      "pc.html",
+      "sp.html"
+    ],
+    "preview_guard": [
+      "assets/js/pt-preview-guard.js"
+    ],
+    "combo_data": [
+      "combos-live.json"
+    ],
+    "icon_directory": "icons/",
+    "icon_files": [
+      "icons/balconybreak.webp",
+      "icons/floorblast.webp",
+      "icons/floorbreak.webp",
+      "icons/floorgimmick.webp",
+      "icons/forcedcrouch.webp",
+      "icons/hardfloorbreak.webp",
+      "icons/hardwallbreak.webp",
+      "icons/heatengage.webp",
+      "icons/homing.webp",
+      "icons/powercrush.webp",
+      "icons/recoverable.webp",
+      "icons/tornado.webp",
+      "icons/wallblast.webp",
+      "icons/wallbound.webp",
+      "icons/wallbreak.webp"
+    ],
+    "config": [
+      "vercel.json"
+    ],
+    "file_count": 20
+  },
+  "external_assets": {
+    "from": "/assets/:path*",
+    "to": "https://githubraw.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/:path*",
+    "source": "GitHub raw proxy",
+    "remark": "Temporary preview transport, not a production CDN SLA"
+  },
+  "security": "Anonymous preview only: OAuth/API guard intercepts account actions; no production domain was assigned.",
+  "diagnostics": "Root icons (15 files) and combos-live.json were initially missing. Both fixed by uploading the original files to isolated Vercel staging. The Phase9 browser parity workflow verifies them.",
+  "next_steps": "Use production/preview comparisons, inspect screenshot diffs, then decide on final production CDN migration after explicit authorization."
+}
