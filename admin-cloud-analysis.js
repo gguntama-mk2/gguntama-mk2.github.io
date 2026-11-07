@@ -19,7 +19,8 @@
     filters:{bryan:{q:"",sort:"priority",status:"all",coverage:"all",character:"all"},
       cross:{q:"",sort:"priority",status:"all",coverage:"all",character:"all"}}};
   let root, csrfProvider, characterProvider=()=>[], panels={}, state=null, payload=null,
-      reviews={}, linkById=new Map(), lastFetch=0, pending=null, message, reloadButton, dialog=null;
+      reviews={}, linkById=new Map(), visibleLimit={bryan:50,cross:50},
+      lastFetch=0, pending=null, message, reloadButton, dialog=null;
   function el(tag,txt,cls){const n=document.createElement(tag);if(txt!==null&&txt!==undefined)n.textContent=String(txt);if(cls)n.className=cls;return n;}
   function node(tag,cls){return el(tag,null,cls);}
   function fmt(x){return x===null||x===undefined||x===""?"—":typeof x==="number"?x.toLocaleString("ja-JP"):String(x);}
@@ -113,7 +114,7 @@
     select.value=current;
   }
   function changeFilter(scope,key,value){
-    state.filters[scope][key]=value;persist();
+    state.filters[scope][key]=value;visibleLimit[scope]=50;persist();
     const panel=scope==="bryan"?"priority":"crossPriority";
     // Controls stay mounted while typing; update the result list only.
     const results=panels[panel].body.querySelector(".pt-cloud-results");
@@ -196,7 +197,7 @@
     return wrap;
   }
   function renderRowsInto(scope,container){
-    const rows=filtered(scope),fields=FIELDS[scope];container.replaceChildren();
+    const allRows=filtered(scope),rows=allRows.slice(0,visibleLimit[scope]||50),fields=FIELDS[scope];container.replaceChildren();
     if(!rows.length){container.appendChild(note("条件に一致するIDはありません。","pt-cloud-empty"));return;}
     const wrap=node("div","tw pt-cloud-table-wrap"),t=node("table","pt-mobile-table pt-cloud-table"),thead=el("thead"),trh=el("tr"),tbody=el("tbody");
     const cols=payload?.linkage?[...fields,["link","資料照合"],["review","調査状況"]]
@@ -224,6 +225,14 @@
       const td=el("td",statusLabel(scope,row));td.dataset.label="調査状況";tr.append(td);tbody.append(tr);
     });
     t.append(thead,tbody);wrap.append(t);container.append(wrap);
+    if(rows.length<allRows.length){
+      const more=el("button","さらに "+Math.min(50,allRows.length-rows.length)+"件表示（残り "+
+        (allRows.length-rows.length)+"件）","btn pt-cloud-more");
+      more.type="button";more.addEventListener("click",()=>{
+        visibleLimit[scope]+=50;renderRowsInto(scope,container);
+      });
+      container.append(more);
+    }
   }
   function listPanel(scope){
     if(!payload?.reports?.[scope])return [note(payload?.errors?.[scope]||"解析データを取得できませんでした。","pt-cloud-error")];
@@ -492,7 +501,8 @@
   function mount(target,context){
     document.removeEventListener("keydown",onEscape);
     root=target;csrfProvider=context?.csrf||(()=> "");characterProvider=context?.characters||(()=>[]);
-    state=loadPrefs();panels={};payload=null;reviews={};linkById=new Map();lastFetch=0;pending=null;
+    state=loadPrefs();panels={};payload=null;reviews={};linkById=new Map();
+    visibleLimit={bryan:50,cross:50};lastFetch=0;pending=null;
     const head=node("div","card pt-cloud-header");
     head.append(el("h2","クラウド解析"),note("調査IDの検索・詳細・記録・差分を管理します。未検証結果は確定情報ではありません。"));
     const controls=node("div","pt-cloud-controls");
