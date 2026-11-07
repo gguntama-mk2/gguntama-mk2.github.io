@@ -23,8 +23,8 @@ try{
  const cmdCount=count(original,cmd),infoCount=count(original,info);
  if(cmdCount!==2||infoCount!==2)throw Error('Unexpected child selector call counts '+cmdCount+'/'+infoCount);
  const helper='const pt28Elements=new Map(); const pt28Get=n=>{let x=pt28Elements.get(n);if(!x){x={c:n.querySelector(".cmdtxt"),mi:n.querySelector(".minfo")};pt28Elements.set(n,x)}return x};';
- let changed=original.replace(first,first+'\n  '+helper);
- changed=changed.replaceAll(cmd,'pt28Get(n).c').replaceAll(info,'pt28Get(n).mi');
+ let changed=original.replaceAll(cmd,'pt28Get(n).c').replaceAll(info,'pt28Get(n).mi');
+ changed=changed.replace(first,first+'\n  '+helper);
  if(changed.includes('n.querySelector(".cmdtxt")') && changed.split('n.querySelector(".cmdtxt")').length!==2)throw Error('Unexpected uncached cmd query');
  if(!changed.includes('pt28Get(n).c')||!changed.includes('pt28Get(n).mi'))throw Error('Selector substitution not applied');
  // Keep exact width/height comparisons, scale factors, and write loops.
