@@ -855,11 +855,13 @@
       var r = await api("/api/v1/admin/audit?limit=200"), tb = h("tbody");
       r.entries.forEach(function (a) {
         var det = a.details ? Object.keys(a.details).map(function (k) { return k + "=" + a.details[k]; }).join(" ") : "";
-        tb.appendChild(h("tr", null, h("td", { text: fmtAt(a.at) }), h("td", { text: ACTION_JA[a.action] || a.action }), h("td", null, h("code", { text: shortId(a.actor) })),
-          h("td", null, a.target ? h("code", { text: shortId(a.target) }) : ""), h("td", { text: (a.object_type || "") + (a.object_id && a.object_type === "checksheet" ? "：" + a.object_id : "") }), h("td", { text: det })));
+        var tr = h("tr", null, h("td", { text: fmtAt(a.at) }), h("td", { text: ACTION_JA[a.action] || a.action }), h("td", null, h("code", { text: shortId(a.actor) })),
+          h("td", null, a.target ? h("code", { text: shortId(a.target) }) : ""), h("td", { text: (a.object_type || "") + (a.object_id && a.object_type === "checksheet" ? "：" + a.object_id : "") }), h("td", { text: det }));
+        ["日時","操作","した人","された人","対象","詳細"].forEach(function (label, i) { tr.children[i].dataset.label = label; });
+        tb.appendChild(tr);
       });
       box.replaceChildren(h("div", { class: "card" }, h("b", { text: "操作の記録（新しい順・最大200件）" }),
-        h("div", { class: "tw" }, h("table", null, h("thead", null, h("tr", null, ["日時", "操作", "した人", "された人", "対象", "詳細"].map(function (t) { return h("th", { text: t }); }))), tb))));
+        h("div", { class: "tw" }, h("table", { class: "pt-mobile-table" }, h("thead", null, h("tr", null, ["日時", "操作", "した人", "された人", "対象", "詳細"].map(function (t) { return h("th", { text: t }); }))), tb))));
     } catch (e) { box.replaceChildren(h("div", { class: "banner err", text: e.message })); }
   }
 
