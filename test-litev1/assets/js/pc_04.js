@@ -344,7 +344,7 @@ function charBtnEl(c, inDrawer) {   // キャラ1人ぶんのボタン（本体�
   pic.className = "pimg";
   if (c.img) {
     const im = document.createElement("img");
-    im.src = c.img; im.alt = ""; im.loading = "lazy";
+    im.alt = ""; im.loading = "lazy"; if(document.documentElement.dataset.page==="home") im.dataset.ptSrc=c.img; else im.src=c.img;
     noDragImg(im);   // 画像をつかんで動かせないように
     pic.appendChild(im);
   } else {
@@ -480,6 +480,7 @@ function chdPicked() {
 /*CHDJS-END*/
 
 function renderTable() {
+  if(document.documentElement.dataset.page==='home')return;
   const c = CHARACTERS.find(x => x.id === current);
   if(c && !c.__ptLoaded) {
     const body=document.getElementById("body");

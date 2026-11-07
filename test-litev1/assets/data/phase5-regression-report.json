@@ -1,30 +1,27 @@
 {
   "schema": 5,
   "mode": "test-only",
-  "at": "2026-11-07T01:11:36.688Z",
+  "at": "2026-11-07T01:16:39.679Z",
   "passed": false,
   "network": {
     "pc": {
-      "total_local_bytes": 1461111,
+      "total_local_bytes": 1091358,
       "under_1mb": false,
       "groups": {
         "html": 14946,
         "css": 112064,
-        "javascript": 436922,
-        "other_media": 792880,
-        "character_json": 86760,
+        "javascript": 437935,
+        "other_media": 508874,
         "pxstore_images": 17539
       },
-      "request_count": 71,
-      "loaded_character_ids": [
-        "alisa"
-      ],
+      "request_count": 27,
+      "loaded_character_ids": [],
       "loaded_feature_codes": [],
       "top_responses": [
         {
           "path": "/test-litev1/assets/js/pc_04.js",
           "status": 200,
-          "bytes": 321688,
+          "bytes": 321826,
           "kind": "javascript"
         },
         {
@@ -38,12 +35,6 @@
           "status": 200,
           "bytes": 109323,
           "kind": "css"
-        },
-        {
-          "path": "/test-litev1/assets/data/characters/alisa.json",
-          "status": 200,
-          "bytes": 86760,
-          "kind": "character_json"
         },
         {
           "path": "/test-litev1/assets/media/356e885b36a307552b9b.webp",
@@ -66,7 +57,7 @@
         {
           "path": "/test-litev1/assets/js/pc_17.js",
           "status": 200,
-          "bytes": 32772,
+          "bytes": 33647,
           "kind": "javascript"
         },
         {
@@ -118,165 +109,9 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/media/db69014ee56eba319d92.webp",
-          "status": 200,
-          "bytes": 10000,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/6065e31d6eaa39c0b1fd.webp",
-          "status": 200,
-          "bytes": 9068,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/42af80ced32ba2aab3cf.webp",
-          "status": 200,
-          "bytes": 8592,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/e66811c13da615ca6334.webp",
-          "status": 200,
-          "bytes": 8022,
-          "kind": "other_media"
-        },
-        {
           "path": "/test-litev1/assets/media/54a666f059de32829fa2.woff",
           "status": 200,
           "bytes": 7968,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/0da58b8cd3f2c561e378.webp",
-          "status": 200,
-          "bytes": 7938,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/6b07a67995fd9ef62d81.webp",
-          "status": 200,
-          "bytes": 7910,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/ac456906500a30d51fdb.webp",
-          "status": 200,
-          "bytes": 7830,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/d50b4ddcbc21b0431cb0.webp",
-          "status": 200,
-          "bytes": 7684,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/d07e4b9afe96e03345c3.webp",
-          "status": 200,
-          "bytes": 7332,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/98fa4ed7562bc1bb8c57.webp",
-          "status": 200,
-          "bytes": 7270,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/3adf93fb28ed89c04ad9.webp",
-          "status": 200,
-          "bytes": 7262,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/37c4deba3c4d59b7db5f.webp",
-          "status": 200,
-          "bytes": 7038,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/30a88ca50a0e3ff0a21a.webp",
-          "status": 200,
-          "bytes": 6742,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/d4fe271a0e9e0c1390ea.webp",
-          "status": 200,
-          "bytes": 6696,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/ff20e631725e5f75d72a.webp",
-          "status": 200,
-          "bytes": 6564,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/7b3d51525dcd2d9d3b7c.webp",
-          "status": 200,
-          "bytes": 6558,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/d300100397e851f2265d.webp",
-          "status": 200,
-          "bytes": 6546,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/47d5ef4cb6959dab85e0.webp",
-          "status": 200,
-          "bytes": 6516,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/f39aae153b8787095fef.webp",
-          "status": 200,
-          "bytes": 6478,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/864bf0a5e9ac6e0c21e8.webp",
-          "status": 200,
-          "bytes": 6442,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/37a740fa41f7f35356a3.webp",
-          "status": 200,
-          "bytes": 6434,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/3ac17081dfcaeff0c5dd.webp",
-          "status": 200,
-          "bytes": 6366,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/ce144bd100afd26d7bce.webp",
-          "status": 200,
-          "bytes": 6362,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/368d40d7328ff5273d86.webp",
-          "status": 200,
-          "bytes": 6336,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/4c77c584aa291fcb8487.webp",
-          "status": 200,
-          "bytes": 6316,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/78af84eaa5797e241c92.webp",
-          "status": 200,
-          "bytes": 6278,
           "kind": "other_media"
         },
         {
@@ -286,66 +121,87 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/media/93132e40ec2245ff055e.webp",
-          "status": 200,
-          "bytes": 6204,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/c40cdb48823b8e5c5c07.webp",
-          "status": 200,
-          "bytes": 6168,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/8ae4d8a93b7adad6dd4f.webp",
-          "status": 200,
-          "bytes": 6140,
-          "kind": "other_media"
-        },
-        {
-          "path": "/test-litev1/assets/media/f5bc735e7b4f3ec56cb5.webp",
-          "status": 200,
-          "bytes": 6126,
-          "kind": "other_media"
-        },
-        {
           "path": "/test-litev1/assets/media/441acd27a4840c16574b.webp",
           "status": 200,
           "bytes": 6026,
           "kind": "other_media"
         },
         {
-          "path": "/test-litev1/assets/media/6d5f976a6a5762e7b10f.webp",
+          "path": "/test-litev1/assets/css/pc_01.css",
           "status": 200,
-          "bytes": 6000,
+          "bytes": 2741,
+          "kind": "css"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_route-loader.js",
+          "status": 200,
+          "bytes": 2586,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/media/6bb65df10133812ba720.svg",
+          "status": 200,
+          "bytes": 686,
           "kind": "other_media"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_00.js",
+          "status": 200,
+          "bytes": 496,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/pxstore/48481f1229888c33fc382ec0.avif",
+          "status": 200,
+          "bytes": 305,
+          "kind": "pxstore_images"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_03.js",
+          "status": 200,
+          "bytes": 240,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_02.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_01.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
+        },
+        {
+          "path": "/test-litev1/assets/js/pc_19.js",
+          "status": 200,
+          "bytes": 0,
+          "kind": "javascript"
         }
       ],
       "bad_responses": [],
       "page_errors": []
     },
     "sp": {
-      "total_local_bytes": 1159769,
+      "total_local_bytes": 1073973,
       "under_1mb": false,
       "groups": {
         "html": 17096,
         "css": 101018,
-        "javascript": 429168,
+        "javascript": 430132,
         "other_media": 508188,
-        "pxstore_images": 17539,
-        "character_json": 86760
+        "pxstore_images": 17539
       },
-      "request_count": 26,
-      "loaded_character_ids": [
-        "alisa"
-      ],
+      "request_count": 25,
+      "loaded_character_ids": [],
       "loaded_feature_codes": [],
       "top_responses": [
         {
           "path": "/test-litev1/assets/js/sp_04.js",
           "status": 200,
-          "bytes": 313958,
+          "bytes": 314047,
           "kind": "javascript"
         },
         {
@@ -359,12 +215,6 @@
           "status": 200,
           "bytes": 101018,
           "kind": "css"
-        },
-        {
-          "path": "/test-litev1/assets/data/characters/alisa.json",
-          "status": 200,
-          "bytes": 86760,
-          "kind": "character_json"
         },
         {
           "path": "/test-litev1/assets/media/356e885b36a307552b9b.webp",
@@ -387,7 +237,7 @@
         {
           "path": "/test-litev1/assets/js/sp_17.js",
           "status": 200,
-          "bytes": 32773,
+          "bytes": 33648,
           "kind": "javascript"
         },
         {
@@ -503,28 +353,9 @@
       "page_errors": []
     }
   },
-  "storage": {
-    "pc_checkpoint": {
-      "actual": {
-        "check": true,
-        "memo": "保存互換テスト・あいうえお",
-        "review": true,
-        "last": "alisa"
-      },
-      "visible": {
-        "checked": false,
-        "reviewClass": false
-      },
-      "chosen": {
-        "id": "alisa",
-        "k": 0,
-        "moveName": "リードジャブ",
-        "idx": 0
-      }
-    }
-  },
+  "storage": {},
   "errors": [
-    "AssertionError [ERR_ASSERTION]: UI state visible\n\nfalse !== true\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:109:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:114:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:136:18"
+    "AssertionError [ERR_ASSERTION]: legacy note\n+ actual - expected\n\n+ undefined\n- '保存互換テスト・あいうえお'\n\n    at validate (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:97:12)\n    at async stateCompatibility (file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:124:13)\n    at async file:///home/runner/work/gguntama-mk2.github.io/gguntama-mk2.github.io/tools/pt_lite_phase5_regression.mjs:146:18"
   ],
   "notes": []
 }

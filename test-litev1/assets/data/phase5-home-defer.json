@@ -1,0 +1,16 @@
+{
+  "schema": 5,
+  "mode": "test-only",
+  "devices": {
+    "pc": {
+      "original_sheet_js_bytes": 321688,
+      "new_sheet_js_bytes": 321826,
+      "on_home": "character JSON withheld; PC hidden character thumbnails withheld"
+    },
+    "sp": {
+      "original_sheet_js_bytes": 313958,
+      "new_sheet_js_bytes": 314047,
+      "on_home": "character JSON withheld; PC hidden character thumbnails withheld"
+    }
+  }
+}

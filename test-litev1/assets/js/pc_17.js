@@ -276,3 +276,27 @@ html.chd-on .totop-bar{visibility:hidden}
 })();
 /*VIEWS-END*/
 
+/* PT-HOME-DEFER: initialize sheet data only when the sheet is actually opened. */
+(function(){
+  const root=document.documentElement;
+  let oldPage=root.dataset.page||"sheet";
+  function hydrate(){
+    const page=root.dataset.page||"sheet";
+    if(page!=="home"){
+      document.querySelectorAll("#chars img[data-pt-src], #chdGrid img[data-pt-src]").forEach(img=>{
+        img.src=img.dataset.ptSrc;
+        delete img.dataset.ptSrc;
+      });
+    }
+    if(page==="sheet" && oldPage!=="sheet"){
+      /* Kept separate from setPage to preserve existing navigation and storage behavior. */
+      if(typeof renderTable==="function")renderTable();
+      else if(typeof buildMoves==="function"){buildMoves();renderTop();renderList();}
+    }
+    oldPage=page;
+  }
+  new MutationObserver(hydrate).observe(root,{attributes:true,attributeFilter:["data-page"]});
+  hydrate();
+})();
+
+

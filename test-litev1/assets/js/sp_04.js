@@ -1597,6 +1597,7 @@ let openedBeforeAns = null;
 
 function buildMoves() {
   C = CHARACTERS.find(x => x.id === current);
+  if(document.documentElement.dataset.page==="home"){M=[];prog={done:0,total:0};return;}
   if(C && !C.__ptLoaded) {
     const id=C.id; M=[];prog={done:0,total:0};
     ptLoadMoves(C).then(()=>{ if(current===id){buildMoves();renderTop();renderList();} }).catch(err=>{
