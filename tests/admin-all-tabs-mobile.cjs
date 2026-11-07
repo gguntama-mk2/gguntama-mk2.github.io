@@ -60,11 +60,18 @@ const fixtures = (u) => {
       ]};
     const linkage={
       schema_version:2,source_character_id:"bryan",gameplay_verified:false,
-      stats:{requirements_with_master_sample_overlap:1,requirements_with_any_master_overlap:2,graph_candidate_edge_records:2,gameplay_verified_links:0},
+      stats:{requirements_with_master_sample_overlap:1,requirements_with_any_master_overlap:2,
+        graph_candidate_edge_records:2,graph_requirement_ids_with_edges:3,
+        graph_requirement_ids_with_only_unmatched_sources:1,gameplay_verified_links:0},
       requirements:[
         {requirement_id:1021,source_character_id:"bryan",example_move_indexes:[74,75],
           matched_master_indexes:[],matched_sample_indexes:[],matched_graph_indexes:[],
-          graph_edge_evidence:[],candidate_move_count_reported:79,parameter_samples:[{values:[10,0,0,0],count:65}]},
+          graph_edge_evidence:[],candidate_move_count_reported:79,
+          graph_candidate_edge_count_total:92,graph_distinct_source_index_count:79,
+          graph_unmatched_source_index_count:79,
+          graph_unmatched_source_examples:[{source_move_index:1473,edge_occurrences:2,
+            example_cancel_index:8286,example_dest_move_id_raw:2165,gameplay_verified:false}],
+          parameter_samples:[{values:[10,0,0,0],count:65}]},
         {requirement_id:439,source_character_id:"bryan",example_move_indexes:[74,75],
           matched_master_indexes:[1569],matched_sample_indexes:[],matched_graph_indexes:[1569],
           graph_edge_evidence:[{source_move_index:1569,cancel_index:8730,dest_move_id_raw:2170,
@@ -233,6 +240,12 @@ const fixtures = (u) => {
           const modal=page.locator(".pt-cloud-dialog");
           await modal.waitFor({state:"visible"});
           assert((await modal.innerText()).includes("Requirements ID"),"Detailed ID drawer opens");
+          assert((await modal.innerText()).includes("技名未照合インデックス"),"Unmatched source count shown");
+          const unknownDetails=modal.locator(".pt-cloud-unmatched");
+          await unknownDetails.locator("summary").click();
+          assert((await unknownDetails.innerText()).includes("79種類"),"All 79 raw candidates counted");
+          assert((await unknownDetails.innerText()).includes("候補技インデックス 1473"),"Raw unnamed index visible");
+          assert((await unknownDetails.innerText()).includes("遷移先raw例：2165"),"Raw destination not renamed as MOTBIN ID");
           if(width===390){
             await modal.locator("select").selectOption("investigating");
             await modal.locator("textarea").fill("解析中・テスト記録");
@@ -244,6 +257,11 @@ const fixtures = (u) => {
           await page.keyboard.press("Escape");
           assert(!(await modal.isVisible()),"Escape closes research detail");
           if(width===390){
+            const filterCharacter=priority.locator(".pt-cloud-filter-label").filter({hasText:"キャラクター資料"}).locator("select");
+            await filterCharacter.selectOption("bryan_unmatched");
+            assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Only one unnamed fixture source ID");
+            assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021");
+            await filterCharacter.selectOption("all");
             const filterStatus=priority.locator(".pt-cloud-filter-label select").nth(1);
             await filterStatus.selectOption("investigating");
             assert.equal(await priority.locator(".pt-cloud-id-button").count(),1,"Review status filter");
@@ -255,6 +273,7 @@ const fixtures = (u) => {
             const csvText=await fs.readFile(await csv.path(),"utf8");
             assert(csvText.includes("CSVサンプル照合件数"),"Provenance columns exported");
             assert(csvText.includes("遷移推定レコード数"),"Graph evidence count exported");
+            assert(csvText.includes("技名未照合インデックス総数"),"Unnamed research leads exported");
             assert(csvText.includes("実機未検証"),"CSV marks inferred data unverified");
           }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
