@@ -1,7 +1,7 @@
 {
   "schema": 5,
   "mode": "test-only",
-  "at": "2026-11-07T01:19:07.127Z",
+  "at": "2026-11-07T01:21:25.332Z",
   "passed": true,
   "network": {
     "pc": {
@@ -175,8 +175,32 @@
           "kind": "javascript"
         }
       ],
-      "bad_responses": [],
-      "page_errors": []
+      "bad_responses": [
+        {
+          "path": "/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+          "status": 404
+        },
+        {
+          "path": "/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+          "status": 404
+        }
+      ],
+      "page_errors": [],
+      "post_navigation": {
+        "update": {
+          "fullVersions": 34,
+          "onUpdate": true,
+          "heading": "アップデート内容アリサの変更がある版：17版／全34版（Ver.1.01.04〜Ver.3.02.02）公式サイトのアップデートデータ（Ver.1.01.04〜Ver.3.02.02）をもとに、内容を",
+          "originalFontEnabled": true,
+          "font": "MaruGoKawa, KosugiMaru, \"Hiragino Maru Gothic ProN\", \"Hiragino Kaku Gothic ProN\", \"Hiragino Sans\", \"Yu Gothic UI\", Meiryo, \"Noto Sans CJK JP\", \"Noto Sans JP\", sans-serif"
+        },
+        "selectedCharacterLoaded": [
+          "alisa"
+        ],
+        "lazyModules": [
+          "20"
+        ]
+      }
     },
     "sp": {
       "total_local_bytes": 773110,
@@ -319,13 +343,13 @@
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/js/sp_02.js",
+          "path": "/test-litev1/assets/js/sp_03.js",
           "status": 200,
           "bytes": 0,
           "kind": "javascript"
         },
         {
-          "path": "/test-litev1/assets/js/sp_03.js",
+          "path": "/test-litev1/assets/js/sp_02.js",
           "status": 200,
           "bytes": 0,
           "kind": "javascript"
@@ -337,8 +361,32 @@
           "kind": "javascript"
         }
       ],
-      "bad_responses": [],
-      "page_errors": []
+      "bad_responses": [
+        {
+          "path": "/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+          "status": 404
+        },
+        {
+          "path": "/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
+          "status": 404
+        }
+      ],
+      "page_errors": [],
+      "post_navigation": {
+        "update": {
+          "fullVersions": 34,
+          "onUpdate": true,
+          "heading": "アップデート内容アリサの変更がある版：17版／全34版（Ver.1.01.04〜Ver.3.02.02）公式サイトのアップデートデータ（Ver.1.01.04〜Ver.3.02.02）をもとに、内容を",
+          "originalFontEnabled": true,
+          "font": "MaruGoKawa, KosugiMaru, \"Hiragino Maru Gothic ProN\", \"Hiragino Kaku Gothic ProN\", \"Hiragino Sans\", \"Yu Gothic UI\", Meiryo, \"Noto Sans CJK JP\", \"Noto Sans JP\", sans-serif"
+        },
+        "selectedCharacterLoaded": [
+          "alisa"
+        ],
+        "lazyModules": [
+          "20"
+        ]
+      }
     }
   },
   "storage": {
