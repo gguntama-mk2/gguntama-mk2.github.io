@@ -67,7 +67,16 @@ const fixtures = (u) => {
       });
       await page.goto("http://127.0.0.1:"+server.address().port+"/admin.html");
       await page.locator("#ptSheetCharPicker option").first().waitFor({state:"attached"});
-      await page.waitForFunction(()=>document.querySelector("#ptSheetMovePicker")&&document.querySelectorAll("#ptSheetMovePicker option").length>1);
+      await page.waitForFunction(()=>document.querySelector("#ptSheetMovePicker")&&document.querySelectorAll("#ptSheetMovePicker option").length>1,{timeout:8000}).catch(async err=>{
+        console.log("SHEET DEBUG",JSON.stringify({
+          errors, page:await page.evaluate(()=>({
+            banner:document.querySelector("#banner")?.textContent,
+            sheet:document.querySelector("#secSheet")?.textContent.slice(0,1000),
+            editor:document.querySelector("#editor")?.textContent.slice(0,400),
+            selector:document.querySelector("#ptSheetCharPicker")?.value
+          }))
+        })); throw err;
+      });
       const charPicker=page.locator("#ptSheetCharPicker");
       assert.equal(await charPicker.locator("option").count(),35);
       const mobile=width<=800;
