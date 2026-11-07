@@ -1,0 +1,131 @@
+name: PROJECT T Lite Phase17 - Font Image Visual Performance (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase16-performance-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase17-test-only
+  cancel-in-progress: true
+jobs:
+  font-image-performance:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout isolated draft PR with no write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Confirm production not targeted
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html
+          node --check tools/pt_lite_phase17_images.mjs
+          node --check tools/pt_lite_phase17_visual.mjs
+          python3 -m py_compile tools/pt_lite_phase17_font_recode.py
+          node --check admin.js
+      - name: Install browser, minifier, image encoder and WOFF2 inspection
+        run: |
+          npm install --no-save playwright terser sharp
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Create Phase16 fully minified baseline in disposable workspace
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+      - name: Apply font loading hints and strict visual WebP optimizer on test copy
+        run: |
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          i=json.loads(Path('phase17-performance/image-report.json').read_text())
+          f=json.loads(Path('phase17-performance/font-report.json').read_text())
+          assert i['passed'] and f['passed'],(i.get('errors'),f.get('error'))
+          assert len(i['scriptChanges']) == 4
+          assert len(i['fontDisplayChanges']) == 2
+          print('PHASE17_ASSET_GENERATION_PASS')
+          PY
+      - name: Measure Phase16 reference PC mobile transfer and route loading
+        run: node tools/pt_lite_phase16_perf.mjs --site=phase16-performance/optimized-site --out=phase17-performance/baseline.json
+      - name: Measure Phase17 test-copy PC mobile transfer and route loading
+        run: node tools/pt_lite_phase16_perf.mjs --site=phase17-performance/optimized-site --out=phase17-performance/optimized.json
+      - name: Compare network transfer and require safe no-regression
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('phase17-performance')
+          a=json.loads((p/'baseline.json').read_text())
+          b=json.loads((p/'optimized.json').read_text())
+          assert a['passed'] and b['passed'],(a.get('failures'),b.get('failures'))
+          metrics={}
+          for profile in a['devices']:
+            for dev in ('pc','sp'):
+              old=a['devices'][profile][dev]
+              new=b['devices'][profile][dev]
+              assert old['coldHome']['performance']['loadedCharacters']==[]
+              assert new['coldHome']['performance']['loadedCharacters']==[]
+              assert new['coldHome']['performance']['loadedRoutes']==[]
+              assert new['coldHome']['network']['transferBytes']<=old['coldHome']['network']['transferBytes']+1000
+              assert new['sheet']['network']['transferBytes']<=old['sheet']['network']['transferBytes']*1.08
+              assert new['warmHome']['network']['transferBytes']<=1500
+              metrics[profile+'-'+dev]={
+                'beforeColdBytes':old['coldHome']['network']['transferBytes'],
+                'afterColdBytes':new['coldHome']['network']['transferBytes'],
+                'beforeSheetBytes':old['sheet']['network']['transferBytes'],
+                'afterSheetBytes':new['sheet']['network']['transferBytes'],
+                'beforeSheetMs':old['sheet']['elapsedMs'],
+                'afterSheetMs':new['sheet']['elapsedMs'],
+                'warmBytes':new['warmHome']['network']['transferBytes']}
+          (p/'network-compare.json').write_text(json.dumps(metrics,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE17_NETWORK_COMPARE',json.dumps(metrics))
+          PY
+      - name: Screenshot and settled-font visual parity PC and mobile
+        run: node tools/pt_lite_phase17_visual.mjs
+      - name: Browser regression on optimized test site only
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase17-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
+      - name: Validate regression reports
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for f in ('phase11-pages-package/browser-report.json',
+                    'phase12-release-audit/phase12-api-mock-browser.json',
+                    'phase17-performance/visual-report.json'):
+            r=json.loads(Path(f).read_text())
+            assert r['passed'],(f,r.get('failures'),r.get('errors'))
+          print('PHASE17_FONT_IMAGE_TEST_ONLY_PASS')
+          PY
+      - name: Save performance reports and visual comparison screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase17-font-image-performance
+          path: |
+            phase17-performance/*.json
+            phase17-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Save optimized test website separately, never deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase17-optimized-site-test-only
+          path: phase17-performance/optimized-site/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error

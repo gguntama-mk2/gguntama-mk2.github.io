@@ -116,8 +116,8 @@
     $("#tabs").hidden = false;
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
     app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.cloud);
-    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return S.chars; } });
-    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
+    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: adminMoveView, resolveCharacter: resolveAdminMoveCharacter });
+    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: adminMoveView, resolveCharacter: resolveAdminMoveCharacter, win: function () { return S.win; } });
     window.PTAdminCloudAnalysis.mount(sec.cloud, { csrf: function () { return S.csrf; } });
     buildSheetSkeleton();
     setTab("sheet");
@@ -130,10 +130,41 @@
         h("a", { class: "btn primary", href: API + "/auth/discord/start?mode=login&return_to=" + back, text: "Discord でログイン" }),
         h("a", { class: "btn", href: API + "/auth/google/start?mode=login&return_to=" + back, text: "Google でログイン" }))));
   }
+  // 技名・コマンドの唯一の参照先を管理者チェックシートに統一する。
+  // S.chars は公開サイトの元データとして不変のまま保ち、現在の編集中データを
+  // 最優先する。別キャラクターの保存済み下書きは認証済みAPIからオンデマンド取得。
+  // 紐付けには文字列を使わず、常に (character_id, site_k) を使う。
+  function adminMoveView() {
+    return (S.chars || []).map(function (base) {
+      if (S.cur && S.cur.id === base.id)
+        return Object.assign({}, base, { moves: clone(S.cur.moves), __ptUnsaved: !!S.dirty });
+      return base;
+    });
+  }
+  async function resolveAdminMoveCharacter(id) {
+    var base = (S.chars || []).find(function (c) { return c.id === id; });
+    if (!base) throw new Error("キャラクターが見つかりません：" + id);
+    if (S.cur && S.cur.id === id)
+      return Object.assign({}, base, { moves: clone(S.cur.moves), __ptUnsaved: !!S.dirty });
+    var saved = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id));
+    var moves = saved && saved.exists && Array.isArray(saved.moves) ? saved.moves : base.moves;
+    return Object.assign({}, base, { moves: clone(moves), __ptUnsaved: false });
+  }
+  function syncMoveRegistrationTabs(t) {
+    if (t !== "icons" && t !== "media") return;
+    var view = adminMoveView();
+    if (t === "icons") window.PTAdminMoveIcons.updateCharacters(view);
+    else {
+      window.PTAdminMoveMedia.updateCharacters(view);
+      // 登録済み動画の表示名も、別タブで変更した同じ site_k の名前へ再解決する。
+      window.PTAdminMoveMedia.refresh();
+    }
+  }
   function setTab(t) {
     S.tab = t;
     Object.keys(sec).forEach(function (k) { sec[k].hidden = k !== t; });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.tab === t)); });
+    syncMoveRegistrationTabs(t);
     if (t === "users") loadUsers(); else if (t === "audit") loadAudit(); else if (t === "cloud") window.PTAdminCloudAnalysis.refresh();
   }
   window.addEventListener("beforeunload", function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
@@ -182,8 +213,8 @@
       S.cols = J("COLS.map(function(c){return {id:c.id,label:c.label}})");
       S.tags = J("INFO_TAGS.map(function(t){return {id:t.id,label:t.label,full:t.full}})");
       S.chars = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,moves:c.moves}})");
-      window.PTAdminMoveMedia.updateCharacters(S.chars);
-      S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars);
+      window.PTAdminMoveMedia.updateCharacters(adminMoveView());
+      S.win = W; window.PTAdminMoveIcons.updateCharacters(adminMoveView());
       S.win = W;
     } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
     if (!(window.crypto && crypto.subtle)) { D.chars.textContent = "この環境では元データの指紋（SHA-256）を計算できないため、編集できません。https で開いたページから使ってください。"; return; }

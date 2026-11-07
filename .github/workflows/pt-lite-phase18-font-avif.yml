@@ -1,0 +1,159 @@
+name: PROJECT T Lite Phase18 - Japanese Font Shards and AVIF (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase17-font-image-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase18-test-only
+  cancel-in-progress: true
+jobs:
+  visual-performance-regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout isolated draft PR, never main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Audit test-only boundary and syntax
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html && test -f admin.html
+          node --check tools/pt_lite_phase18_glyphs.mjs
+          node --check tools/pt_lite_phase18_avif.mjs
+          node --check tools/pt_lite_phase18_visual.mjs
+          node --check tools/pt_lite_phase18_perf.mjs
+          python3 -m py_compile tools/pt_lite_phase18_font_split.py
+          node --check admin.js
+          node --check tests/admin-all-tabs-mobile.cjs
+      - name: Install isolated Chromium, JS/image tooling and fonttools
+        run: |
+          npm install --no-save playwright terser sharp
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Rebuild passing Phase17 test site from source (read-only source)
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance phase18-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          cp -a phase17-performance/optimized-site phase18-performance/baseline-site
+          cp -a phase17-performance/optimized-site phase18-performance/optimized-site
+      - name: Census browser-visible first-sheet/home Japanese glyphs
+        run: node tools/pt_lite_phase18_glyphs.mjs
+      - name: Partition all MaruGoKawa font glyphs without losing coverage/metrics
+        run: |
+          python3 tools/pt_lite_phase18_font_split.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('phase18-performance/font-split.json').read_text())
+          assert j['passed'] and j['allCodepointsRetained'],j
+          assert len(j['subsets'])==2,j
+          assert j['firstViewBytes']<j['originalBytes'],j
+          print('PHASE18_FONT_PARTITION_PASS',j['firstViewBytes'],j['originalBytes'])
+          PY
+      - name: Attempt visually validated AVIF conversion with WebP fallback
+        run: node tools/pt_lite_phase18_avif.mjs
+      - name: Compare Phase17 baseline network, cold/warm and lazy routes
+        run: node tools/pt_lite_phase18_perf.mjs --site=phase18-performance/baseline-site --out=phase18-performance/baseline-network.json
+      - name: Compare Phase18 font/AVIF network, cold/warm and lazy routes
+        run: node tools/pt_lite_phase18_perf.mjs --site=phase18-performance/optimized-site --out=phase18-performance/optimized-network.json
+      - name: Check measured transfer regressions and data-file SHA parity
+        run: |
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('phase18-performance')
+          a=json.loads((p/'baseline-network.json').read_text())
+          b=json.loads((p/'optimized-network.json').read_text())
+          font=json.loads((p/'font-split.json').read_text())
+          avif=json.loads((p/'avif-report.json').read_text())
+          assert a['passed'] and b['passed'],(a.get('failures'),b.get('failures'))
+          assert font['passed'] and avif['passed'],(font.get('errors'),avif.get('errors'))
+          assert font['firstViewBytes']<font['originalBytes']
+          old=p/'baseline-site/assets/data'
+          new=p/'optimized-site/assets/data'
+          files=list(old.rglob('*.json'))
+          assert len(files)>=44,len(files)
+          for f in files:
+            g=new/f.relative_to(old)
+            assert g.exists(),str(g)
+            assert hashlib.sha256(f.read_bytes()).digest()==hashlib.sha256(g.read_bytes()).digest(),str(f)
+          m={}
+          for profile in a['devices']:
+            for dev in ('pc','sp'):
+              before=a['devices'][profile][dev]
+              after=b['devices'][profile][dev]
+              cold0=before['coldHome']['network']['transferBytes']
+              cold1=after['coldHome']['network']['transferBytes']
+              sheet0=before['sheet']['network']['transferBytes']
+              sheet1=after['sheet']['network']['transferBytes']
+              assert cold1<=cold0+15000,(profile,dev,'cold',cold0,cold1)
+              assert sheet1<sheet0,(profile,dev,'sheet transfer not lower',sheet0,sheet1)
+              assert sheet0-sheet1>=40000,(profile,dev,'font split savings too small',sheet0,sheet1)
+              assert after['coldHome']['performance']['loadedCharacters']==[]
+              assert after['coldHome']['performance']['loadedRoutes']==[]
+              assert after['warmHome']['network']['transferBytes']<=1500
+              m[profile+'-'+dev]={
+                'beforeColdBytes':cold0,'afterColdBytes':cold1,
+                'beforeSheetBytes':sheet0,'afterSheetBytes':sheet1,
+                'beforeSheetMs':before['sheet']['elapsedMs'],
+                'afterSheetMs':after['sheet']['elapsedMs'],
+                'beforeColdMs':before['coldHome']['elapsedMs'],
+                'afterColdMs':after['coldHome']['elapsedMs'],
+                'warmBytes':after['warmHome']['network']['transferBytes']}
+          (p/'network-compare.json').write_text(json.dumps(m,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE18_NETWORK_COMPARE',json.dumps(m))
+          print('PHASE18_JSON_DATA_EXACT',len(files))
+          PY
+      - name: Check desktop/mobile screenshots including character artwork
+        run: node tools/pt_lite_phase18_visual.mjs
+      - name: Recheck complete PC/SP and admin browser compatibility
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase18-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
+      - name: Final test-only assertion and artifact readiness
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          reports=['phase18-performance/glyph-census.json','phase18-performance/font-split.json',
+                   'phase18-performance/avif-report.json','phase18-performance/visual-report.json',
+                   'phase11-pages-package/browser-report.json',
+                   'phase12-release-audit/phase12-api-mock-browser.json']
+          for file in reports:
+            r=json.loads(Path(file).read_text())
+            assert r['passed'],(file,r.get('errors'),r.get('failures'))
+          print('PHASE18_ALL_TESTS_PASSED_TEST_ONLY')
+          PY
+      - name: Save performance and visual reports, never deploy
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase18-font-avif-audit
+          path: |
+            phase18-performance/*.json
+            phase18-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Save isolated optimized static site for testing, never deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase18-optimized-site-test-only
+          path: phase18-performance/optimized-site/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error

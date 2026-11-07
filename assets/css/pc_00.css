@@ -1,0 +1,1169 @@
+
+  :root {
+    --bg: #1a1c2c;
+    --panel: #242740;
+    --line: #3a3e63;
+    --text: #e9eaf4;
+    --sub: #9a9dc0;
+    --accent: #ff4f7b;
+    --accent-soft: rgba(255, 79, 123, .14);
+    --ok: #5ad1e6;
+  }
+/* ---- デザイン（配色テーマ）（プルダウンで切替。選択はブラウザに保存） ---- */
+:root{color-scheme:dark;--head:#2d3052;--panel2:#2d3052;--on:#ffffff;--on-ok:#10243a;--na:#5d6189;--na2:#7c80a8;--na-line:#4a4e78;--na-bg:rgba(0,0,0,.28);--na-fill:rgba(255,255,255,.04);--hatch1:rgba(255,255,255,.07);--thumbA:#30345a;--thumbB:#1f2240;--thumbT:#6f739d;--popbg:#ffffff;--poptx:#1a1c2c;--popsub:#6b6f99;--popempty:#8b8fb3;--ph:#6f739d;--ph2:#555a85;--done-name:#3a2a44;--done-bg:#232a45;--warn:#ffb86b;--danger:#ff8fa8}
+html[data-theme="heat"]{color-scheme:dark;--bg:#15110e;--panel:#211a15;--head:#2b211a;--panel2:#2b211a;--line:#4a382c;--text:#f4ece4;--sub:#b9a899;--accent:#ff7a2f;--accent-soft:rgba(255,122,47,.16);--ok:#ffc857;--on:#1a0f08;--on-ok:#1a0f08;--na:#6e5a4a;--na2:#8a7462;--na-line:#5a4738;--na-bg:rgba(0,0,0,.30);--na-fill:rgba(255,255,255,.04);--hatch1:rgba(255,255,255,.06);--thumbA:#3a2a1f;--thumbB:#1c1511;--thumbT:#8a6f5a;--popbg:#fff7ee;--poptx:#1a0f08;--popsub:#8a6a50;--popempty:#9c8573;--ph:#b9a899;--ph2:#b9a899;--done-name:#452919;--done-bg:#2e2419;--warn:#ffb86b;--danger:#ff8f7a}
+html[data-theme="gold"]{color-scheme:dark;--bg:#0d0d10;--panel:#17171c;--head:#202027;--panel2:#202027;--line:#3a3a44;--text:#f3f1ea;--sub:#a9a698;--accent:#f2c14e;--accent-soft:rgba(242,193,78,.16);--ok:#ffe08a;--on:#14110a;--on-ok:#14110a;--na:#5a5a66;--na2:#7a7a86;--na-line:#4a4a56;--na-bg:rgba(0,0,0,.35);--na-fill:rgba(255,255,255,.04);--hatch1:rgba(255,255,255,.06);--thumbA:#2a2a33;--thumbB:#131317;--thumbT:#6f6d62;--popbg:#fbf4dc;--poptx:#14110a;--popsub:#7a6a35;--popempty:#8a7d52;--ph:#a9a698;--ph2:#a9a698;--done-name:#3a3224;--done-bg:#252323;--warn:#ffb86b;--danger:#ff8f8f}
+html[data-theme="steel"]{color-scheme:dark;--bg:#0f141a;--panel:#182029;--head:#202b36;--panel2:#202b36;--line:#34445a;--text:#e6edf3;--sub:#93a4b5;--accent:#4aa8ff;--accent-soft:rgba(74,168,255,.16);--ok:#7ee0d8;--on:#06121f;--on-ok:#06121f;--na:#4d6078;--na2:#6d83a0;--na-line:#3f5068;--na-bg:rgba(0,0,0,.30);--na-fill:rgba(255,255,255,.04);--hatch1:rgba(255,255,255,.06);--thumbA:#273646;--thumbB:#121a22;--thumbT:#60788f;--popbg:#eef6ff;--poptx:#06121f;--popsub:#4a6a8a;--popempty:#5f7f9c;--ph:#93a4b5;--ph2:#93a4b5;--done-name:#20364b;--done-bg:#1e2c34;--warn:#ffb86b;--danger:#ff8fa8}
+html[data-theme="jade"]{color-scheme:dark;--bg:#0e1815;--panel:#16231f;--head:#1d2e29;--panel2:#1d2e29;--line:#2f4a43;--text:#e7f3ee;--sub:#8fb0a5;--accent:#34d399;--accent-soft:rgba(52,211,153,.16);--ok:#a7f3d0;--on:#052018;--on-ok:#052018;--na:#47645c;--na2:#668a80;--na-line:#3c5a52;--na-bg:rgba(0,0,0,.30);--na-fill:rgba(255,255,255,.04);--hatch1:rgba(255,255,255,.06);--thumbA:#233a34;--thumbB:#111d1a;--thumbT:#5d8379;--popbg:#effaf5;--poptx:#052018;--popsub:#3f6a5c;--popempty:#5c8a7b;--ph:#8fb0a5;--ph2:#8fb0a5;--done-name:#1b3f33;--done-bg:#1f2f2a;--warn:#ffb86b;--danger:#ff8fa8}
+html[data-theme="dojo"]{color-scheme:light;--bg:#f3efe6;--panel:#fffdf8;--head:#e9e3d6;--panel2:#e9e3d6;--line:#d3c9b4;--text:#1f2430;--sub:#5a6070;--accent:#c8372d;--accent-soft:rgba(200,55,45,.12);--ok:#1d6fa5;--on:#ffffff;--on-ok:#ffffff;--na:#b3a98f;--na2:#8f866e;--na-line:#c4b99f;--na-bg:rgba(0,0,0,.05);--na-fill:rgba(0,0,0,.04);--hatch1:rgba(0,0,0,.05);--thumbA:#e2dccb;--thumbB:#cfc7b2;--thumbT:#8f866e;--popbg:#1f2430;--poptx:#fffdf8;--popsub:#b9bfcc;--popempty:#aab0bd;--ph:#5a6070;--ph2:#5a6070;--done-name:#f6ddd8;--done-bg:#f1f4f3;--warn:#8a4b00;--danger:#b3261e}
+select.themesel option{background:var(--panel);color:var(--text)}
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  /* 文字の選択を無効にする（ページ上の文字をなぞったり選んだりしたときに、閲覧アプリ側の「コメントを追加」の吹き出しが出て邪魔になるため）。入力欄・メモ欄・書き出しコードの欄だけは、これまでどおり選択・コピーできる */
+  html, body { -webkit-user-select: none; user-select: none; }
+  input, textarea, select { -webkit-user-select: text; user-select: text; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif);
+    line-height: 1.6;
+    padding: 24px 12px 64px;
+  }
+  .wrap { max-width: 1800px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; letter-spacing: .04em; }
+  .hint { margin: -8px 0 20px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); border: 1px solid var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); font-size: .875rem; display: inline-block; }
+  .hint b { color: var(--text); }
+  .lead { color: var(--sub); font-size: .875rem; margin: 0 0 20px; }
+  .titlebar { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin: 0 0 4px; }
+  .titlebar h1 { margin: 0; }
+  /* ページ名（見出し）は、すべての名前を同じ場所に重ねて置き、表示するもの以外は見えなくするだけにする。
+     見出しの幅がいちばん長い名前のままで変わらないので、ページを切り替えても、右隣のページ切り替えボタンの位置がずれない */
+  .titlebar h1 { display: grid; }
+  .titlebar h1 > [data-ttl] { grid-area: 1 / 1; visibility: hidden; white-space: nowrap; }
+  html:not([data-page]) .titlebar h1 > [data-ttl="sheet"], html[data-page="login"] .titlebar h1 > [data-ttl="login"], html[data-page="combo"] .titlebar h1 > [data-ttl="combo"], html[data-page="glossary"] .titlebar h1 > [data-ttl="glossary"], html[data-page="punish"] .titlebar h1 > [data-ttl="punish"], html[data-page="update"] .titlebar h1 > [data-ttl="update"], html[data-page="stage"] .titlebar h1 > [data-ttl="stage"], html[data-page="gallery"] .titlebar h1 > [data-ttl="gallery"], html[data-page="vs"] .titlebar h1 > [data-ttl="vs"], html[data-page="privacy"] .titlebar h1 > [data-ttl="privacy"], html[data-page="price"] .titlebar h1 > [data-ttl="price"], html[data-page="download"] .titlebar h1 > [data-ttl="download"], html[data-page="guide"] .titlebar h1 > [data-ttl="guide"], html[data-page="home"] .titlebar h1 > [data-ttl="home"] { visibility: visible; }
+  .titleleft { display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; }
+  .pagenav { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 99px; background: var(--panel); }
+  .pagenav button { padding: 4px 15px; border: 0; border-radius: 99px; background: transparent; color: var(--sub); font: inherit; font-size: .8125rem; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .pagenav button:hover { color: var(--text); }
+  .pagenav button:focus-visible { outline: 2px solid var(--ok); outline-offset: 1px; }
+  html:not([data-page]) .pagenav [data-go="sheet"], html[data-page="login"] .pagenav [data-go="login"], html[data-page="combo"] .pagenav [data-go="combo"], html[data-page="glossary"] .pagenav [data-go="glossary"], html[data-page="punish"] .pagenav [data-go="punish"], html[data-page="update"] .pagenav [data-go="update"], html[data-page="stage"] .pagenav [data-go="stage"], html[data-page="gallery"] .pagenav [data-go="gallery"], html[data-page="vs"] .pagenav [data-go="vs"], html[data-page="privacy"] .pagenav [data-go="privacy"], html[data-page="price"] .pagenav [data-go="price"], html[data-page="download"] .pagenav [data-go="download"], html[data-page="guide"] .pagenav [data-go="guide"], html[data-page="home"] .pagenav [data-go="home"] { background: var(--accent); color: var(--on); }
+  html[data-theme="navy"]:not([data-page]) .pagenav [data-go="sheet"], html[data-theme="navy"][data-page="login"] .pagenav [data-go="login"], html[data-theme="navy"][data-page="combo"] .pagenav [data-go="combo"], html[data-theme="navy"][data-page="glossary"] .pagenav [data-go="glossary"], html[data-theme="navy"][data-page="punish"] .pagenav [data-go="punish"], html[data-theme="navy"][data-page="update"] .pagenav [data-go="update"], html[data-theme="navy"][data-page="stage"] .pagenav [data-go="stage"], html[data-theme="navy"][data-page="gallery"] .pagenav [data-go="gallery"], html[data-theme="navy"][data-page="vs"] .pagenav [data-go="vs"], html[data-theme="navy"][data-page="privacy"] .pagenav [data-go="privacy"], html[data-theme="navy"][data-page="price"] .pagenav [data-go="price"], html[data-theme="navy"][data-page="download"] .pagenav [data-go="download"], html[data-theme="navy"][data-page="guide"] .pagenav [data-go="guide"], html[data-theme="navy"][data-page="home"] .pagenav [data-go="home"] { color: #1a1330; }
+  @media (max-width: 520px) { .pagenav button { padding: 4px 9px; font-size: .75rem; } }
+  /* ページの切り替え：同じページの中で表示を入れ替える（<html data-page="combo"> のとき、コンボ集） */
+  #viewLogin, #viewHome, #viewCombo, #viewGlossary, #viewPunish, #viewUpdate, #viewStage, #viewGallery, #viewVs, #viewPrivacy, #viewPrice, #viewDownload, #viewGuide { display: none; }
+  html[data-page] #viewSheet { display: none; }
+  html[data-page="login"] #viewLogin, html[data-page="combo"] #viewCombo, html[data-page="glossary"] #viewGlossary, html[data-page="punish"] #viewPunish, html[data-page="update"] #viewUpdate, html[data-page="stage"] #viewStage, html[data-page="gallery"] #viewGallery, html[data-page="vs"] #viewVs, html[data-page="privacy"] #viewPrivacy, html[data-page="price"] #viewPrice, html[data-page="download"] #viewDownload, html[data-page="guide"] #viewGuide, html[data-page="home"] #viewHome { display: block; }
+  /* data-only に書いたページ（空白区切りで複数可）でだけ表示する */
+  html:not([data-page]) [data-only]:not([data-only~="sheet"]), html[data-page="login"] [data-only]:not([data-only~="login"]), html[data-page="combo"] [data-only]:not([data-only~="combo"]), html[data-page="glossary"] [data-only]:not([data-only~="glossary"]), html[data-page="punish"] [data-only]:not([data-only~="punish"]), html[data-page="update"] [data-only]:not([data-only~="update"]), html[data-page="stage"] [data-only]:not([data-only~="stage"]), html[data-page="gallery"] [data-only]:not([data-only~="gallery"]), html[data-page="vs"] [data-only]:not([data-only~="vs"]), html[data-page="privacy"] [data-only]:not([data-only~="privacy"]), html[data-page="price"] [data-only]:not([data-only~="price"]), html[data-page="download"] [data-only]:not([data-only~="download"]), html[data-page="guide"] [data-only]:not([data-only~="guide"]), html[data-page="home"] [data-only]:not([data-only~="home"]) { display: none !important; }
+  html[data-theme="navy"] #lgHost, html[data-theme="navy"] #glHost, html[data-theme="navy"] #pnHost, html[data-theme="navy"] #sgHost, html[data-theme="navy"] #hoHost, html[data-theme="navy"] #vsHost, html[data-theme="navy"] #prHost, html[data-theme="navy"] #pcHost, html[data-theme="navy"] #dlHost, html[data-theme="navy"] #gdHost { --on: #1a1330; }
+  html[data-theme="navy"] #cbHost { --cb-on: #1a1330; }
+  .themebox { display: flex; align-items: center; gap: 8px; font-size: .8125rem; color: var(--sub); }
+  .themesel { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font: inherit; font-size: .8125rem; cursor: pointer; }
+
+  /* キャラ一覧：タイルの最小幅（--ch-min）を変えるとアイコンの大きさが変わる（旧 88px → 72px） */
+  .chars { --ch-min: 72px; display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--ch-min), 1fr)); gap: 4px; margin-bottom: 14px; }
+  .panel {
+    display: flex; flex-direction: column; padding: 0; overflow: hidden;
+    background: var(--panel); color: var(--text);
+    border: 2px solid var(--line); border-radius: 6px;
+    cursor: pointer; font: inherit; text-align: center;
+  }
+  .panel:hover { border-color: var(--sub); }
+  .panel[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .pimg {
+    display: grid; place-items: center; aspect-ratio: 1 / 1; position: relative; overflow: hidden;
+    background: linear-gradient(160deg, var(--thumbA), var(--thumbB));
+    color: var(--thumbT); font-size: 1.25rem; font-weight: 800; line-height: 1;
+  }
+  .pimg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none; }
+  .pimg img, .chd-th img { pointer-events: none; -webkit-user-drag: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }   /* キャラの絵（一覧・ドロワー）は、右クリック・長押し・ドラッグの対象にしない（下の guard と合わせて、画像のコピー・保存をできなくする） */
+  .pname { padding: 2px 1px; font-size: .625rem; line-height: 1.35; font-weight: 600; background: var(--head); white-space: nowrap; overflow: hidden; }
+  .pname.long { font-size: .5625rem; }   /* 7文字以上の名前（アーマーキング等）は1行に収める */
+  .panel[aria-pressed="true"] .pname { background: var(--accent); color: var(--on); }
+  html[data-theme="navy"] .panel[aria-pressed="true"] .pname { color: #1a1330; }   /* ピンク地では白文字だとコントラスト不足のため */
+  td.empty { padding: 40px 12px; color: var(--sub); text-align: center; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; }
+
+  .bar {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  /* キャラ名の見出しは幅を固定（最長のキャラ名が入る幅）。名前の長さで検索欄やボタンの位置が動かないようにする */
+  .bar h2 { font-size: 1.125rem; margin: 0; flex: none; width: 7.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reset {
+    background: transparent; color: var(--sub);
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 6px 12px; font: inherit; font-size: .8125rem; cursor: pointer;
+  }
+  .cmdtgl { background: transparent; color: var(--sub); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; font: inherit; font-size: .8125rem; cursor: pointer; margin-left: 8px; }
+  .cmdtgl[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+  /* ON/OFF の両方の文言を同じ位置に重ねて置き、ボタンの幅は常に長いほうに合わせる（切り替えても検索欄などが動かない） */
+  .cmdtgl { display: inline-grid; justify-items: center; align-items: center; flex: none; }
+  .cmdtgl .lbl { grid-area: 1 / 1; white-space: nowrap; }
+  .cmdtgl[aria-pressed="false"] .lbl[data-v="on"], .cmdtgl[aria-pressed="true"] .lbl[data-v="off"] { visibility: hidden; }
+  #ansTgl { margin-left: 0; }
+  [hidden] { display: none !important; }
+  .mcmd { display: block; margin-top: 2px; font-size: .75rem; font-weight: 800; color: var(--sub); font-family: var(--font-ui); }
+  .reset:hover { color: var(--text); border-color: var(--sub); }
+
+  .scroll { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  col.c-name { width: 18%; }   /* 技名の列。広げるほど、技名・コマンドを縮める行が減る */
+  thead th {
+    position: sticky; top: 0;
+    background: var(--head);
+    font-size: .8125rem; font-weight: 700;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+    line-height: 1.35;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  th.name, td.name { text-align: left; padding-left: 14px; position: sticky; left: 0; z-index: 1; }
+  td.name { background: var(--panel); font-weight: 600; font-size: .875rem; overflow-wrap: anywhere; border-right: 1px solid var(--line); }
+  thead th { z-index: 3; }   /* 貼りついた見出し行は、下を流れるデータ欄（position: relative のセル）より手前に出す。z-index がないと、コマンド列から右でセルの枠や斜線が見出しに透けて重なる */
+  thead th.name { z-index: 4; }
+  td { padding: 0; text-align: center; border-bottom: 1px solid var(--line); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.name { padding: 10px 14px; }
+  tr.done td { background: var(--accent-soft); }
+  tr.done td.name { background: var(--done-name); }
+
+  td label { display: flex; align-items: center; justify-content: center; min-height: 44px; cursor: pointer; }
+  input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    width: 22px; height: 22px; margin: 0;
+    border: 2px solid var(--sub); border-radius: 5px;
+    background: transparent; cursor: pointer;
+    display: grid; place-content: center;
+  }
+  input[type="checkbox"]::after {
+    content: ""; width: 10px; height: 5px;
+    border-left: 3px solid var(--on); border-bottom: 3px solid var(--on);
+    transform: rotate(-45deg) scale(0); margin-top: -2px;
+    transition: transform .1s;
+  }
+  input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+  input[type="checkbox"]:checked::after { transform: rotate(-45deg) scale(1); }
+
+  .note { color: var(--sub); font-size: .75rem; margin-top: 14px; }
+  .warn { color: var(--warn); font-size: .8125rem; margin: 8px 0 0; display: none; }
+
+  /* チェック不可（対象外）のセル */
+  td.na {
+    background-color: var(--na-bg);
+    background-image: repeating-linear-gradient(135deg, var(--hatch1) 0 6px, transparent 6px 12px);
+    cursor: not-allowed;
+  }
+  td.na label { cursor: not-allowed; }
+  input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    border: 2px dashed var(--na);
+    background: var(--na-fill);
+  }
+  input[type="checkbox"]:disabled::after {
+    content: "\00d7";
+    width: auto; height: auto; border: 0;
+    transform: none; margin: 0;
+    color: var(--na2); font-size: 18px; font-weight: 700; line-height: 1;
+  }
+
+  /* 右クリックで出る答えの吹き出し */
+  .pop {
+    position: fixed; z-index: 50;
+    background: var(--popbg); color: var(--poptx);
+    border-radius: 10px; padding: 8px 16px 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+    text-align: center; max-width: min(320px, 90vw);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(var(--rise, 10px)) scale(.8);
+    transform-origin: var(--ox, 50%) var(--oy, 0%);
+    transition: transform .18s cubic-bezier(.2, .9, .3, 1.3), opacity .12s;
+  }
+  .pop.show { opacity: 1; transform: none; }
+  .pop .q { font-size: .6875rem; color: var(--popsub); }
+  .pop .a { font-size: 1.125rem; font-weight: 800; letter-spacing: .02em; overflow-wrap: anywhere; }
+  .pop .a.empty { font-size: .8125rem; font-weight: 600; color: var(--popempty); }
+  /* 2行の答え（状態名＋性質） */
+  .pn { display: inline-block; }
+  .a1, .a2 { display: block; }
+  .pop .a.m2 { font-weight: 600; }
+  .pop .a.m2 .a1 { font-size: 1.0625rem; font-weight: 800; line-height: 1.3; }
+  .pop .a.m2 .a2 { font-size: .75rem; letter-spacing: normal; line-height: 1.4; margin-top: 3px; color: var(--popsub); }
+  td.cell .ans.m2 .a2 { font-size: .625rem; font-weight: 600; line-height: 1.3; margin-top: 2px; color: var(--sub); }
+  .ans.st2 .a1, .ans.st2 .a2.one, .ans.st2 .stg { white-space: nowrap; }   /* 発生(持続)：「15F」「(15F)」を、かっこの途中で折り返さない（表の列が、その幅まで広がる） */
+  .ans.st2 .stg { display: inline-block; }
+  td.cell .ans.st2 .stg, td.cell .ans.st2 .a2:not(.one) { font-size: .5625rem; }   /* 「(2段目：15F)」のような長い持続は、少し小さくして「：」で折り返す */
+  html[data-ans="1"] th[data-col="startup"] { width: 3.7%; }   /* 答えを全表示のとき、発生(持続)の列を少し広げて、「(15F)」が割れないようにする（広げたぶんは、ヒット・カウンター・技名の列から譲る） */
+  html[data-ans="1"] td.cell .ans.st2 { padding: 0 1px; }
+  td.cell.peek { background: var(--accent-soft); }
+  /* 「答えを全表示」がONのとき：チェック欄の下に、その項目の答えを出す（行の高さは答えの長さに合わせて伸びる） */
+  td.cell .ans { display: none; }
+  html[data-ans="1"] td.cell .ans {
+    display: block; max-width: 100%; box-sizing: border-box; padding: 0 3px;
+    font-size: .6875rem; font-weight: 800; line-height: 1.3; color: var(--text); text-align: center; overflow-wrap: anywhere;
+  }
+  html[data-ans="1"] td.cell .ans.none { font-size: .625rem; font-weight: 500; color: var(--sub); }
+  /* ギミック列：発動するギミックを1つずつのタグにして縦に並べる（複数あっても列の幅に収まる） */
+  html[data-ans="1"] td.cell .ans.gm { display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 0 2px; align-self: stretch; width: 100%; box-sizing: border-box; }   /* 答えの幅は、技ごとの中身の長さに関わらず、いつも列の幅いっぱいに固定する（label が flex なので、指定しないと中身の幅に縮み、タグの大きさが技ごとにまちまちになる） */
+  /* ギミックのタグ：壁＝オレンジ・床＝青緑。どのデザイン（配色テーマ）でも変わらない色にして、壁と床がひと目で見分けられるようにする */
+  .gi { display: block; padding: 1px 3px; border: 1px solid #c2410c; border-radius: 5px; background: #c2410c; font-size: .5625rem; font-weight: 700; line-height: 1.25; color: #fff; text-align: center; overflow-wrap: anywhere; }
+  .gi.f { border-color: #0b7285; background: #0b7285; }
+  .gc { display: block; font-size: .5625rem; font-weight: 600; line-height: 1.3; color: var(--sub); text-align: left; border-left: 3px solid #0b7285; padding-left: 4px; overflow-wrap: anywhere; word-break: auto-phrase; }   /* 床のギミックが発動する条件（空中ヒット時など） */
+  .gc.w { border-left-color: #c2410c; }   /* 壁のギミックが発動する条件（ノーマルヒット時など）は、壁のオレンジ */
+  .pop .a.gm .gc { color: var(--popsub); font-size: .75rem; margin-top: 2px; }
+  .pop .a.gm { display: flex; flex-direction: column; gap: 4px; font-size: .8125rem; }
+  .pop .a.gm .gi { color: #fff; padding: 2px 8px; font-size: .8125rem; }
+  /* 答えは「状態名＋性質」と長いので、答え全表示のあいだは、ガード・ヒット・カウンターの列を広げ、メモ欄を少し狭める */
+  html[data-ans="1"] th[data-col="hit"], html[data-ans="1"] th[data-col="counter"] { width: 8%; }
+  html[data-ans="1"] th[data-col="gimmick"] { width: 8.5%; }
+  html[data-ans="1"] th[data-col="guard"], html[data-ans="1"] th[data-col="wall"] { width: 6.5%; }
+  html[data-ans="1"] th[data-col="tbreak"] { width: 6%; }
+  html[data-ans="1"] th[data-col="tracking"] { width: 5%; }   /* 追尾方向の答え（左・右・両・無。ワームアタックだけ「1段目：右／2段目：左」）が収まる幅 */
+  html[data-ans="1"] th.memo { width: 9%; }
+  html[data-ans="1"] td.cell { vertical-align: top; }   /* 答えが長くて行が伸びても、チェック欄は同じ高さに揃える */
+  html[data-ans="1"] td.cell label { flex-direction: column; justify-content: flex-start; gap: 4px; padding: 30px 0 8px; }
+
+  @media (max-width: 1000px) {
+    .scroll { overflow: auto; max-height: 80vh; }
+    table { table-layout: auto; min-width: 1000px; }
+    th.name, td.name { min-width: 150px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    input[type="checkbox"]::after { transition: none; }
+  }
+/* 技の行の高さ：全キャラ・全技で同じ（--row-h）。技名＋ふりがな（--txt-h）は上、コマンド表示は下の固定の位置。
+   収まらないものだけ JS（fitNames）が文字を縮めて収める。td.name の中身は絶対配置にして、列幅に影響させない */
+:root { --row-h: 108px; --txt-h: 50px; --info-h: 17px; --cmd-h: 23px; }
+td.name { height: var(--row-h); padding: 0; }
+.nm { position: absolute; inset: 0; box-sizing: border-box; padding: 8px 10px 6px 14px; display: flex; flex-direction: column; overflow: hidden; }
+.nm .txt { flex: none; height: var(--txt-h); overflow: hidden; }
+.nm .nt { display: block; font-size: calc(13px * var(--ts, 1)); line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+.nm .nt { -webkit-user-select: text; user-select: text; cursor: text; }   /* 技名だけは、選択してコピーできる（ほかの文字は選択できない） */
+.nm .yomi { font-size: calc(10.4px * var(--ts, 1)); line-height: 1.3; margin-top: 1.5px; }
+.nm .minfo { flex: none; margin-top: 2px; height: var(--info-h); overflow: hidden; white-space: nowrap; display: flex; align-items: center; gap: 4px; font-size: calc(11px * var(--is, 1)); line-height: 1.3; }
+.nm .minfo [data-k] { display: none; }
+html[data-info~="atk"] .nm .minfo [data-k="atk"], html[data-info~="pc"] .nm .minfo [data-k="pc"], html[data-info~="hs"] .nm .minfo [data-k="hs"],
+html[data-info~="he"] .nm .minfo [data-k="he"], html[data-info~="hb"] .nm .minfo [data-k="hb"], html[data-info~="ho"] .nm .minfo [data-k="ho"],
+html[data-info~="ra"] .nm .minfo [data-k="ra"], html[data-info~="ss"] .nm .minfo [data-k="ss"], html[data-info~="tn"] .nm .minfo [data-k="tn"],
+html[data-info~="kr"] .nm .minfo [data-k="kr"], html[data-info~="wk"] .nm .minfo [data-k="wk"], html[data-info~="hd"] .nm .minfo [data-k="hd"], html[data-info~="fu"] .nm .minfo [data-k="fu"] { display: inline-block; }
+.nm .minfo .atk { font-weight: 700; color: var(--text); letter-spacing: .02em; }
+.nm .minfo .tg { font-size: .92em; font-weight: 700; line-height: 1.45; padding: 0 .5em; border-radius: 99px; color: var(--text); background: var(--accent-soft); border: 1px solid var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+/* 技の種類の色分け：ヒート専用技（橙）・ヒートスマッシュ（赤）・レイジアーツ（紫）。左の帯と背景で通常の技と見分ける。
+   「技の情報を表示」の同じ項目のON/OFFに連動。チェック済みの行は、背景は完了の色のまま（帯だけ残す） */
+:root { --kd-ho: #f0922b; --kd-hs: #ec4d63; --kd-ra: #b07af7; --kd-ss: #84cc16; --kd-he: #10b981; --kd-st: #5b8def; --kd-cr: #ff6ec7; --tor: #4ade80; --tor-soft: rgba(74,222,128,.16); --dsh: #22d3ee; --dsh-soft: rgba(34,211,238,.16); }   /* --dsh：コンボの前ダッシュ（66）のタグの色 */   /* --tor：コンボの T（トルネード誘発）のタグの色／--tor-soft：その薄い背景 */
+html[data-theme="dojo"] { --kd-ho: #c4600a; --kd-hs: #c42b43; --kd-ra: #7d45d1; --kd-ss: #4d7c0f; --kd-he: #047857; --kd-st: #2563c9; --kd-cr: #a32a94; --tor: #167a42; --tor-soft: rgba(22,122,66,.12); --dsh: #0558a0; --dsh-soft: rgba(5,88,160,.12); }
+html[data-theme="jade"] { --tor: #a3e635; --tor-soft: rgba(163,230,53,.16); }   /* ジェイドは強調色が緑なので、T は黄緑にして見分けがつくように */
+html[data-theme="steel"] { --dsh: #fb923c; --dsh-soft: rgba(251,146,60,.16); }   /* スチールは強調色が青なので、前ダッシュは橙にして見分けがつくように */
+html[data-theme="jade"] { --dsh: #f472b6; --dsh-soft: rgba(244,114,182,.16); }   /* ジェイドは強調色が緑なので、前ダッシュは桃色に */
+/* --hb：コンボの HB（ヒートバースト）のタグの色。強調色・T・前ダッシュと見分けがつくように、テーマごとに変える */
+:root { --hb: #facc15; --hb-soft: rgba(250,204,21,.16); }
+html[data-theme="heat"] { --hb: #a78bfa; --hb-soft: rgba(167,139,250,.16); }
+html[data-theme="gold"] { --hb: #fb7185; --hb-soft: rgba(251,113,133,.16); }
+html[data-theme="steel"] { --hb: #a78bfa; --hb-soft: rgba(167,139,250,.16); }
+html[data-theme="jade"] { --hb: #fb923c; --hb-soft: rgba(251,146,60,.16); }
+html[data-theme="dojo"] { --hb: #6d28d9; --hb-soft: rgba(109,40,217,.12); }
+/* --std：コンボの「立ち途中」のタグの色。強調色・T・前ダッシュ・HB と見分けがつくように、テーマごとに変える */
+:root { --std: #fb923c; --std-soft: rgba(251,146,60,.16); }
+html[data-theme="heat"] { --std: #f472b6; --std-soft: rgba(244,114,182,.16); }
+html[data-theme="gold"] { --std: #a78bfa; --std-soft: rgba(167,139,250,.16); }
+html[data-theme="steel"] { --std: #f472b6; --std-soft: rgba(244,114,182,.16); }
+html[data-theme="jade"] { --std: #38bdf8; --std-soft: rgba(56,189,248,.16); }
+html[data-theme="dojo"] { --std: #b45309; --std-soft: rgba(180,83,9,.12); }
+/* --mv-◯◯：コンボのカプセル型タグ「左横移動(lm)」「右横移動(rm)」「左横歩き(lw)」「右横歩き(rw)」「バックステップ(bs)」「微歩き(mw)」の色。強調色・T・前ダッシュ・HB・立ち途中・ほかの5色と見分けがつくように、テーマごとに変える（色は mk_side_colors2.py と同じ考え方で選んだ） */
+:root { --mv-lm: #b2a6ec; --mv-lm-soft: rgba(178,166,236,.16); --mv-rm: #49a2fe; --mv-rm-soft: rgba(73,162,254,.16); --mv-lw: #d66fe0; --mv-lw-soft: rgba(214,111,224,.16); --mv-rw: #39a08a; --mv-rw-soft: rgba(57,160,138,.16); --mv-bs: #6f9d17; --mv-bs-soft: rgba(111,157,23,.16); --mv-mw: #feaaae; --mv-mw-soft: rgba(254,170,174,.16); }
+html[data-theme="heat"] { --mv-lm: #ad76ab; --mv-lm-soft: rgba(173,118,171,.16); --mv-rm: #638ec8; --mv-rm-soft: rgba(99,142,200,.16); --mv-lw: #f9c1fd; --mv-lw-soft: rgba(249,193,253,.16); --mv-rw: #34a08e; --mv-rw-soft: rgba(52,160,142,.16); --mv-bs: #759b3d; --mv-bs-soft: rgba(117,155,61,.16); --mv-mw: #ffaba5; --mv-mw-soft: rgba(255,171,165,.16); }
+html[data-theme="gold"] { --mv-lm: #c759c5; --mv-lm-soft: rgba(199,89,197,.16); --mv-rm: #058dfa; --mv-rm-soft: rgba(5,141,250,.16); --mv-lw: #f9c1fd; --mv-lw-soft: rgba(249,193,253,.16); --mv-rw: #39a08a; --mv-rw-soft: rgba(57,160,138,.16); --mv-bs: #6f9d17; --mv-bs-soft: rgba(111,157,23,.16); --mv-mw: #f87103; --mv-mw-soft: rgba(248,113,3,.16); }
+html[data-theme="steel"] { --mv-lm: #ad76ab; --mv-lm-soft: rgba(173,118,171,.16); --mv-rm: #70d5ed; --mv-rm-soft: rgba(112,213,237,.16); --mv-lw: #f9c1fd; --mv-lw-soft: rgba(249,193,253,.16); --mv-rw: #34a08e; --mv-rw-soft: rgba(52,160,142,.16); --mv-bs: #759b3d; --mv-bs-soft: rgba(117,155,61,.16); --mv-mw: #ff6362; --mv-mw-soft: rgba(255,99,98,.16); }
+html[data-theme="jade"] { --mv-lm: #a18ee8; --mv-lm-soft: rgba(161,142,232,.16); --mv-rm: #4087fd; --mv-rm-soft: rgba(64,135,253,.16); --mv-lw: #f9c1fd; --mv-lw-soft: rgba(249,193,253,.16); --mv-rw: #299f9c; --mv-rw-soft: rgba(41,159,156,.16); --mv-bs: #6f9d17; --mv-bs-soft: rgba(111,157,23,.16); --mv-mw: #c2736e; --mv-mw-soft: rgba(194,115,110,.16); }
+html[data-theme="dojo"] { --mv-lm: #6c58ad; --mv-lm-soft: rgba(108,88,173,.12); --mv-rm: #3c2aa9; --mv-rm-soft: rgba(60,42,169,.12); --mv-lw: #6e1b77; --mv-lw-soft: rgba(110,27,119,.12); --mv-rw: #0a562b; --mv-rw-soft: rgba(10,86,43,.12); --mv-bs: #7a6813; --mv-bs-soft: rgba(122,104,19,.12); --mv-mw: #742e2c; --mv-mw-soft: rgba(116,46,44,.12); }
+/* --jst・--hld：コンボのカプセル型タグ「ジャスト」「ホールド」の色。ジャストは色味のない色（白に近い色。明るいテーマでは濃い灰色）、ホールドはほかのタグと見分けがつく色味のある色。テーマごとに変える（色は mk_jh_colors.py で選んだ） */
+:root { --jst: #bfb547; --jst-soft: rgba(191,181,71,.16); --hld: #67f3d4; --hld-soft: rgba(103,243,212,.16); }
+html[data-theme="heat"] { --jst: #d3ac41; --jst-soft: rgba(211,172,65,.16); --hld: #67f3d4; --hld-soft: rgba(103,243,212,.16); }
+html[data-theme="gold"] { --jst: #adbd2c; --jst-soft: rgba(173,189,44,.16); --hld: #67f3d4; --hld-soft: rgba(103,243,212,.16); }
+html[data-theme="steel"] { --jst: #c4b345; --jst-soft: rgba(196,179,69,.16); --hld: #24f9d3; --hld-soft: rgba(36,249,211,.16); }
+html[data-theme="jade"] { --jst: #fbd26b; --jst-soft: rgba(251,210,107,.16); --hld: #53f2f3; --hld-soft: rgba(83,242,243,.16); }
+html[data-theme="dojo"] { --jst: #9e0163; --jst-soft: rgba(158,1,99,.12); --hld: #a94bbe; --hld-soft: rgba(169,75,190,.12); }
+/* 技名のカプセル：ヒートダッシュ（緑）・トルネード（水色）・強きりもみ（ピンク）・衰弱（青紫）。ヒート専用技の橙・ヒートスマッシュの赤・レイジアーツの紫・強化状態の黄緑と見分けがつく色 */
+:root { --kd-hd: #22c55e; --kd-tn: #22d3ee; --kd-kr: #ff6ec7; --kd-wk: #818cf8; --kd-fu: #a1a1aa; }   /* 追撃可能やられ：色の数が出尽くしたので、色味のない銀色 */
+html[data-theme="dojo"] { --kd-hd: #00a63e; --kd-tn: #0e7490; --kd-kr: #a32a94; --kd-wk: #4f46e5; --kd-fu: #78716c; }
+tr.kd-ho, .nm .minfo .tg-ho { --kd: var(--kd-ho); }
+tr.kd-hs, .nm .minfo .tg-hs { --kd: var(--kd-hs); }
+tr.kd-ra, .nm .minfo .tg-ra { --kd: var(--kd-ra); }
+.nm .minfo .tg-ss { --kd: var(--kd-ss); }
+.nm .minfo .tg-hd { --kd: var(--kd-hd); }
+.nm .minfo .tg-tn { --kd: var(--kd-tn); }
+.nm .minfo .tg-kr { --kd: var(--kd-kr); }
+.nm .minfo .tg-wk { --kd: var(--kd-wk); }
+.nm .minfo .tg-fu { --kd: var(--kd-fu); }
+html[data-info~="ho"] tr.kd-ho td.name, html[data-info~="hs"] tr.kd-hs td.name, html[data-info~="ra"] tr.kd-ra td.name { box-shadow: inset 6px 0 0 var(--kd); }
+html[data-info~="ho"] tr.kd-ho:not(.done) td.name, html[data-info~="hs"] tr.kd-hs:not(.done) td.name, html[data-info~="ra"] tr.kd-ra:not(.done) td.name { background: color-mix(in srgb, var(--kd) 15%, var(--panel)); }
+.nm .minfo .tg-ho, .nm .minfo .tg-hs, .nm .minfo .tg-ra, .nm .minfo .tg-ss, .nm .minfo .tg-hd, .nm .minfo .tg-tn, .nm .minfo .tg-kr, .nm .minfo .tg-wk, .nm .minfo .tg-fu { background: color-mix(in srgb, var(--kd) 28%, transparent); border-color: var(--kd); }
+.nm .mcmd { flex: none; margin: auto 0 0; height: var(--cmd-h); overflow: hidden; white-space: nowrap; font-size: calc(11px * var(--cs, 1)); line-height: calc(var(--cmd-h) * var(--cs, 1)); }
+.nm .mcmd .ci { vertical-align: middle; }
+.nm .mcmd.w2 { white-space: normal; --cs: .5; }
+/* 技の情報の表示項目（項目ごとのON/OFF）。ボタンの幅は ON/OFF で変わらない（✓の場所を常に空けておく） */
+.infobar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -2px 0 12px; }
+.infobar .ilbl { font-size: .8125rem; color: var(--sub); margin-right: 2px; }
+.ichip { background: transparent; color: var(--sub); border: 1px solid var(--line); border-radius: 99px; padding: 5px 13px 5px 11px; font: inherit; font-size: .8125rem; cursor: pointer; white-space: nowrap; }
+.ichip::before { content: "✓"; visibility: hidden; margin-right: .3em; font-weight: 800; }
+.ichip[data-k="all"] { margin-right: 4px; }
+.ichip:hover { border-color: var(--sub); color: var(--text); }
+.ichip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.ichip[aria-pressed="true"]::before { visibility: visible; }
+/* ジャンプリンク（検索欄の下・技の情報の上）：入力方向／状況・構え／ヒート・レイジ ごとに、その最初の技へ飛ぶ */
+.jump { display: grid; gap: 6px; margin: 0 0 12px; }
+.jrow { display: grid; grid-template-columns: 6.6em minmax(0, 1fr) auto; align-items: start; gap: 8px; }
+.jlbl { font-size: .75rem; color: var(--sub); line-height: 28px; white-space: nowrap; }
+.jchips { position: relative; display: flex; flex-wrap: wrap; gap: 6px; max-height: 32px; overflow: hidden; padding: 2px; margin: -2px; }
+.jrow.open .jchips { max-height: none; }
+.jchip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 28px; box-sizing: border-box; padding: 0 10px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: .8125rem; cursor: pointer; white-space: nowrap; }
+.jchip .jn { font-size: .6875rem; color: var(--sub); font-variant-numeric: tabular-nums; }
+.jchip:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.jchip:focus-visible { outline-offset: 0; }
+.jchip:disabled { opacity: .35; cursor: default; }
+.jchip[data-id="h:ho"] { border-left: 3px solid var(--kd-ho); }
+.jchip[data-id="h:hs"] { border-left: 3px solid var(--kd-hs); }
+.jchip[data-id="h:ra"] { border-left: 3px solid var(--kd-ra); }
+.jmore { height: 28px; padding: 0 4px; background: none; border: 0; color: var(--sub); font: inherit; font-size: .75rem; cursor: pointer; white-space: nowrap; }
+.jmore:hover { color: var(--text); text-decoration: underline; }
+@keyframes jflash { from { background-color: color-mix(in srgb, var(--accent) 30%, var(--panel)); } }
+tr.jflash > td { animation: jflash 1.8s ease-out; }
+@media (max-width: 640px) { .jrow { grid-template-columns: minmax(0, 1fr) auto; } .jlbl { grid-column: 1 / -1; line-height: 1.2; } }
+.ver{margin:-12px 0 14px;color:var(--sub);font-size:.75rem}
+dialog.iodlg{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:20px;width:min(560px,92vw)}
+dialog.iodlg::backdrop{background:rgba(0,0,0,.55)}
+.iodlg h2{margin:0 0 8px;font-size:1.125rem}
+.iodlg p{margin:0 0 10px;color:var(--sub);font-size:.8125rem}
+.iodlg textarea{display:block;width:100%;min-height:120px;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--font-ui);font-size:.75rem}
+.iodlg textarea::placeholder{color:var(--ph)}
+.iodlg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.iodlg button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px 14px;font:inherit;font-size:.8125rem;cursor:pointer}
+.iodlg button.primary{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.iodlg .msg{min-height:1.4em;margin:8px 0 0;color:var(--ok);font-size:.8125rem}
+/*CMDICONS-START*/
+.search{flex:1 1 220px;min-width:180px;max-width:360px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:.8125rem}
+.search::placeholder{color:var(--ph)}
+th.memo{width:16%;min-width:160px}
+th.hic { width: 58px; min-width: 58px; } col.c-hic { width: 58px; } td.hic { text-align: center; vertical-align: middle; line-height: 0; } td.hic img { display: inline-block; width: 24px; height: 24px; margin: 1px; vertical-align: middle; border-radius: 4px; }
+td.memo{padding:6px 8px;text-align:left;vertical-align:middle}
+textarea.memo{display:block;width:100%;min-height:34px;resize:vertical;box-sizing:border-box;background:var(--bg,#1a1b2e);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:.8125rem;line-height:1.4}
+textarea.memo::placeholder{color:var(--ph2)}
+tr.nomatch{display:none}
+.yomi{display:block;font-size:.6875rem;font-weight:500;color:var(--sub);line-height:1.4;margin-top:1px}
+.ci{display:inline-block;width:2.1em;height:2.1em;vertical-align:-.72em;background:center/contain no-repeat;margin:0 .5px}
+.ci-b1{background-image:url(../media/50952756cd0084ef4469.webp)}
+.ci-b2{background-image:url(../media/01712af6725f7a051354.webp)}
+.ci-b3{background-image:url(../media/dbcdf7ca32408a9b49a0.webp)}
+.ci-b4{background-image:url(../media/e607a31cf21f2a45bb64.webp)}
+.ci-b12{background-image:url(../media/3f1b29319cd8774b2be0.webp)}
+.ci-b34{background-image:url(../media/5c667a5e7139cb4d866a.webp)}
+.ci-b13{background-image:url(../media/4ce9ed25f5a260069f2f.webp)}
+.ci-b24{background-image:url(../media/c2203a8e8a6b62354532.webp)}
+.ci-b14{background-image:url(../media/4a77995801e01869a478.webp)}
+.ci-b23{background-image:url(../media/ec0fdc1c4cc87c209a9e.webp)}
+.ci-b123{background-image:url(../media/536066e77f801ebcd07f.webp)}
+.ci-b124{background-image:url(../media/49775a2f65e9872aec5f.webp)}
+.ci-b134{background-image:url(../media/f5d2bc7ba1d3d2f62d4f.webp)}
+.ci-b234{background-image:url(../media/aaf936eb8fb8f5a03f7d.webp)}
+.ci-b1234{background-image:url(../media/678f49ff5f20b7be9ec2.webp)}
+.ci-nn{background-image:url(../media/43e52ab72fa32ac00c99.webp)}
+.ci-d1{background-image:url(../media/939b905f675d0f620dd3.webp)}
+.ci-h1{background-image:url(../media/1dd7101137c6fd5b6170.webp)}
+.ci-d2{background-image:url(../media/8108e1e6e4a5692e69d3.webp)}
+.ci-h2{background-image:url(../media/e39efe8430fa5fd0dd35.webp)}
+.ci-d3{background-image:url(../media/7bffa25151e72f252340.webp)}
+.ci-h3{background-image:url(../media/aa2ae913e155dfbd32b2.webp)}
+.ci-d4{background-image:url(../media/7f79b70747a1bd7285f0.webp)}
+.ci-h4{background-image:url(../media/cf042027c5526c1ba0b2.webp)}
+.ci-d6{background-image:url(../media/d4092ba268299fb13c5c.webp)}
+.ci-h6{background-image:url(../media/371d05df379e04205e18.webp)}
+.ci-d7{background-image:url(../media/3481c88755a0fd2fefe4.webp)}
+.ci-h7{background-image:url(../media/de6a89e4f08ff66e1924.webp)}
+.ci-d8{background-image:url(../media/9dd93bc94cdc6dc896f3.webp)}
+.ci-h8{background-image:url(../media/8df3bddd5181e2287acd.webp)}
+.ci-d9{background-image:url(../media/4f59cd2c4b40eab42390.webp)}
+.ci-h9{background-image:url(../media/0ed625be04150fa8f09c.webp)}
+.mcmd .ct,.cmdtxt .ct{font-weight:800}
+.mcmd,.cmdtxt{line-height:2.4}
+.mcmd.off,.cmdtxt.off{visibility:hidden}
+/*CMDICONS-END*/
+/*RVNUMCSS-START*/
+/* ブックマークマーク（旗）の色。強調色と見分けがつくように、テーマごとに変える */
+:root { --rv: #fbbf24; --rv-soft: rgba(251,191,36,.18); }
+html[data-theme="heat"] { --rv: #fde047; --rv-soft: rgba(253,224,71,.18); }
+html[data-theme="gold"] { --rv: #fb7185; --rv-soft: rgba(251,113,133,.18); }
+html[data-theme="dojo"] { --rv: #f59e0b; --rv-soft: rgba(245,158,11,.2); }
+/* 旗のボタン（大きさと位置は、行・カードごとに各版で決める） */
+.rvbtn { display: inline-grid; place-items: center; padding: 0; margin: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--sub); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.rvbtn svg { width: 58%; height: 58%; display: block; }
+.rvbtn path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.rvbtn:hover { color: var(--text); border-color: var(--sub); }
+.rvbtn[aria-pressed="true"] { background: var(--rv); border-color: var(--rv); color: #1a1208; }
+.rvbtn[aria-pressed="true"] path:nth-child(2) { fill: currentColor; }
+.fstat { font-size: .8125rem; color: var(--sub); }
+.fstat .warnx { color: var(--warn); }
+/* 絞り込み・並べ替えのパネル */
+.nfp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.nfp-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start; }
+.nfp-h { margin: 0; font-size: .8125rem; font-weight: 700; color: var(--sub); letter-spacing: .02em; }
+.nfp-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.nfp-rows:empty { display: none; }
+.nfp-row, .nfp-srow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.nfp select, .nfp-in { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: .8125rem; min-height: 2rem; }
+.nfp-col { flex: 1 1 9em; min-width: 0; max-width: 14em; }
+.nfp-op { flex: 0 0 auto; }
+.nfp-val { display: inline-flex; align-items: center; gap: 4px; }
+.nfp-in { width: 4.5em; text-align: center; font-variant-numeric: tabular-nums; }
+.nfp-in[aria-invalid="true"] { border-color: var(--danger, #ff8fa8); }
+.nfp-unit { min-width: .8em; font-size: .8125rem; color: var(--sub); }
+.nfp-st, .nfp-del, .nfp-sdel { min-width: 2rem; min-height: 2rem; padding: 0 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; font-size: .9375rem; line-height: 1; cursor: pointer; }
+.nfp-st:hover, .nfp-del:hover, .nfp-sdel:hover { border-color: var(--sub); }
+.nfp-del, .nfp-sdel { color: var(--sub); }
+.nfp-add, .nfp-sadd, .nfp-clear { justify-self: start; min-height: 2rem; padding: 4px 14px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--sub); font: inherit; font-size: .8125rem; cursor: pointer; }
+.nfp-add:hover:not(:disabled), .nfp-sadd:hover:not(:disabled), .nfp-clear:hover:not(:disabled) { color: var(--text); border-color: var(--sub); }
+.nfp-add:disabled, .nfp-sadd:disabled, .nfp-clear:disabled { opacity: .4; cursor: default; }
+.nfp-pre { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.nfp-prel { font-size: .75rem; color: var(--sub); margin-right: 2px; }
+.nfp-chip { min-height: 1.875rem; padding: 2px 12px; border: 1px solid var(--line); border-radius: 99px; background: transparent; color: var(--sub); font: inherit; font-size: .8125rem; cursor: pointer; white-space: nowrap; }
+.nfp-chip:hover { border-color: var(--sub); color: var(--text); }
+.nfp-chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+/* ヒット・カウンター時の状態の行 */
+.nfp-scol { flex: 0 0 auto; min-width: 0; max-width: 100%; }
+.nfp-skey { flex: 1 1 15em; min-width: 0; max-width: 26em; text-overflow: ellipsis; }
+.nfp-sort { display: flex; flex-wrap: wrap; gap: 8px; }
+.nfp-sort select:disabled { opacity: .5; }
+.nfp-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.nfp-stat { font-size: .875rem; font-weight: 700; color: var(--text); }
+.nfp-note { margin: 0; font-size: .75rem; color: var(--sub); line-height: 1.55; }
+.jump.sorted { opacity: .4; pointer-events: none; }
+/* 数字ジャンプ（検索欄に数字だけを入れたとき、検索欄の下に出るリンクの帯） */
+.njump { display: grid; gap: 8px; margin: 0 0 12px; padding: 10px 12px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 10px; }
+.njump[hidden] { display: none; }
+.njhead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.njlbl { font-size: .875rem; font-weight: 700; color: var(--text); }
+.njchips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* 「✖」の解除ボタン：項目ごと（リンクの左端）と、一斉解除（「数字〇〇にジャンプ」の左端） */
+.njitem { display: inline-flex; align-items: center; gap: 4px; }
+.njx { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; box-sizing: border-box; background: var(--panel); color: var(--sub); border: 1px solid var(--line); border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.njx svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; pointer-events: none; }
+.njx:hover { color: var(--text); border-color: var(--accent); }
+.njx:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.njxall { color: var(--text); }
+.njchip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; box-sizing: border-box; padding: 0 10px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: .8125rem; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.njchip:hover { border-color: var(--accent); }
+.njchip .njv { font-weight: 700; font-variant-numeric: tabular-nums; }
+.njchip .njn { min-width: 2.6em; text-align: right; font-size: .75rem; color: var(--sub); font-variant-numeric: tabular-nums; }
+.njnone { font-size: .8125rem; color: var(--sub); }
+.njfilter { justify-self: start; min-height: 30px; padding: 0 10px; background: transparent; color: var(--text); border: 1px dashed var(--sub); border-radius: 8px; font: inherit; font-size: .75rem; cursor: pointer; }
+.njfilter[aria-pressed="true"] { background: var(--accent); color: var(--on); border-style: solid; border-color: var(--accent); }
+.njhint { margin: 0; font-size: .75rem; color: var(--sub); }
+@keyframes njflash { from { box-shadow: inset 0 0 0 3px var(--accent); background-color: color-mix(in srgb, var(--accent) 35%, var(--panel)); } }
+.njflash { animation: njflash 1.9s ease-out; }
+
+/* ===== 検索のハイライト（黄色。どのテーマでも文字が読める組み合わせ） ===== */
+:root { --hl: #ffe14a; --hl-fg: #1b1700; }
+mark.shl { background: var(--hl); color: var(--hl-fg); border-radius: 3px; padding: 0 1px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .28); }
+.shl-cmd { border-radius: 4px; background: color-mix(in srgb, var(--hl) 45%, transparent); box-shadow: 0 0 0 2px var(--hl); }
+tr.sh-hit td.name { box-shadow: inset 6px 0 0 var(--hl); }
+.card.sh-hit { border-color: var(--hl); box-shadow: inset 6px 0 0 var(--hl); }
+td.cell.nhit, .cell.nhit, td.cell.whit, .cell.whit { background: color-mix(in srgb, var(--hl) 62%, var(--panel)); box-shadow: inset 0 0 0 2px var(--hl); }
+.nhit .ans { background: var(--hl); color: var(--hl-fg); border-radius: 3px; padding: 0 4px; font-weight: 800; }
+.nhb { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--hl); color: var(--hl-fg); font-size: .6875rem; font-weight: 800; line-height: 1.5; white-space: nowrap; }
+/* ===== 追従する検索欄（技表をスクロールしたら、検索欄を画面の上に貼りつける） ===== */
+.sqph[hidden] { display: none; }
+#sqBar { position: fixed; z-index: 18; box-sizing: border-box; background: var(--bg); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+#sqBar[hidden] { display: none; }
+.search.sqfix { position: fixed; z-index: 19; box-sizing: border-box; margin: 0 !important; min-width: 0 !important; max-width: none !important; }
+/* ===== 追従する数字ジャンプ（画面の上に出ていったら、1行にして貼りつく） ===== */
+.njph[hidden] { display: none; }
+.njump.njfix { position: fixed; z-index: 19; box-sizing: border-box; height: 2.75rem; margin: 0; padding: 0 10px; display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; overflow: hidden; border-radius: 0 0 10px 10px; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); background: color-mix(in srgb, var(--accent) 18%, var(--panel)); }
+.njfix .njhead { flex: none; }
+.njfix .njlbl { white-space: nowrap; font-size: .8125rem; }
+.njfix .njchips { flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.njfix .njchips::-webkit-scrollbar { display: none; }
+.njfix .njitem { flex: none; }
+.njfix .njchip { flex: none; min-height: 30px; }
+.njfix .njx { width: 26px; height: 26px; }
+.njfix .njfilter { flex: none; white-space: nowrap; min-height: 28px; }
+.njfix .njhint { display: none; }
+@media (max-width: 559.98px) { .njfix .njlbl { display: none; } }
+thead th { top: calc(var(--sqh, 0px) + var(--njh, 0px)); }   /* PC版：貼りついた検索欄と数字ジャンプの帯の下に、表の見出しを貼りつける */
+/* ===== 右端の目印（ヒットした行の位置。Chromeのページ内検索と同じ） ===== */
+#shMarks { position: fixed; top: 0; bottom: 0; right: env(safe-area-inset-right, 0px); width: 12px; z-index: 18; pointer-events: none; background: color-mix(in srgb, var(--text) 7%, transparent); }
+#shMarks[hidden] { display: none; }
+html[data-page] #shMarks { display: none; }   /* 技チェックシート以外のページでは出さない */
+.shtick { position: absolute; right: 1px; width: 10px; height: 3px; padding: 0; border: 0; border-radius: 1px; background: var(--hl); box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); pointer-events: auto; cursor: pointer; }
+.shtick::after { content: ""; position: absolute; inset: -6px -2px; }   /* 3pxの線でも押しやすいように、当たり判定を広げる */
+.shtick:hover, .shtick:focus-visible { background: #fff; outline: 2px solid var(--hl); }
+/*RVNUMCSS-END*/
+/* ブックマーク・数値の絞り込み：パソコン版の配置 */
+.fbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -4px 0 12px; }
+.fbar .cmdtgl { margin-left: 0; }
+.fbar .cmdtgl.act { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.fbar #nfTgl { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+.fbar .nfarrow { display: inline-block; margin-left: .35em; transition: transform .15s; }
+.fbar #nfTgl[aria-expanded="true"] .nfarrow { transform: rotate(180deg); }
+.fbar .fstat { margin-left: 4px; }
+.nfpanel { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.nfpanel.nfp { grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); column-gap: 32px; row-gap: 10px; align-items: start; }
+.nfpanel .nfp-foot, .nfpanel .nfp-note { grid-column: 1 / -1; }
+.nfpanel .nfp-sec[data-sec="num"] { grid-column: 1; grid-row: 1; }
+.nfpanel .nfp-sec[data-sec="state"] { grid-column: 1; grid-row: 2; }
+.nfpanel .nfp-sec[data-sec="sort"] { grid-column: 2; grid-row: 1 / span 2; }
+@media (max-width: 800px) { .nfpanel.nfp { grid-template-columns: minmax(0, 1fr); } .nfpanel .nfp-sec[data-sec] { grid-column: 1; grid-row: auto; } }
+.nfpanel .nfp-stat { display: none; }
+.nfpanel .nfp-foot { justify-content: flex-end; }
+.nm .rvbtn { position: absolute; right: 6px; top: calc(8px + var(--txt-h) + 2px + (var(--info-h) - 22px) / 2); width: 22px; height: 22px; z-index: 1; }
+.nm .minfo { margin-right: 28px; }
+tr.rv .nm::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: var(--rv); pointer-events: none; }
+tr.rvfade { opacity: .35; transition: opacity .3s; }
+.panel { position: relative; }
+.panel[data-rv]::after { content: attr(data-rv); position: absolute; top: 2px; right: 2px; min-width: 15px; height: 15px; padding: 0 4px; box-sizing: border-box; border-radius: 99px; background: var(--rv); color: #1a1208; font-size: .625rem; font-weight: 800; line-height: 15px; text-align: center; pointer-events: none; }
+/*REDESIGN-START*/
+/* ===== デザイン刷新（コンパクト＋ゲームUI風）：色はすべてテーマの変数を使う ===== */
+:root { --row-h: 92px; --txt-h: 40px; }
+/* 縦スクロールバーを常に出す（短いページは使えない状態の薄いバー）：ページが短い（コンボ集など）と、バーが出ない分だけ中央寄せの内容が他のページより約7px右に寄って見えるため。重ねて出る形のバー（スマホ・Macの既定）では見た目は変わらない。scrollbar-gutter は新しいSafariでしか効かないので使わない */
+html { overflow-y: scroll; }
+/* 道場（ライト）：補助文字（--sub）を少し濃くする（#5a6070 → #4f5565、背景とのコントラスト比 5.5 → 6.5）。乗算で重ねる背景画像を、文字が読みにくくならない範囲でもっとはっきり見せるため（画像の濃さは約1.7倍） */
+html[data-theme="dojo"] { --sub: #4f5565; }
+/* PROJECT T のロゴ（黒い正方形に白い「PT」。お客様提供の画像を図形に起こしたもので、拡大しても粗くならない）。タイトルの左と、キャラ選択の見出しで使う */
+:root { --t8: url("../media/6bb65df10133812ba720.svg"); }
+body { padding-top: 16px; background-image: radial-gradient(1100px 420px at 8% -120px, color-mix(in srgb, var(--accent) 15%, transparent), transparent 70%); background-repeat: no-repeat; }
+/* ヘッダー */
+.titlebar { position: relative; margin: 0 0 12px; padding: 0 0 12px; border-bottom: 1px solid var(--line); }
+.titlebar::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 132px; height: 3px; background: var(--accent); }
+.titlebar h1 { position: relative; padding-left: 2.1em; font-size: 1.375rem; font-weight: 800; letter-spacing: .05em; }
+.titlebar h1::before { content: ""; position: absolute; left: 0; top: 50%; width: 1.5em; height: 1.5em; transform: translateY(-50%); background: var(--t8) center / contain no-repeat; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 70%, transparent); }
+.pagenav { gap: 3px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.pagenav button { padding: 7px 15px; border-radius: 0; background: color-mix(in srgb, var(--panel) 85%, transparent); letter-spacing: .04em; clip-path: polygon(9px 0, 100% 0, calc(100% - 9px) 100%, 0 100%); }
+.pagenav button:hover { background: var(--head); }
+.themesel { border-radius: 2px; }
+/* 説明の行 */
+.lead { margin: 0 0 8px; font-size: .8125rem; }
+p.ver { display: inline-block; margin: 0 14px 10px 0; font-size: .75rem; }
+.pagelinks { display: inline-flex; margin: 0 14px 10px 0; vertical-align: middle; }
+.plink { min-height: 28px; padding: 2px 14px; border-radius: 2px; font-size: .75rem; }
+.hint { display: inline-block; margin: 0 0 10px; padding: 4px 12px; border-radius: 2px; font-size: .75rem; vertical-align: middle; }
+/* キャラ一覧：名前を顔の上に重ねたタイル */
+.chars { --ch-min: 58px; gap: 3px; margin-bottom: 14px; }
+.panel { border-width: 1px; border-radius: 3px; }
+.pname { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 1px 2px; background: linear-gradient(to top, rgba(0, 0, 0, .9), rgba(0, 0, 0, 0)); color: #fff; font-size: .5625rem; text-shadow: 0 1px 2px #000; }
+.pname.long { font-size: .5rem; }
+.panel[aria-pressed="true"] { z-index: 1; box-shadow: 0 0 0 2px var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 55%, transparent); }
+.panel[aria-pressed="true"] .pname { padding-top: 2px; background: var(--accent); text-shadow: none; }
+/* ツールバー：検索・ブックマーク・絞り込みを1行目に、細かい操作を2行目にまとめる */
+#viewSheet { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+#viewSheet > * { flex: 1 0 100%; min-width: 0; }
+#viewSheet > .bar, #viewSheet > .fbar { display: contents; }
+#viewSheet .bar > *, #viewSheet .fbar > * { flex: 0 0 auto; margin: 0; }
+#viewSheet .bar h2 { order: -20; width: 6.5em; font-size: 1.0625rem; }
+#viewSheet .bar .search { order: -19; flex: 1 1 260px; min-width: 200px; }
+#rvTgl { order: -18; }
+#rvClear { order: -17; }
+#nfTgl { order: -16; }
+#cmdTgl { order: -10; }
+#ansTgl { order: -9; }
+#ioBtn { order: -8; }
+#reset { order: -7; }
+#fStat { order: -1; flex: 1 0 100%; }
+.reset, .cmdtgl { border-radius: 2px; padding: 5px 9px; font-size: .75rem; }
+.search { border-radius: 2px; }
+.nfpanel { margin: 0; border-radius: 4px; }
+.njump { margin: 0; border-radius: 4px; }
+#viewSheet > .nfpanel, #viewSheet > .njump, #viewSheet > .jump, #viewSheet > .infobar, #viewSheet > .scroll { flex-basis: 100%; }
+/* ジャンプ・情報の表示：詰める */
+.jump { gap: 4px; margin: 0; }
+.jrow { grid-template-columns: 5.4em minmax(0, 1fr) auto; gap: 6px; }
+.jlbl { font-size: .6875rem; line-height: 26px; letter-spacing: .06em; }
+.jchips { gap: 4px; max-height: 30px; }
+.jchip { height: 26px; padding: 0 9px; border-radius: 2px; font-size: .75rem; }
+.infobar { margin: 0; gap: 6px; }
+.infobar .ilbl { font-size: .75rem; }
+.ichip { padding: 3px 11px 3px 9px; border-radius: 2px; font-size: .75rem; }
+/* 表 */
+.scroll { margin-top: 4px; border-radius: 4px; }
+thead th { padding: 8px 1px; font-size: .65625rem;   /* 表は幅1100px（全ページ共通）に収めるので、見出しの途中改行（「コマン／ド」など）が出ないよう少し小さく */ line-height: 1.25; letter-spacing: 0; background: var(--head); border-bottom: 2px solid var(--accent); }
+thead th.name { font-size: .75rem; letter-spacing: .08em; }
+col.c-name { width: 14%; }
+/* ===== 技名の列：文字を大きく表示／タグ専用の列（技名の右）=====
+   技名・ふりがなは14px/11px、コマンドは12pxを基準にする。収まらないときだけ JS（fitNames）が縮め、コマンドは小さくなりすぎる前に2行へ折り返す。
+   カプセルのタグは技名の欄から出して、右隣のタグ列にまとめる。 */
+/* (行の高さは 112px) */
+:root { --row-h: 112px; --nm-fs: 14px; --yomi-fs: 11px; --cmd-fs: 12px; --tag-fs: 11.5px; --tg-col: calc(var(--tag-fs) * 12 + 16px); }   /* --tg-col＝タグ列の幅：いちばん長いタグ（11文字）が1段で入る幅（カプセル 12文字ぶん＋枠 4px ＋ 列の左右の余白 12px） */
+col.c-name { width: 19%; }
+col.c-tag { width: var(--tg-col); }
+th.memo { width: 9%; min-width: 110px; }
+td.name { height: var(--row-h); }
+.nm { padding: 7px 8px 5px 14px; }
+.nm .txt { flex: 1 1 0; height: auto; min-height: 0; }
+.nm .txt::before { content: ""; float: right; width: 26px; height: calc(var(--nm-fs) * 1.3 * var(--ts, 1)); }   /* 右上の旗ボタンの場所（1行目だけ避ける） */
+.nm .nt { font-size: calc(var(--nm-fs) * var(--ts, 1)); }
+.nm .yomi { display: block; font-size: calc(var(--yomi-fs) * var(--ts, 1)); }
+.nm .rvbtn { top: 5px; right: 6px; width: 21px; height: 21px; }
+.nm .minfo { display: none; margin: 2px 0 0; }
+html[data-info~="atk"] .nm .minfo { display: flex; }
+.nm .mcmd { flex: none; height: auto; margin: 2px 0 0; font-size: calc(var(--cmd-fs) * var(--cs, 1)); line-height: 2.2; }
+.nm .mcmd.w2 { white-space: normal; max-height: 4.4em; --cs: .87; }
+th.tagc { text-align: left; padding-left: 10px; letter-spacing: .08em; }
+td.tagc { height: var(--row-h); padding: 0 6px; text-align: left; vertical-align: middle; border-right: 1px solid var(--line); }
+/* 地上ヒット時・空中ヒット時・タグの間に縦の線を入れる／技名とタグは列の中央に寄せる */
+th.hic, td.hic { border-right: 1px solid var(--line); }
+th.name, th.tagc { text-align: center; padding-left: 1px; padding-right: 1px; }
+td.tagc { text-align: center; }
+.tgc { justify-content: center; }
+.tgc { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; max-height: calc(var(--row-h) - 14px); overflow: hidden; font-size: calc(var(--tag-fs) * var(--tgs, 1)); line-height: 1.3; }
+.tgc [data-k] { display: none; }
+.tgc[data-many] { gap: 1px; }   /* タグが5つ以上の技は、行の高さに収まるよう、タグの上下の余白だけ詰める（文字の大きさ・幅は他の行と同じ） */
+.tgc[data-many] .tg { padding: 0; line-height: 1.2; }
+.tgc[data-many="2"] { max-height: calc(var(--row-h) - 2px); }   /* タグが6つ以上の技（最大7つ）：上下の余白を減らして、7つまで行の高さに収める（文字の大きさ・幅は他の行と同じ） */
+.tgc[data-many="2"] .tg { border-width: 1px; line-height: 1.1; }   /* 枠線も細くして、7つ目まで収める */
+html[data-info~="pc"] .tgc [data-k="pc"], html[data-info~="hs"] .tgc [data-k="hs"], html[data-info~="he"] .tgc [data-k="he"], html[data-info~="hb"] .tgc [data-k="hb"],
+html[data-info~="ho"] .tgc [data-k="ho"], html[data-info~="ra"] .tgc [data-k="ra"], html[data-info~="ss"] .tgc [data-k="ss"], html[data-info~="tn"] .tgc [data-k="tn"],
+html[data-info~="kr"] .tgc [data-k="kr"], html[data-info~="wk"] .tgc [data-k="wk"], html[data-info~="hd"] .tgc [data-k="hd"], html[data-info~="fu"] .tgc [data-k="fu"],
+html[data-info~="gn"] .tgc [data-k="gn"], html[data-info~="gu"] .tgc [data-k="gu"], html[data-info~="gw"] .tgc [data-k="gw"], html[data-info~="gf"] .tgc [data-k="gf"],
+html[data-info~="hc"] .tgc [data-k="hc"], html[data-info~="cc"] .tgc [data-k="cc"], html[data-info~="hf"] .tgc [data-k="hf"], html[data-info~="cf"] .tgc [data-k="cf"], html[data-info~="ws"] .tgc [data-k="ws"], html[data-info~="wm"] .tgc [data-k="wm"], html[data-info~="hm"] .tgc [data-k="hm"], html[data-info~="dl"] .tgc [data-k="dl"], html[data-info~="wy"] .tgc [data-k="wy"], html[data-info~="au"] .tgc [data-k="au"], html[data-info~="tkl"] .tgc [data-k="tkl"], html[data-info~="tkr"] .tgc [data-k="tkr"], html[data-info~="hn"] .tgc [data-k="hn"] { display: block; }
+.tgc .tg { flex: none; box-sizing: border-box; width: calc(12em + 4px); max-width: none; padding: 1px 0; border-radius: 12px; font-weight: 700; line-height: 1.35; text-align: center; white-space: nowrap; overflow: hidden;   /* タグは全部同じ幅（いちばん長い11文字のタグに合わせる）で、文字は縮めず1段 */ color: var(--text); background: var(--accent-soft); border: 1px solid var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+:root { --kd-gn: #eab308; --kd-gu: #14b8a6; --kd-gw: #9a6b4b; --kd-gf: #2563eb; }
+:root { --kd-hc: #ffdafd; --kd-cc: #d236c4; --kd-hf: #b0feba; --kd-cf: #fced3f; }   /* ヒット時コンボ始動（薄い藤色）・カウンター時コンボ始動（赤紫）・ヒット時追撃可能（薄い緑）・カウンター時追撃可能（黄）。既存のタグから色の離れた4色を、色の距離（OKLab）で選んだ */   /* 取得（黄）・消費（青緑）・壁ギミック発動（茶）・床ギミック発動（青）。ほかのタグと色の差が十分あるものを選んだ */
+html[data-theme="dojo"] { --kd-gn: #a16207; --kd-gu: #0f766e; --kd-gw: #6b4423; --kd-gf: #1e3a8a; }
+html[data-theme="dojo"] { --kd-hc: #694e8c; --kd-cc: #6e034f; --kd-hf: #004b1e; --kd-cf: #6d129d; }
+:root { --kd-ws: #a0960a; --kd-wm: #dcaafa; }   /* 壁やられ(強)（からし色）・壁やられ(中)（薄い紫）。既存のタグから色の離れた2色を、色の距離（OKLab）で選んだ */
+html[data-theme="dojo"] { --kd-ws: #a0960a; --kd-wm: #9a7ac0; }
+:root { --kd-hm: #f8b0a8; --kd-dl: #c078a8; --kd-wy: #a8b878; --kd-au: #c88068; --kd-tkl: #98d8c0; --kd-tkr: #a8c8f8; --kd-hn: #b8e068; }   /* ホーミング・ディレイ可・壁よろけ・空ヒ時うつ伏せ・左追尾効果・右追尾効果・ヒット時投げ抜け不可。既存のタグ・各テーマの色から離れた7色を、色の距離（OKLab）で選んだ */
+html[data-theme="dojo"] { --kd-hm: #900018; --kd-dl: #1070d0; --kd-wy: #005060; --kd-au: #904858; --kd-tkl: #503860; --kd-tkr: #386000; --kd-hn: #3850b0; }
+.tgc .tg-ho { --kd: var(--kd-ho); }
+.tgc .tg-hs { --kd: var(--kd-hs); }
+.tgc .tg-ra { --kd: var(--kd-ra); }
+.tgc .tg-ss { --kd: var(--kd-ss); }
+.tgc .tg-hd { --kd: var(--kd-hd); }
+.tgc .tg-tn { --kd: var(--kd-tn); }
+.tgc .tg-kr { --kd: var(--kd-kr); }
+.tgc .tg-wk { --kd: var(--kd-wk); }
+.tgc .tg-fu { --kd: var(--kd-fu); }
+.tgc .tg-gn { --kd: var(--kd-gn); }
+.tgc .tg-gu { --kd: var(--kd-gu); }
+.tgc .tg-gw { --kd: var(--kd-gw); }
+.tgc .tg-gf { --kd: var(--kd-gf); }
+.tgc .tg-hc { --kd: var(--kd-hc); }
+.tgc .tg-cc { --kd: var(--kd-cc); }
+.tgc .tg-hf { --kd: var(--kd-hf); }
+.tgc .tg-cf { --kd: var(--kd-cf); }
+.tgc .tg-ws { --kd: var(--kd-ws); }
+.tgc .tg-wm { --kd: var(--kd-wm); }
+.tgc .tg-hm { --kd: var(--kd-hm); }
+.tgc .tg-dl { --kd: var(--kd-dl); }
+.tgc .tg-wy { --kd: var(--kd-wy); }
+.tgc .tg-au { --kd: var(--kd-au); }
+.tgc .tg-tkl { --kd: var(--kd-tkl); }
+.tgc .tg-tkr { --kd: var(--kd-tkr); }
+.tgc .tg-hn { --kd: var(--kd-hn); }
+.tgc .tg-ho, .tgc .tg-hs, .tgc .tg-ra, .tgc .tg-ss, .tgc .tg-hd, .tgc .tg-tn, .tgc .tg-kr, .tgc .tg-wk, .tgc .tg-fu, .tgc .tg-gn, .tgc .tg-gu, .tgc .tg-gw, .tgc .tg-gf, .tgc .tg-hc, .tgc .tg-cc, .tgc .tg-hf, .tgc .tg-cf, .tgc .tg-ws, .tgc .tg-wm, .tgc .tg-hm, .tgc .tg-dl, .tgc .tg-wy, .tgc .tg-au, .tgc .tg-tkl, .tgc .tg-tkr, .tgc .tg-hn { background: color-mix(in srgb, var(--kd) 28%, transparent); border-color: var(--kd); }
+html[data-info~="ho"] tr.kd-ho:not(.done) td.tagc, html[data-info~="hs"] tr.kd-hs:not(.done) td.tagc, html[data-info~="ra"] tr.kd-ra:not(.done) td.tagc { background: color-mix(in srgb, var(--kd) 15%, var(--panel)); }
+/* ヒット・カウンターの列の薄字：追撃可能・コンボ始動・追撃可能(壁際のみ)・コンボ始動(壁際のみ)。チェック欄の下に、薄い色で出す（右クリックの答えとは別。タグと同じ判定） */
+@media (min-width: 1366px) { th[data-col="hit"], th[data-col="counter"] { width: 4.5%; } }   /* 薄字（「コンボ始動」5文字・「(壁際のみ)」）が1行で入る幅（ほかの項目の列より少し広く）。これより狭い画面は、ほかの列の見出しが収まる幅を守るため広げず、薄字を一段小さくする */
+td.cell { position: relative; }
+td.cell .chnote { position: absolute; left: 1px; right: 1px; bottom: 5px; display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none; text-align: center; font-size: .625rem; font-weight: 600; line-height: 1.15; color: var(--sub); overflow-wrap: anywhere; }   /* 文字の太さ・色は、答えの2段目（「コンボ始動」など）と同じ */
+td.cell .chnote .chn { display: block; white-space: nowrap; }
+td.cell .chnote .chn i { display: block; font-style: normal; font-size: .92em; }
+html[data-ans="1"] td.cell .chnote { position: static; margin: 2px 0 4px; }   /* 答えを全表示のときは、答えの下に並べる */
+@media (max-width: 1365px) { td.cell .chnote { font-size: .5rem; line-height: 1; bottom: 3px; gap: 1px; }
+  td.cell .chnote .chn { white-space: normal; word-break: keep-all; } }   /* 狭い画面では、「コンボ／始動」「(壁際／のみ)」のように決まった位置で折り返して、隣の列の薄字とくっつかないようにする */
+/* 答えの全表示：答えの列を広げるぶん、技名・タグ・メモの列を少し狭める */
+html[data-ans="1"] col.c-name { width: 12.2%; }   /* タグ列を固定幅にしたぶん、技名の列を詰めて、答えの列の幅を保つ */
+html[data-ans="1"] col.c-tag { width: var(--tg-col); }
+html[data-ans="1"] th.memo { width: 6.5%; min-width: 84px; }
+html[data-ans="1"] th[data-col="gimmick"] { width: 6.5%; }
+html[data-ans="1"] th[data-col="wall"], html[data-ans="1"] th[data-col="tbreak"] { width: 5%; }
+/* 画面が狭いとき：チェック欄（技の項目の列）が詰まりすぎないよう、技名・メモの列を少し狭める。タグの列は、いちばん長いタグ（11文字）が1行で入る幅（--tg-col）を、どの画面でも保つ */
+/* （タグの列の幅は、画面の幅によらず --tg-col で固定） */
+@media (max-width: 1360px) { col.c-name { width: 17.5%; } th.memo { width: 8.5%; min-width: 100px; } }
+@media (max-width: 1200px) { col.c-name { width: 14.5%; } th.memo { width: 8.5%; min-width: 96px; } thead th { font-size: .5625rem; } }   /* タグ列を1段で入る幅（--tg-col）に固定したぶん、技名・メモと見出しを少し詰めて、見出しが途中で折れないようにする */
+@media (max-width: 1000px) { table { min-width: 1120px; } th.name, td.name { min-width: 170px; } th.tagc, td.tagc { min-width: var(--tg-col); } }
+thead th[data-col] { white-space: pre-line; }
+thead th[data-col="startup"] { white-space: pre; }   /* 発生(持続)の見出し：「発生」「(持続)」の2行のまま、かっこの途中で折り返さない */
+td.name { font-size: .8125rem; }
+tbody tr:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--panel)); }
+tbody tr:hover td.name { background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+/* ページの切り替え：どのボタンも同じ大きさ（いちばん長い名前に合わせる）。1180px以上は1列、それより狭いと4列のマスにして、ページが増えたら下の段へ折り返す。520px以下は、スマホ版と同じ短い名前にする */
+.pagenav { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.pagenav button { padding: 7px 10px; text-align: center; }
+.pagenav .ls { display: none; }
+@media (max-width: 1179.98px) { .titleleft .pagenav { display: grid; grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 44rem); } }
+@media (max-width: 899.98px) { .titleleft { width: 100%; } }
+@media (max-width: 520px) { .pagenav button { padding: 7px 4px; font-size: min(.75rem, 3.4vw); letter-spacing: 0; } .pagenav .lf { display: none; } .pagenav .ls { display: inline; } }
+/* キャラ一覧のドロワー：左端のタブから開く（検索の目印は右端なので、左側に置いて重ならないようにする） */
+.chd-launch { position: fixed; left: 0; top: 50%; z-index: 17; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; width: 30px; padding: 8px 0 8px 3px; box-sizing: border-box; border: 1px solid var(--line); border-left: 0; border-radius: 0 8px 8px 0; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; box-shadow: 4px 0 14px rgba(0, 0, 0, .35); }
+.chd-launch::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); }
+.chd-launch:hover, .chd-launch:focus-visible { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.chd-th { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; overflow: hidden; flex: none; background: linear-gradient(160deg, var(--thumbA), var(--thumbB)); color: var(--thumbT); font-size: .6875rem; font-weight: 800; line-height: 1; }
+.chd-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.chd-tx { writing-mode: vertical-rl; font-size: .75rem; font-weight: 700; letter-spacing: .14em; line-height: 1; }
+.chd-arw { color: var(--accent); font-size: 1rem; font-weight: 800; line-height: 1; }
+html.chd-on .chd-launch { visibility: hidden; }
+/* 左右の余白は、全ページでそろえる（ステージ・用語集と同じ：画面の左右12px＋本文は幅1100pxまで・中央）。
+   左端のキャラ一覧のタブ（幅30px）に本文が重なる幅（約1168px未満）では、全ページ同じ左余白（42px）を足す */
+#chars, #viewSheet, #viewCombo, #viewPunish, #viewUpdate { max-width: 1100px; margin-left: auto; margin-right: auto; }
+/* 技チェックシートだけ：キャラ一覧の下の「キャラ名・検索・絞り込み・表」を、キャラ一覧（幅1100px）より広げる。
+   文字の大きさは変えず、表の列が広がって余裕ができる。キャラ一覧と版数表示は幅1100pxのまま・中央のまま。
+   幅は、画面の幅から60px（左のタブに重ならない余白）を引いた広さで、最大1680px。1100px以下の画面は今までどおり。 */
+#viewSheet { max-width: none; width: clamp(min(1100px, 100%), calc(100% - 60px), 1680px); }
+#viewSheet > .shinfo { padding-left: max(0px, calc((100% - 1100px) / 2)); padding-right: max(0px, calc((100% - 1100px) / 2)); box-sizing: border-box; }
+/* 広い画面（1176px以上）：技表は、左のタブ（幅30px）のすぐ右から、右の検索の目印の手前まで広げる（左 26px・右は画面の端の余白だけ）。タグを1段に収めるための幅を、技表の広がりでまかなう。
+   キャラ一覧と版数表示は、これまでどおり幅1100pxで中央。最大は、全体の幅（1800px）まで。 */
+@media (min-width: 1176px) {
+  #viewSheet { width: clamp(1100px, calc(100% - 26px), 1774px); margin-left: 26px; margin-right: 0; }
+  #viewSheet > .shinfo { padding-left: max(0px, calc((100% - 1100px) / 2 - 13px)); padding-right: max(0px, calc((100% - 1100px) / 2 + 13px)); }
+}
+/* キャラ一覧のすぐ下：バージョン表示と、答えの表示のヒント */
+#viewSheet > .shinfo { order: -30; }
+.shinfo > p.ver, .shinfo > .hint { margin: 0 14px 4px 0; }
+@media (min-width: 700px) and (max-width: 1167px) { body { padding-left: 42px; } }
+.chd-scrim { position: fixed; inset: 0; z-index: 85; background: rgba(5, 6, 12, .62); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.chd-scrim.show { opacity: 1; pointer-events: auto; }
+.chd-drawer { position: fixed; top: 0; bottom: 0; left: 0; z-index: 90; width: min(31rem, calc(100vw - 28px)); box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--line); box-shadow: 12px 0 40px rgba(0, 0, 0, .55); transform: translateX(-104%); visibility: hidden; transition: transform .24s cubic-bezier(.2, .8, .2, 1), visibility 0s .24s; outline: none; }
+.chd-drawer.show { transform: none; visibility: visible; transition: transform .24s cubic-bezier(.2, .8, .2, 1), visibility 0s; }
+.chd-drawer::after { content: ""; position: absolute; top: 0; bottom: 0; right: -1px; width: 3px; background: var(--accent); pointer-events: none; }
+.chd-hd { display: flex; align-items: center; gap: 8px; flex: none; padding: 14px 12px 10px 18px; border-bottom: 1px solid var(--line); }
+.chd-hd h2 { position: relative; flex: 1; margin: 0; padding-left: 2.15em; font-size: 1.0625rem; font-weight: 800; letter-spacing: .06em; }
+.chd-hd h2::before { content: ""; position: absolute; left: 0; top: 50%; width: 1.55em; height: 1.55em; transform: translateY(-50%); background: var(--t8) center / contain no-repeat; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 70%, transparent); }
+.chd-x { width: 36px; height: 36px; border: 0; border-radius: 4px; background: transparent; color: var(--sub); font-size: 1.125rem; cursor: pointer; }
+.chd-x:hover, .chd-x:focus-visible { background: var(--head); color: var(--text); }
+.chd-qw { flex: none; padding: 10px 14px 0 18px; }
+.chd-qw .search { display: block; width: 100%; max-width: none; flex: none; box-sizing: border-box; border-radius: 2px; }
+.chd-grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px 18px 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; align-content: start; }
+.chd-grid .panel[hidden] { display: none; }
+.chd-grid .pname { font-size: .625rem; }
+.chd-grid .pname.long { font-size: .5625rem; }
+.chd-empty { margin: 0; padding: 18px; text-align: center; color: var(--sub); font-size: .875rem; }
+.chd-empty[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .chd-drawer, .chd-drawer.show, .chd-scrim { transition: none; } }
+/* ページ名（左上の見出し）のフォント：Dela Gothic One（Google Fonts・SIL Open Font License）。見出しに使う文字（いまのページ名すべて・ひらがな・カタカナ・英数字・記号）を切り出して埋め込み済み（ネットがなくても表示される）。
+   ない文字は、次の候補のフォントで表示され、見出しの太さがそろわなくなる。ページ名に漢字を足したときは、切り出し直しが必要（元：Dela Gothic One 全体 → scratchpad/dela_new/mk_subset.py）。試験 t398 が、ページ名の字がすべて入っているかを確かめる */
+@font-face { font-family: "Dela Gothic One"; font-style: normal; font-weight: 400; font-display: swap; src: url(../media/8188ad9e81eac5cc98cb.woff2) format("woff2"); }
+/* VS の札の漢字用（Dela Gothic One 完全版から 17 字を切り出し。OFL）。.chartxt だけが使う。作り方: build_inputs/mk_vs_kanji_font.sh */
+@font-face { font-family: "Dela Gothic One Kanji"; font-style: normal; font-weight: 400; font-display: block; src: url(../media/57e8d79dd717b2ea5605.woff2) format("woff2"); }
+/* サイト全体の文字：略字少なめ丸ゴかわ（OFL 系の Kosugi Maru ベース・ユーザー提供）。サイトで使う文字だけを切り出して埋め込み済み（ネットがなくても表示される）。
+   トップの名言と人名（Rockglazer・白光明朝）以外は、すべてこのフォント。旧丸ゴが簡体字に近い形・略字に変えていた漢字（../maru/ban_chars.txt）は、元の書体 Kosugi Maru（日本語の標準字形・同じ丸み・Apache License 2.0・The Kosugi Maru Project Authors）の字形で表示される。ない文字（絵文字など）は、次の候補のフォントで表示される。文字を増やしたときは、切り出し直しが必要 */
+@font-face { font-family: "MaruGoKawa"; font-style: normal; font-weight: 400; font-display: block; src: url(../media/a512bebf66816c386edb.woff2) format("woff2"); }
+@font-face { font-family: "KosugiMaru"; font-style: normal; font-weight: 400; font-display: block; src: url(../media/590d76a38d297080c723.woff2) format("woff2"); }
+:root { --font-ui: "MaruGoKawa", "KosugiMaru", "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif; }
+html body, button, input, select, textarea { font-family: var(--font-ui); }
+/* トップの名言のフォント：Rockglazer（個人利用無料のフォント）。名言に使う英字だけを切り出して埋め込み済み（文字を変えるときは切り出し直しが必要）。 */
+@font-face { font-family: "Rockglazer"; font-style: normal; font-weight: 400; font-display: block; src: url(../media/54a666f059de32829fa2.woff) format("woff"); }
+/* トップの「01 · Learn」「02 · Practice」の名言のフォント：白光明朝（SIL Open Font License 1.1）。名言と人名に使う文字だけを切り出して埋め込み済み（文字を変えるときは切り出し直す） */
+@font-face { font-family: "HakkouMincho"; font-style: normal; font-weight: 400; font-display: block; src: url(../media/7e5616b661cc3e3a14c6.woff) format("woff"); }
+/* 技表のチェック欄：指で長押しして答えを出す（タブレットなど）。iOS の長押しメニュー・ダブルタップ拡大を出さない */
+td.cell { -webkit-touch-callout: none; touch-action: manipulation; }
+.titlebar h1 { font-family: "Dela Gothic One", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; font-weight: 400; font-size: 1.3125rem; letter-spacing: .04em; }
+
+/* iOS Safari：16px未満の入力欄に触れると画面が勝手に拡大されるのを防ぐ（iOSだけに効く）。向きを変えても文字が膨らまないようにもする */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: max(16px, 1em); }
+}
+/*PX-START*/
+/* ===== ページ背景のパララックス（試験：シャオユウ・アンナ・ニーナ・デビル仁・仁・ブライアン・ドラグノフ・キング・クニミツ・飛鳥の 技チェックシート・コンボ集・確定反撃表・アップデート）=====
+   しくみ：views.js が <body> の先頭に .pxbg（画面に固定した画像の層）を1つ置き、<html data-px="キャラID"> のときだけ見せる。
+   どのキャラ・どのページに出すかは views.js の PX_BG で決める（広げるときは、そこに足して、下に画像を1つ足すだけ）。
+   スクロールすると、層が内容よりゆっくり上へ動く（奥行き）。文字が読みにくくならないよう、画像は薄く（--px-op）して背景色になじませる。 */
+:root { --px-op: .17; }   /* 薄さ：文字（--sub の色）が、画像のいちばん明るい所に重なっても、コントラスト比 4.5 以上を保つ値（テーマごと） */
+html[data-theme="steel"] { --px-op: .15; }
+html[data-theme="jade"] { --px-op: .16; }
+html[data-theme="navy"] { --px-op: .10; }
+html[data-theme="dojo"] { --px-op: 0.142; }
+html[data-theme="dojo"] .pxbg { mix-blend-mode: multiply; }   /* 明るい背景のテーマでは、乗算で重ねる（明るい所はそのまま、濃い所だけ色づく） */
+html[data-theme="dojo"] .pxbg::before { filter: contrast(1.45) saturate(1.3); }   /* 道場ライトだけ：画像の濃淡と色を強めて、薄い乗算でも絵が見えるようにする（文字との比は、濃い所が黒に近くなる前提で、薄さの上限の9.5割に収めてある） */
+.pxbg { position: fixed; left: 0; right: 0; top: 0; height: calc(100vh + var(--px-ex, 0px)); z-index: -1; overflow: hidden; pointer-events: none; opacity: 0; visibility: hidden; will-change: transform; transition: opacity .6s ease, visibility 0s linear .6s; }
+html[data-px] .pxbg { opacity: var(--px-op); visibility: visible; transition: opacity .6s ease, visibility 0s; }
+.pxbg::before { content: ""; position: absolute; inset: 0; background: var(--pxi, none) center 28% / cover no-repeat; }   /* --pxi は views.js が、保管庫（pxstore.js）から取り出した絵の一時URLを入れる */
+.pxbg[data-k="xiaoyu"]::before { background-position: center 28%; }
+.pxbg[data-k="anna"]::before { background-position: 40% 28%; }
+.pxbg[data-k="anna"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="anna"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="anna"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="anna"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="anna"] { --px-op: 0.142; }
+.pxbg[data-k="nina"]::before { background-position: 44% 28%; }
+.pxbg[data-k="nina"] { --px-op: 0.175; }
+html[data-theme="steel"] .pxbg[data-k="nina"] { --px-op: 0.145; }
+html[data-theme="jade"] .pxbg[data-k="nina"] { --px-op: 0.155; }
+html[data-theme="navy"] .pxbg[data-k="nina"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="nina"] { --px-op: 0.142; }
+.pxbg[data-k="devil-jin"]::before { background-position: 52% 28%; }
+.pxbg[data-k="devil-jin"] { --px-op: 0.165; }
+html[data-theme="steel"] .pxbg[data-k="devil-jin"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="devil-jin"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="devil-jin"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="devil-jin"] { --px-op: 0.142; }
+.pxbg[data-k="jin"]::before { background-position: 62% 28%; }
+.pxbg[data-k="jin"] { --px-op: 0.165; }
+html[data-theme="steel"] .pxbg[data-k="jin"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="jin"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="jin"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="jin"] { --px-op: 0.142; }
+.pxbg[data-k="dragunov"]::before { background-position: 85% 28%; }
+.pxbg[data-k="dragunov"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="dragunov"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="dragunov"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="dragunov"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="dragunov"] { --px-op: 0.142; }
+.pxbg[data-k="king"]::before { background-position: center 28%; }
+.pxbg[data-k="king"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="king"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="king"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="king"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="king"] { --px-op: 0.142; }
+.pxbg[data-k="kunimitsu"]::before { background-position: 52% 28%; }
+.pxbg[data-k="kunimitsu"] { --px-op: 0.15; }
+html[data-theme="steel"] .pxbg[data-k="kunimitsu"] { --px-op: 0.125; }
+html[data-theme="jade"] .pxbg[data-k="kunimitsu"] { --px-op: 0.135; }
+html[data-theme="navy"] .pxbg[data-k="kunimitsu"] { --px-op: 0.09; }
+html[data-theme="dojo"] .pxbg[data-k="kunimitsu"] { --px-op: 0.142; }
+.pxbg[data-k="asuka"]::before { background-position: 48% 28%; }
+.pxbg[data-k="asuka"] { --px-op: 0.165; }
+html[data-theme="steel"] .pxbg[data-k="asuka"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="asuka"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="asuka"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="asuka"] { --px-op: 0.142; }
+.pxbg[data-k="kazuya"]::before { background-position: 45% 28%; }
+.pxbg[data-k="kazuya"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="kazuya"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="kazuya"] { --px-op: 0.155; }
+html[data-theme="navy"] .pxbg[data-k="kazuya"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="kazuya"] { --px-op: 0.142; }
+.pxbg[data-k="lee"]::before { background-position: 65% 28%; }
+.pxbg[data-k="lee"] { --px-op: 0.185; }
+html[data-theme="steel"] .pxbg[data-k="lee"] { --px-op: 0.15; }
+html[data-theme="jade"] .pxbg[data-k="lee"] { --px-op: 0.165; }
+html[data-theme="navy"] .pxbg[data-k="lee"] { --px-op: 0.105; }
+html[data-theme="dojo"] .pxbg[data-k="lee"] { --px-op: 0.142; }
+.pxbg[data-k="reina"]::before { background-position: 45% 28%; }
+.pxbg[data-k="reina"] { --px-op: 0.19; }
+html[data-theme="steel"] .pxbg[data-k="reina"] { --px-op: 0.16; }
+html[data-theme="jade"] .pxbg[data-k="reina"] { --px-op: 0.175; }
+html[data-theme="navy"] .pxbg[data-k="reina"] { --px-op: 0.115; }
+html[data-theme="dojo"] .pxbg[data-k="reina"] { --px-op: 0.142; }
+.pxbg[data-k="leroy"]::before { background-position: 70% 28%; }
+.pxbg[data-k="leroy"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="leroy"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="leroy"] { --px-op: 0.155; }
+html[data-theme="navy"] .pxbg[data-k="leroy"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="leroy"] { --px-op: 0.142; }
+.pxbg[data-k="jack8"]::before { background-position: 55% 28%; }
+.pxbg[data-k="jack8"] { --px-op: 0.2; }
+html[data-theme="steel"] .pxbg[data-k="jack8"] { --px-op: 0.17; }
+html[data-theme="jade"] .pxbg[data-k="jack8"] { --px-op: 0.19; }
+html[data-theme="navy"] .pxbg[data-k="jack8"] { --px-op: 0.14; }
+html[data-theme="dojo"] .pxbg[data-k="jack8"] { --px-op: 0.142; }
+.pxbg[data-k="armorking"]::before { background-position: 36% 28%; }
+.pxbg[data-k="armorking"] { --px-op: 0.19; }
+html[data-theme="steel"] .pxbg[data-k="armorking"] { --px-op: 0.16; }
+html[data-theme="jade"] .pxbg[data-k="armorking"] { --px-op: 0.175; }
+html[data-theme="navy"] .pxbg[data-k="armorking"] { --px-op: 0.12; }
+html[data-theme="dojo"] .pxbg[data-k="armorking"] { --px-op: 0.142; }
+.pxbg[data-k="bob"]::before { background-position: 65% 28%; }
+.pxbg[data-k="bob"] { --px-op: 0.17; }
+html[data-theme="steel"] .pxbg[data-k="bob"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="bob"] { --px-op: 0.15; }
+html[data-theme="navy"] .pxbg[data-k="bob"] { --px-op: 0.1; }
+html[data-theme="dojo"] .pxbg[data-k="bob"] { --px-op: 0.142; }
+.pxbg[data-k="bryan"]::before { background-position: 53% 28%; }
+.pxbg[data-k="bryan"] { --px-op: 0.15; }
+html[data-theme="steel"] .pxbg[data-k="bryan"] { --px-op: 0.125; }
+html[data-theme="jade"] .pxbg[data-k="bryan"] { --px-op: 0.135; }
+html[data-theme="navy"] .pxbg[data-k="bryan"] { --px-op: 0.09; }
+html[data-theme="dojo"] .pxbg[data-k="bryan"] { --px-op: 0.142; }
+.pxbg[data-k="clive"]::before { background-position: 43% 28%; }
+.pxbg[data-k="clive"] { --px-op: 0.171; }
+html[data-theme="steel"] .pxbg[data-k="clive"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="clive"] { --px-op: 0.153; }
+html[data-theme="navy"] .pxbg[data-k="clive"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="clive"] { --px-op: 0.135; }
+.pxbg[data-k="alisa"]::before { background-position: 52% 28%; }
+.pxbg[data-k="alisa"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="alisa"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="alisa"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="alisa"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="alisa"] { --px-op: 0.156; }
+.pxbg[data-k="lili"]::before { background-position: 43% 28%; }
+.pxbg[data-k="lili"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="lili"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="lili"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="lili"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="lili"] { --px-op: 0.152; }
+.pxbg[data-k="victor"]::before { background-position: 45% 28%; }
+.pxbg[data-k="victor"] { --px-op: 0.171; }
+html[data-theme="steel"] .pxbg[data-k="victor"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="victor"] { --px-op: 0.153; }
+html[data-theme="navy"] .pxbg[data-k="victor"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="victor"] { --px-op: 0.142; }
+.pxbg[data-k="lidia"]::before { background-position: 50% 28%; }
+.pxbg[data-k="lidia"] { --px-op: 0.195; }
+html[data-theme="steel"] .pxbg[data-k="lidia"] { --px-op: 0.165; }
+html[data-theme="jade"] .pxbg[data-k="lidia"] { --px-op: 0.18; }
+html[data-theme="navy"] .pxbg[data-k="lidia"] { --px-op: 0.13; }
+html[data-theme="dojo"] .pxbg[data-k="lidia"] { --px-op: 0.142; }
+.pxbg[data-k="jun"]::before { background-position: 32% 28%; }
+.pxbg[data-k="jun"] { --px-op: 0.189; }
+html[data-theme="steel"] .pxbg[data-k="jun"] { --px-op: 0.153; }
+html[data-theme="jade"] .pxbg[data-k="jun"] { --px-op: 0.171; }
+html[data-theme="navy"] .pxbg[data-k="jun"] { --px-op: 0.108; }
+html[data-theme="dojo"] .pxbg[data-k="jun"] { --px-op: 0.15; }
+.pxbg[data-k="miary"]::before { background-position: 45% 28%; }
+.pxbg[data-k="miary"] { --px-op: 0.184; }
+html[data-theme="steel"] .pxbg[data-k="miary"] { --px-op: 0.153; }
+html[data-theme="jade"] .pxbg[data-k="miary"] { --px-op: 0.167; }
+html[data-theme="navy"] .pxbg[data-k="miary"] { --px-op: 0.108; }
+html[data-theme="dojo"] .pxbg[data-k="miary"] { --px-op: 0.15; }
+.pxbg[data-k="zafina"]::before { background-position: 52% 28%; }
+.pxbg[data-k="zafina"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="zafina"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="zafina"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="zafina"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="zafina"] { --px-op: 0.14; }
+.pxbg[data-k="fahkumram"]::before { background-position: 58% 28%; }
+.pxbg[data-k="fahkumram"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="fahkumram"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="fahkumram"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="fahkumram"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="fahkumram"] { --px-op: 0.14; }
+.pxbg[data-k="law"]::before { background-position: 57% 28%; }
+.pxbg[data-k="law"] { --px-op: 0.194; }
+html[data-theme="steel"] .pxbg[data-k="law"] { --px-op: 0.162; }
+html[data-theme="jade"] .pxbg[data-k="law"] { --px-op: 0.176; }
+html[data-theme="navy"] .pxbg[data-k="law"] { --px-op: 0.113; }
+html[data-theme="dojo"] .pxbg[data-k="law"] { --px-op: 0.14; }
+.pxbg[data-k="heihachi"]::before { background-position: 50% 28%; }
+.pxbg[data-k="heihachi"] { --px-op: 0.171; }
+html[data-theme="steel"] .pxbg[data-k="heihachi"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="heihachi"] { --px-op: 0.153; }
+html[data-theme="navy"] .pxbg[data-k="heihachi"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="heihachi"] { --px-op: 0.135; }
+.pxbg[data-k="steve"]::before { background-position: 50% 20%; }
+.pxbg[data-k="steve"] { --px-op: 0.18; }
+html[data-theme="steel"] .pxbg[data-k="steve"] { --px-op: 0.149; }
+html[data-theme="jade"] .pxbg[data-k="steve"] { --px-op: 0.162; }
+html[data-theme="navy"] .pxbg[data-k="steve"] { --px-op: 0.104; }
+html[data-theme="dojo"] .pxbg[data-k="steve"] { --px-op: 0.149; }
+.pxbg[data-k="azucena"]::before { background-position: 50% 28%; }
+.pxbg[data-k="azucena"] { --px-op: 0.176; }
+html[data-theme="steel"] .pxbg[data-k="azucena"] { --px-op: 0.144; }
+html[data-theme="jade"] .pxbg[data-k="azucena"] { --px-op: 0.158; }
+html[data-theme="navy"] .pxbg[data-k="azucena"] { --px-op: 0.104; }
+html[data-theme="dojo"] .pxbg[data-k="azucena"] { --px-op: 0.135; }
+.pxbg[data-k="hwoarang"]::before { background-position: 50% 28%; }
+.pxbg[data-k="hwoarang"] { --px-op: 0.171; }
+html[data-theme="steel"] .pxbg[data-k="hwoarang"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="hwoarang"] { --px-op: 0.153; }
+html[data-theme="navy"] .pxbg[data-k="hwoarang"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="hwoarang"] { --px-op: 0.153; }
+.pxbg[data-k="leo"]::before { background-position: 40% 28%; }
+.pxbg[data-k="leo"] { --px-op: 0.171; }
+html[data-theme="steel"] .pxbg[data-k="leo"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="leo"] { --px-op: 0.153; }
+html[data-theme="navy"] .pxbg[data-k="leo"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="leo"] { --px-op: 0.135; }
+.pxbg[data-k="claudio"]::before { background-position: 45% 14%; }
+.pxbg[data-k="claudio"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="claudio"] { --px-op: 0.135; }
+html[data-theme="jade"] .pxbg[data-k="claudio"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="claudio"] { --px-op: 0.095; }
+html[data-theme="dojo"] .pxbg[data-k="claudio"] { --px-op: 0.153; }
+.pxbg[data-k="raven"]::before { background-position: 58% 35%; }
+.pxbg[data-k="raven"] { --px-op: 0.176; }
+html[data-theme="steel"] .pxbg[data-k="raven"] { --px-op: 0.144; }
+html[data-theme="jade"] .pxbg[data-k="raven"] { --px-op: 0.158; }
+html[data-theme="navy"] .pxbg[data-k="raven"] { --px-op: 0.104; }
+html[data-theme="dojo"] .pxbg[data-k="raven"] { --px-op: 0.135; }
+.pxbg[data-k="shaheen"]::before { background-position: 39% 16%; }
+.pxbg[data-k="shaheen"] { --px-op: 0.194; }
+html[data-theme="steel"] .pxbg[data-k="shaheen"] { --px-op: 0.158; }
+html[data-theme="jade"] .pxbg[data-k="shaheen"] { --px-op: 0.176; }
+html[data-theme="navy"] .pxbg[data-k="shaheen"] { --px-op: 0.113; }
+html[data-theme="dojo"] .pxbg[data-k="shaheen"] { --px-op: 0.144; }
+.pxbg[data-k="eddy"]::before { background-position: 50% 28%; }
+.pxbg[data-k="eddy"] { --px-op: 0.2; }
+html[data-theme="steel"] .pxbg[data-k="eddy"] { --px-op: 0.2; }
+html[data-theme="jade"] .pxbg[data-k="eddy"] { --px-op: 0.2; }
+html[data-theme="navy"] .pxbg[data-k="eddy"] { --px-op: 0.176; }
+html[data-theme="dojo"] .pxbg[data-k="eddy"] { --px-op: 0.135; }
+.pxbg[data-k="kuma"]::before { background-position: 50% 28%; }
+.pxbg[data-k="kuma"] { --px-op: 0.189; }
+html[data-theme="steel"] .pxbg[data-k="kuma"] { --px-op: 0.158; }
+html[data-theme="jade"] .pxbg[data-k="kuma"] { --px-op: 0.171; }
+html[data-theme="navy"] .pxbg[data-k="kuma"] { --px-op: 0.113; }
+html[data-theme="dojo"] .pxbg[data-k="kuma"] { --px-op: 0.149; }
+.pxbg[data-k="panda"]::before { background-position: 56% 28%; }
+.pxbg[data-k="panda"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="panda"] { --px-op: 0.135; }
+html[data-theme="jade"] .pxbg[data-k="panda"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="panda"] { --px-op: 0.095; }
+html[data-theme="dojo"] .pxbg[data-k="panda"] { --px-op: 0.171; }
+.pxbg[data-k="lars"]::before { background-position: 42% 28%; }
+.pxbg[data-k="lars"] { --px-op: 0.2; }
+html[data-theme="steel"] .pxbg[data-k="lars"] { --px-op: 0.2; }
+html[data-theme="jade"] .pxbg[data-k="lars"] { --px-op: 0.2; }
+html[data-theme="navy"] .pxbg[data-k="lars"] { --px-op: 0.153; }
+html[data-theme="dojo"] .pxbg[data-k="lars"] { --px-op: 0.135; }
+.pxbg[data-k="feng"]::before { background-position: 40% 28%; }
+.pxbg[data-k="feng"] { --px-op: 0.167; }
+html[data-theme="steel"] .pxbg[data-k="feng"] { --px-op: 0.14; }
+html[data-theme="jade"] .pxbg[data-k="feng"] { --px-op: 0.149; }
+html[data-theme="navy"] .pxbg[data-k="feng"] { --px-op: 0.099; }
+html[data-theme="dojo"] .pxbg[data-k="feng"] { --px-op: 0.158; }
+.pxbg[data-k="yoshimitsu"]::before { background-position: 55% 20%; }
+.pxbg[data-k="yoshimitsu"] { --px-op: 0.2; }
+html[data-theme="steel"] .pxbg[data-k="yoshimitsu"] { --px-op: 0.2; }
+html[data-theme="jade"] .pxbg[data-k="yoshimitsu"] { --px-op: 0.2; }
+html[data-theme="navy"] .pxbg[data-k="yoshimitsu"] { --px-op: 0.158; }
+html[data-theme="dojo"] .pxbg[data-k="yoshimitsu"] { --px-op: 0.135; }
+.pxbg[data-k="paul"]::before { background-position: 40% 28%; }
+.pxbg[data-k="paul"] { --px-op: 0.2; }
+html[data-theme="steel"] .pxbg[data-k="paul"] { --px-op: 0.167; }
+html[data-theme="jade"] .pxbg[data-k="paul"] { --px-op: 0.18; }
+html[data-theme="navy"] .pxbg[data-k="paul"] { --px-op: 0.117; }
+html[data-theme="dojo"] .pxbg[data-k="paul"] { --px-op: 0.144; }
+.pxbg[data-k="roger-jr"]::before { background-position: center 28%; }
+@media (prefers-reduced-motion: reduce) { .pxbg { transition: none; will-change: auto; } }
+@media print { .pxbg { display: none; } }
+/*PX-END*/
+/*POP-START*/
+/* 色（各テーマの変数）はそのまま。丸み・影・動きの共通の値（shadow DOM の部品にも引き継がれる） */
+:root { --pop-ease: cubic-bezier(.34, 1.56, .64, 1); --pop-shadow: rgba(0, 0, 0, .55); --pop-edge: color-mix(in srgb, var(--accent) 32%, var(--line)); }
+html[data-theme="dojo"] { --pop-shadow: rgba(90, 60, 30, .26); }
+
+/* ページの背景：ごく淡い水玉 */
+body { background-image: radial-gradient(color-mix(in srgb, var(--accent) 10%, transparent) 1.7px, transparent 2.1px); background-size: 30px 30px; }
+
+/* ページ切り替え：丸いボタン。いま開いているページはテーマの色で塗る */
+html .pagenav button[data-go] { border: 2px solid var(--pop-edge); border-radius: 999px; clip-path: none; background: var(--panel); box-shadow: 0 3px 0 var(--pop-shadow); transition: transform .22s var(--pop-ease), box-shadow .22s var(--pop-ease); }
+html .pagenav button[data-go]:hover { transform: translateY(-2px); background: var(--head); box-shadow: 0 5px 0 var(--pop-shadow); }
+html .pagenav button[data-go]:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--pop-shadow); }
+html .pagenav button[data-go][aria-current="page"] { border-color: var(--accent); background: var(--accent); color: var(--on); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 50%, #000); }
+html[data-theme="navy"] .pagenav button[data-go][aria-current="page"] { color: #1a1330; }
+
+/* 自分で押すボタン・切り替えチップ */
+html .reset,
+html .cmdtgl,
+html .ichip,
+html .jchip,
+html .njchip,
+html .njfilter,
+html .nfp-st,
+html .nfp-del,
+html .nfp-sdel,
+html .nfp-add,
+html .nfp-sadd,
+html .nfp-clear,
+html .plink,
+html .iodlg button,
+html dialog .row button,
+html .menulist button,
+html .rowact button,
+html .tools .cmdtgl,
+html .nfp-chip,
+html .njx { border-radius: 999px; box-shadow: 0 3px 0 var(--pop-shadow); transition: transform .22s var(--pop-ease), box-shadow .22s var(--pop-ease); }
+html .reset:hover:not(:disabled),
+html .cmdtgl:hover:not(:disabled),
+html .ichip:hover:not(:disabled),
+html .jchip:hover:not(:disabled),
+html .njchip:hover:not(:disabled),
+html .njfilter:hover:not(:disabled),
+html .nfp-st:hover:not(:disabled),
+html .nfp-del:hover:not(:disabled),
+html .nfp-sdel:hover:not(:disabled),
+html .nfp-add:hover:not(:disabled),
+html .nfp-sadd:hover:not(:disabled),
+html .nfp-clear:hover:not(:disabled),
+html .plink:hover:not(:disabled),
+html .iodlg button:hover:not(:disabled),
+html dialog .row button:hover:not(:disabled),
+html .menulist button:hover:not(:disabled),
+html .rowact button:hover:not(:disabled),
+html .tools .cmdtgl:hover:not(:disabled),
+html .nfp-chip:hover:not(:disabled),
+html .njx:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 0 var(--pop-shadow); }
+html .reset:active:not(:disabled),
+html .cmdtgl:active:not(:disabled),
+html .ichip:active:not(:disabled),
+html .jchip:active:not(:disabled),
+html .njchip:active:not(:disabled),
+html .njfilter:active:not(:disabled),
+html .nfp-st:active:not(:disabled),
+html .nfp-del:active:not(:disabled),
+html .nfp-sdel:active:not(:disabled),
+html .nfp-add:active:not(:disabled),
+html .nfp-sadd:active:not(:disabled),
+html .nfp-clear:active:not(:disabled),
+html .plink:active:not(:disabled),
+html .iodlg button:active:not(:disabled),
+html dialog .row button:active:not(:disabled),
+html .menulist button:active:not(:disabled),
+html .rowact button:active:not(:disabled),
+html .tools .cmdtgl:active:not(:disabled),
+html .nfp-chip:active:not(:disabled),
+html .njx:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--pop-shadow); }
+
+html .themesel { border: 2px solid var(--pop-edge); border-radius: 999px; box-shadow: 0 3px 0 var(--pop-shadow); padding-left: 14px; transition: transform .22s var(--pop-ease), box-shadow .22s var(--pop-ease); }
+html .themesel:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--pop-shadow); }
+
+/* 入力欄 */
+html .search { border-radius: 999px; padding-left: 16px; }
+html .nfp select, html .nfp-in { border-radius: 999px; }
+html textarea.memo, html .memo textarea, html textarea.io, html .iodlg textarea { border-radius: 16px; }
+html .hint { border-radius: 18px; }
+
+/* チェック欄：まるっとした角。チェックを入れると弾む */
+html input[type="checkbox"] { border-radius: 8px; }
+html input[type="checkbox"]::after { transition: transform .28s var(--pop-ease); }
+
+/* ポップアップ・ダイアログ */
+html dialog, html dialog.iodlg { border: 2px solid var(--pop-edge); border-radius: 26px; box-shadow: 0 8px 0 var(--pop-shadow), 0 30px 60px -10px rgba(0, 0, 0, .55); }
+html .pop { border-radius: 18px; }
+html .pop::after { border-radius: 4px; }
+html .toast { box-shadow: 0 4px 0 var(--pop-shadow); }
+
+/* 技名の下のタグ・検索の目印 */
+html mark.shl, html mark { border-radius: 6px; }
+html .shl-cmd, html .nhb, html .nhit .ans { border-radius: 8px; }
+
+/* 左端の「キャラ一覧」「ページの先頭へ」のタブ */
+html .chd-launch, html .totop-bar { border-width: 2px; border-left: 0; border-radius: 0 22px 22px 0; box-shadow: 4px 4px 0 var(--pop-shadow); }
+html .chd-launch::before, html .totop-bar::before { top: 12px; bottom: 12px; width: 4px; border-radius: 0 4px 4px 0; }
+html .chd-th { border-radius: 8px; }
+html .chd-x { border-radius: 999px; }
+html .chd-hd h2::before, html .titlebar h1::before { border-radius: 9px; }
+html .chd-drawer { border-radius: 0 28px 28px 0; border-right: 2px solid var(--pop-edge); }
+html .chd-drawer::after { top: 18px; bottom: 18px; border-radius: 4px; }
+html .chd-qw .search { border-radius: 999px; }
+
+/* 上の見出しの下線：太く丸く */
+html .titlebar::after { height: 6px; border-radius: 999px; width: 150px; bottom: -3px; }
+html .tclk.pc { border-radius: 18px; border: 2px solid var(--pop-edge); border-left: 2px solid var(--pop-edge); box-shadow: 0 4px 0 var(--pop-shadow); }
+
+/* 画面の下に浮かぶ切り替え：丸いボタンで幅が増えたぶん、画面の中央から右半分だけだと折り返してしまうので、中身の幅いっぱいに広げる（画面が狭いときだけ折り返す） */
+/* PC：キャラの顔タイル・技の表・フィルター */
+html .pagenav button[data-go] { letter-spacing: .02em; }
+html .panel { border-radius: 16px; border-width: 2px; box-shadow: 0 3px 0 var(--pop-shadow); transition: transform .22s var(--pop-ease), box-shadow .22s var(--pop-ease); }
+html .panel:hover { transform: translateY(-3px); box-shadow: 0 6px 0 var(--pop-shadow); }
+html .panel:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--pop-shadow); }
+html .panel[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--accent), 0 4px 0 2px color-mix(in srgb, var(--accent) 50%, #000); }
+html .scroll { border: 2px solid var(--pop-edge); border-radius: 26px; box-shadow: 0 6px 0 var(--pop-shadow); overflow: clip; }   /* 角の丸みで、表の見出し・最後の行の角が飛び出さないように切る（clip はスクロール枠にならないので、見出しの固定表示はそのまま動く） */
+/* 幅1000px以下では、表の枠の中で縦にも横にもスクロールさせる（もとの指定 @media (max-width:1000px) { .scroll { overflow:auto; max-height:80vh } }）。
+   上の overflow: clip が、この auto を打ち消すと、枠の高さ（80vh）から下の行と、右にはみ出す列が、スクロールしても見えなくなる（2026-10-20 に報告された「ウィンドウを小さくすると下へのスクロールが途中で止まる」不具合の原因） */
+@media (max-width: 1000px) { html .scroll { overflow: auto; } }
+/* 枠の中で縦にスクロールする配置では、表の見出しは「枠の上端」に貼りつく（貼りついた数字ジャンプの帯は枠の外・ページの上にあるので、その高さ --njh ぶん下げない。下げると、見出しの上に行が見え、ジャンプした行が見出しに隠れる） */
+@media (max-width: 1000px) { html thead th { top: 0; } }
+html .nfpanel { border-radius: 22px; }
+html .njump { border-radius: 22px; }
+html .njump.njfix { border-radius: 0 0 22px 22px; }
+html .tgc .tg { border-width: 2px; border-radius: 999px; padding: 1px 0; }
+@media (prefers-reduced-motion: reduce) { html .pagenav button[data-go], html .panel, html .themesel, html .reset, html .cmdtgl, html .ichip, html .jchip, html .njchip, html .njfilter, html .nfp-st, html .nfp-del, html .nfp-sdel, html .nfp-add, html .nfp-sadd, html .nfp-clear, html .plink, html .iodlg button, html dialog .row button, html .menulist button, html .rowact button, html .tools .cmdtgl, html .nfp-chip, html .njx { transition: none !important; transform: none !important; } }
+/*POP-END*/
+/*REDESIGN-END*/
+
+/* PT-FIRST-VIEW-FONT-STRATEGY */
+html[data-page="home"]:not(.pt-full-font-ready){--font-ui:"KosugiMaru","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;}

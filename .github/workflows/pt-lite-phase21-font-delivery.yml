@@ -1,0 +1,206 @@
+name: PROJECT T Lite Phase21 - Exact Font Ranges and Intent Prefetch (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-lite-phase20-unicode-css-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase21-test-only
+  cancel-in-progress: true
+jobs:
+  phase21-font-css-regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Checkout test PR only, no write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check no production branch, static syntax and test fixtures
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html
+          node --check tools/pt_lite_phase20_unicode_css.mjs
+          node --check tools/pt_lite_phase21_optimize.mjs
+          node --check tools/pt_lite_phase21_perf.mjs
+          node --check tools/pt_lite_phase21_visual.mjs
+          node --check tools/pt_lite_phase21_characters.mjs
+          node --check tools/pt_lite_phase21_intent.mjs
+          node --check tools/pt_lite_phase20_perf.mjs
+          node --check tools/pt_lite_phase20_visual.mjs
+          node --check tools/pt_lite_phase20_characters.mjs
+          python3 -m py_compile tools/pt_lite_phase18_font_split.py
+          node --check admin.js
+          node --check tests/admin-all-tabs-mobile.cjs
+      - name: Install isolated browser and local font/image utilities
+        run: |
+          npm install --no-save playwright terser sharp
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Rebuild passing Phase19 from source into disposable test copies
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance phase18-performance phase19-performance phase20-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          cp -a phase17-performance/optimized-site phase18-performance/baseline-site
+          cp -a phase17-performance/optimized-site phase18-performance/optimized-site
+          node tools/pt_lite_phase18_glyphs.mjs
+          python3 tools/pt_lite_phase18_font_split.py
+          node tools/pt_lite_phase18_avif.mjs
+          cp -a phase18-performance/optimized-site phase19-performance/baseline-site
+          cp -a phase18-performance/optimized-site phase19-performance/optimized-site
+          node tools/pt_lite_phase19_css.mjs
+          cp -a phase19-performance/optimized-site phase20-performance/baseline-site
+          cp -a phase19-performance/optimized-site phase20-performance/optimized-site
+      - name: Compact disjoint unicode-range CSS and add navigation intent hint
+        run: |
+          node tools/pt_lite_phase20_unicode_css.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase20-performance/unicode-css-report.json').read_text())
+          assert r['passed'] and r['allOriginalCodepointsRetained'],r
+          assert r['homeInteractionHint'] and r['fontBinaryFilesUntouched'],r
+          assert r['cssBytesSaved']>0,r
+          assert sum(x['supportedCodepoints'] for x in r['faces'])==1674,r
+          print('PHASE20_CSS_COMPRESSION_PASS',r['oldCssBytes'],r['newCssBytes'])
+          PY
+      - name: Build Phase21 from independently reconstructed Phase20 golden test site
+        run: |
+          mkdir -p phase21-performance
+          cp -a phase20-performance/optimized-site phase21-performance/baseline-site
+          cp -a phase20-performance/optimized-site phase21-performance/optimized-site
+          node tools/pt_lite_phase21_optimize.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase21-performance/css-delivery-report.json').read_text())
+          assert r['passed'],r
+          assert r['css']['exactOnDemandCodepoints']==1038,r
+          assert r['css']['unchangedFontFiles'] and r['css']['removedOnlyRedundantDefaultDescriptors'],r
+          assert r['css']['savedBytes']>=60,r
+          assert r['html']['pc']['savedBytes']>200 and r['html']['sp']['savedBytes']>200,r
+          print('PHASE21_DELIVERY_GENERATION_PASS',r['css'],r['html'])
+          PY
+      - name: Benchmark Phase20 reference (PC, smartphone and 4G)
+        run: node tools/pt_lite_phase21_perf.mjs --site=phase21-performance/baseline-site --out=phase21-performance/baseline-network.json
+      - name: Benchmark Phase21 optimized font delivery (PC, smartphone and 4G)
+        run: node tools/pt_lite_phase21_perf.mjs --site=phase21-performance/optimized-site --out=phase21-performance/optimized-network.json
+      - name: Validate true cold/home font CSS savings, lazy routing and exact assets
+        run: |
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('phase21-performance')
+          base=p/'baseline-site'
+          target=p/'optimized-site'
+          r=json.loads((p/'css-delivery-report.json').read_text())
+          a=json.loads((p/'baseline-network.json').read_text())
+          b=json.loads((p/'optimized-network.json').read_text())
+          assert r['passed'] and a['passed'] and b['passed']
+          assert r['passed'] and r['html']['pc']['savedBytes']>200 and r['html']['sp']['savedBytes']>200
+          for folder,pattern,minimum in [
+            ('assets/data','*.json',44),
+            ('assets/media','*.webp',1),
+            ('assets/media','*.woff2',1),
+            ('icons','*.webp',1),
+            ('assets/pxstore','*.avif',1)]:
+            original=base/folder
+            if not original.exists():
+              assert minimum==0,(folder,'missing')
+              continue
+            files=list(original.rglob(pattern))
+            assert len(files)>=minimum,(folder,len(files))
+            for f in files:
+              other=target/f.relative_to(base)
+              assert other.is_file() and hashlib.sha256(f.read_bytes()).digest()==hashlib.sha256(other.read_bytes()).digest(),str(f)
+          measurements={}
+          for profile in a['devices']:
+            for dev in ('pc','sp'):
+              before=a['devices'][profile][dev]
+              after=b['devices'][profile][dev]
+              b_home=before['coldHome']['network']['transferBytes']
+              n_home=after['coldHome']['network']['transferBytes']
+              b_sheet=before['sheet']['network']['transferBytes']
+              n_sheet=after['sheet']['network']['transferBytes']
+              typ0=before['sheet']['network']['bytesByType']
+              typ1=after['sheet']['network']['bytesByType']
+              assert n_home < b_home,(profile,dev,'home not smaller',b_home,n_home)
+              assert after['coldHome']['performance']['loadedCharacters']==[],(profile,dev,'eager character JSON')
+              assert after['coldHome']['performance']['loadedRoutes']==[],(profile,dev,'eager feature')
+              assert after['warmHome']['network']['transferBytes']<=1500,(profile,dev,'cache regression')
+              for kind in ('Font','Fetch'):
+                assert typ1.get(kind,0)==typ0.get(kind,0),(profile,dev,kind,typ0,typ1)
+              css_saved=typ0.get('Stylesheet',0)-typ1.get('Stylesheet',0)
+              assert css_saved>=r['css']['savedBytes']-150,(profile,dev,'no stylesheet savings',css_saved,r)
+              image_variance=typ1.get('Image',0)-typ0.get('Image',0)
+              assert abs(image_variance)<=90000,(profile,dev,'unexpected image variance',image_variance)
+              measurements[profile+'-'+dev]={
+                'homeBeforeBytes':b_home,'homeAfterBytes':n_home,
+                'sheetBeforeBytes':b_sheet,'sheetAfterBytes':n_sheet,
+                'sheetCssBytesSaved':css_saved,'imageVarianceBytes':image_variance,
+                'homeBeforeMs':before['coldHome']['elapsedMs'],
+                'homeAfterMs':after['coldHome']['elapsedMs'],
+                'sheetBeforeMs':before['sheet']['elapsedMs'],
+                'sheetAfterMs':after['sheet']['elapsedMs'],
+                'cacheBytes':after['warmHome']['network']['transferBytes']}
+          (p/'network-compare.json').write_text(json.dumps(measurements,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE21_NETWORK_COMPARE',json.dumps(measurements,ensure_ascii=False))
+          print('PHASE21_ALL_ASSETS_IDENTITY_PASS')
+          PY
+      - name: Compare PC and smartphone screenshot parity after font load
+        run: node tools/pt_lite_phase21_visual.mjs
+      - name: Verify all 44 character sheets, original counts and both font shards
+        run: node tools/pt_lite_phase21_characters.mjs
+      - name: Verify pointer hover, keyboard focus, touch and keypress prewarm without eager home fonts
+        run: node tools/pt_lite_phase21_intent.mjs
+      - name: Regression tests for PC/SP move data, persistence, mocked APIs and admin UI
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase21-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase11_pages_smoke.mjs
+          node tools/pt_lite_phase12_api_mock_smoke.mjs
+          node tests/admin-mobile-layout.cjs
+          node tests/admin-all-tabs-mobile.cjs
+      - name: Final gate - all reports green, no deployment
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for name in (
+            'phase21-performance/css-delivery-report.json',
+            'phase21-performance/intent-prewarm.json',
+            'phase21-performance/visual-report.json',
+            'phase21-performance/44-character-audit.json',
+            'phase11-pages-package/browser-report.json',
+            'phase12-release-audit/phase12-api-mock-browser.json'):
+            r=json.loads(Path(name).read_text())
+            assert r['passed'],(name,r.get('errors'),r.get('failures'))
+          print('PHASE21_TEST_ONLY_ALL_PASS')
+          PY
+      - name: Upload Phase21 audit and screen comparisons, test only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase21-unicode-css-audit
+          path: |
+            phase21-performance/*.json
+            phase21-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Upload Phase21 isolated website, never deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase21-optimized-site-test-only
+          path: phase21-performance/optimized-site/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error

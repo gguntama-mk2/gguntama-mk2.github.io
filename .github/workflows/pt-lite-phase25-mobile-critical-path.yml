@@ -1,0 +1,309 @@
+name: PROJECT T Lite Phase25 - Mobile Sheet Critical Path (TEST ONLY)
+on:
+  pull_request:
+    branches: [test/pt-admin-move-label-sync-20261107]
+permissions:
+  contents: read
+concurrency:
+  group: project-t-lite-phase25-test-only
+  cancel-in-progress: true
+jobs:
+  phase25-mobile-sheet-regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Checkout test PR only, no write token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check no production branch, static syntax and test fixtures
+        run: |
+          test "$GITHUB_REF_NAME" != "main"
+          test -f pc.html && test -f sp.html
+          node --check tools/pt_lite_phase20_unicode_css.mjs
+          node --check tools/pt_lite_phase21_optimize.mjs
+          node --check tools/pt_lite_phase21_perf.mjs
+          node --check tools/pt_lite_phase21_visual.mjs
+          node --check tools/pt_lite_phase21_characters.mjs
+          node --check tools/pt_lite_phase21_intent.mjs
+          node --check tools/pt_lite_phase22_split.mjs
+          node --check tools/pt_lite_phase22_perf.mjs
+          node --check tools/pt_lite_phase22_visual.mjs
+          node --check tools/pt_lite_phase22_characters.mjs
+          node --check tools/pt_lite_phase22_integrity.mjs
+          node --check tools/pt_lite_phase22_intent.mjs
+          node --check tools/pt_lite_phase23_split.mjs
+          node --check tools/pt_lite_phase23_perf.mjs
+          node --check tools/pt_lite_phase23_visual.mjs
+          node --check tools/pt_lite_phase23_characters.mjs
+          node --check tools/pt_lite_phase23_integrity.mjs
+          node --check tools/pt_lite_phase23_intent.mjs
+          node --check tools/pt_lite_phase23_modules.mjs
+          node --check tools/pt_lite_phase23_pages_smoke.mjs
+          node --check tools/pt_lite_phase23_api_mock_smoke.mjs
+          node --check tools/pt_lite_phase24_parallel.mjs
+          node --check tools/pt_lite_phase24_parallel_test.mjs
+          node --check tools/pt_lite_phase24_perf.mjs
+          node --check tools/pt_lite_phase24_visual.mjs
+          node --check tools/pt_lite_phase24_characters.mjs
+          node --check tools/pt_lite_phase24_integrity.mjs
+          node --check tools/pt_lite_phase24_intent.mjs
+          node --check tools/pt_lite_phase24_modules.mjs
+          node --check tools/pt_lite_phase25_optimize.mjs
+          node --check tools/pt_lite_phase25_perf.mjs
+          node --check tools/pt_lite_phase25_repeat.mjs
+          node --check tools/pt_lite_phase25_visual.mjs
+          node --check tools/pt_lite_phase25_characters.mjs
+          node --check tools/pt_lite_phase25_integrity.mjs
+          node --check tools/pt_lite_phase25_modules.mjs
+          node --check tools/pt_lite_phase25_intent.mjs
+          node --check tools/pt_lite_phase25_parallel_test.mjs
+          node --check tests/admin-move-label-sync.cjs
+          node --check tools/pt_lite_phase20_perf.mjs
+          node --check tools/pt_lite_phase20_visual.mjs
+          node --check tools/pt_lite_phase20_characters.mjs
+          python3 -m py_compile tools/pt_lite_phase18_font_split.py
+          node --check admin.js
+          node --check tests/admin-all-tabs-mobile.cjs
+      - name: Install isolated browser and local font/image utilities
+        run: |
+          npm install --no-save playwright terser sharp acorn
+          npx playwright install --with-deps chromium
+          python3 -m pip install --user 'fonttools[woff]' brotli
+      - name: Rebuild passing Phase19 from source into disposable test copies
+        run: |
+          node tools/pt_lite_phase16_optimize.mjs
+          mkdir -p phase17-performance phase18-performance phase19-performance phase20-performance
+          cp -a phase16-performance/optimized-site phase17-performance/optimized-site
+          node tools/pt_lite_phase17_images.mjs --site=phase17-performance/optimized-site
+          python3 tools/pt_lite_phase17_font_recode.py --site=phase17-performance/optimized-site
+          cp -a phase17-performance/optimized-site phase18-performance/baseline-site
+          cp -a phase17-performance/optimized-site phase18-performance/optimized-site
+          node tools/pt_lite_phase18_glyphs.mjs
+          python3 tools/pt_lite_phase18_font_split.py
+          node tools/pt_lite_phase18_avif.mjs
+          cp -a phase18-performance/optimized-site phase19-performance/baseline-site
+          cp -a phase18-performance/optimized-site phase19-performance/optimized-site
+          node tools/pt_lite_phase19_css.mjs
+          cp -a phase19-performance/optimized-site phase20-performance/baseline-site
+          cp -a phase19-performance/optimized-site phase20-performance/optimized-site
+      - name: Compact disjoint unicode-range CSS and add navigation intent hint
+        run: |
+          node tools/pt_lite_phase20_unicode_css.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase20-performance/unicode-css-report.json').read_text())
+          assert r['passed'] and r['allOriginalCodepointsRetained'],r
+          assert r['homeInteractionHint'] and r['fontBinaryFilesUntouched'],r
+          assert r['cssBytesSaved']>0,r
+          assert sum(x['supportedCodepoints'] for x in r['faces'])==1674,r
+          print('PHASE20_CSS_COMPRESSION_PASS',r['oldCssBytes'],r['newCssBytes'])
+          PY
+      - name: Build Phase21 from independently reconstructed Phase20 golden test site
+        run: |
+          mkdir -p phase21-performance
+          cp -a phase20-performance/optimized-site phase21-performance/baseline-site
+          cp -a phase20-performance/optimized-site phase21-performance/optimized-site
+          node tools/pt_lite_phase21_optimize.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase21-performance/css-delivery-report.json').read_text())
+          assert r['passed'],r
+          assert r['css']['exactOnDemandCodepoints']==1038,r
+          assert r['css']['unchangedFontFiles'] and r['css']['removedOnlyRedundantDefaultDescriptors'],r
+          assert r['css']['savedBytes']>=60,r
+          assert r['html']['pc']['savedBytes']>200 and r['html']['sp']['savedBytes']>200,r
+          print('PHASE21_DELIVERY_GENERATION_PASS',r['css'],r['html'])
+          PY
+      - name: Isolate passing Phase21 baseline and split duplicate masks from Phase22 test copy
+        run: |
+          mkdir -p phase22-performance
+          cp -a phase21-performance/optimized-site phase22-performance/baseline-site
+          cp -a phase21-performance/optimized-site phase22-performance/optimized-site
+          node tools/pt_lite_phase22_split.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase22-performance/js-split-report.json').read_text())
+          assert r['passed'],r.get('errors')
+          for d in ('pc','sp'):
+            x=r['devices'][d]
+            assert x['characters']==44 and x['originalKeys']==9569,x
+            assert x['savedBytes']>=50000,x
+            assert x['sourceVsCharacterJSONVerified'],x
+          print('PHASE22_TECHNIQUE_DATA_SPLIT_PASS',r['devices'])
+          PY
+      - name: Build isolated Phase23 reference and defer sheet/render/icon/video scripts
+        run: |
+          mkdir -p phase23-performance
+          cp -a phase22-performance/optimized-site phase23-performance/baseline-site
+          cp -a phase22-performance/optimized-site phase23-performance/optimized-site
+          node tools/pt_lite_phase23_split.mjs
+          node --check phase23-performance/optimized-site/assets/js/pc_04_boot.js
+          node --check phase23-performance/optimized-site/assets/js/sp_04_boot.js
+          node --check phase23-performance/optimized-site/assets/js/pc_04_runtime.js
+          node --check phase23-performance/optimized-site/assets/js/sp_04_runtime.js
+          node --check phase23-performance/optimized-site/assets/js/pc_sheet-loader.js
+          node --check phase23-performance/optimized-site/assets/js/sp_sheet-loader.js
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('phase23-performance/js-split-report.json').read_text())
+          assert r['passed'],r.get('errors')
+          for dev in ('pc','sp'):
+            x=r['devices'][dev]
+            assert x['homeJsSavedBytes']>=60000 and x['iconAndVideoDeferred'],x
+            assert x['phase22JsonShaPreserved'] and x['themeAvailableOnHome'],x
+          print('PHASE23_SAFE_SPLIT_PASS',r['devices'])
+          PY
+      - name: Overlay Phase24 concurrent fetch, ordered classic-script initialization (disposable site only)
+        run: |
+          mkdir -p phase24-performance
+          cp -a phase23-performance/optimized-site phase24-performance/baseline-site
+          cp -a phase23-performance/optimized-site phase24-performance/optimized-site
+          node tools/pt_lite_phase24_parallel.mjs
+          node --check phase24-performance/optimized-site/assets/js/pc_sheet-loader.js
+          node --check phase24-performance/optimized-site/assets/js/sp_sheet-loader.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          root=Path('phase24-performance')
+          b=root/'baseline-site'
+          t=root/'optimized-site'
+          rpt=json.loads((root/'parallel-build-report.json').read_text())
+          assert rpt['passed'],rpt
+          allowed={'assets/js/pc_sheet-loader.js','assets/js/sp_sheet-loader.js'}
+          base_files={str(x.relative_to(b)):x for x in b.rglob('*') if x.is_file()}
+          target_files={str(x.relative_to(t)):x for x in t.rglob('*') if x.is_file()}
+          assert set(base_files)==set(target_files),(set(base_files)-set(target_files),set(target_files)-set(base_files))
+          changed=set()
+          for name,path in base_files.items():
+            baseline=hashlib.sha256(path.read_bytes()).digest()
+            new=hashlib.sha256(target_files[name].read_bytes()).digest()
+            if baseline!=new:changed.add(name)
+          assert changed==allowed,('Unexpected changes outside two lazy loader files',changed)
+          for d in ('pc','sp'):
+            x=rpt['devices'][d]
+            assert x['passed'] and x['scriptRequestsStartInParallel'] and x['iconVideoRuntimeLoadedInOrder'],x
+            assert x['minifiedLoader'] and x['loaderDeltaBytes']<0,x
+          print('PHASE24_ONLY_TWO_TEST_LOADERS_CHANGED',sorted(changed),'totalOtherFiles',len(base_files)-2)
+          PY
+      - name: Build Phase25 candidate from passing Phase24 + admin PR22 test branch
+        run: |
+          mkdir -p phase25-performance
+          cp -a phase24-performance/optimized-site phase25-performance/baseline-site
+          cp -a phase24-performance/optimized-site phase25-performance/optimized-site
+          node tools/pt_lite_phase25_optimize.mjs
+          node --check phase25-performance/optimized-site/assets/js/pc_sheet-loader.js
+          node --check phase25-performance/optimized-site/assets/js/sp_sheet-loader.js
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('phase25-performance')
+          orig=root/'baseline-site'; changed=root/'optimized-site'
+          a={str(f.relative_to(orig)):f for f in orig.rglob('*') if f.is_file()}
+          b={str(f.relative_to(changed)):f for f in changed.rglob('*') if f.is_file()}
+          assert set(a)==set(b),'File was added or removed'
+          names={n for n in a if hashlib.sha256(a[n].read_bytes()).digest()!=hashlib.sha256(b[n].read_bytes()).digest()}
+          assert names=={'assets/js/pc_sheet-loader.js','assets/js/sp_sheet-loader.js'},names
+          r=json.loads((root/'critical-path-build.json').read_text())
+          assert r['passed'],r.get('errors')
+          for dev in ('pc','sp'):
+            assert r['devices'][dev]['homeLoaderDelta']<=1100,r
+            assert r['devices'][dev]['rangeLimitedFontWarm'],r
+          print('PHASE25_BINARY_ASSET_AND_ADMIN_IDENTITY_PASS',len(a)-2,'untouched files')
+          PY
+      - name: Repeated PC / smartphone paired A-B measurements (3 runs, desktop-fast and simulated 4G)
+        run: node tools/pt_lite_phase25_repeat.mjs
+      - name: Verify home cache, source data, fonts and image bytes without conflating lazy-image scheduling
+        run: |
+          python3 - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          p=Path('phase25-performance')
+          r=json.loads((p/'paired-repeat-report.json').read_text())
+          assert r['passed'] and len(r['rounds'])==3,r.get('failures')
+          summary={}
+          for profile in ('desktop-fast','mobile-4g-simulated'):
+            for dev in ('pc','sp'):
+              x=r['comparisons'][profile][dev]
+              b=x['median']['homeBytes']['before']
+              a=x['median']['homeBytes']['after']
+              assert a<=b+1100,(profile,dev,'home transfer regression',b,a)
+              assert x['median']['sheetNonImageBytes']['after']<=x['median']['sheetNonImageBytes']['before']+1100,(profile,dev,'sheet non-image regression')
+              for rec in x['after']:
+                assert rec['cacheWarmHomeBytes']<=1500,(profile,dev,'warm cache')
+              summary[profile+'-'+dev]={k:v for k,v in x['median'].items()
+                if k in ('homeBytes','homeMs','firstRowsMs','fontReadyMs','settledMs','sheetImageBytes','sheetNonImageBytes','cacheWarmHomeBytes')}
+          (p/'median-compare.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+          print('PHASE25_NETWORK_AND_MEDIAN_COMPARE',json.dumps(summary,ensure_ascii=False))
+          PY
+      - name: Full mobile/PC screenshot parity after Japanese font and visible images are settled
+        run: node tools/pt_lite_phase25_visual.mjs
+      - name: Audit all 44 characters, all 9569 stable move IDs and font shard integrity
+        run: node tools/pt_lite_phase25_characters.mjs
+      - name: Real sheet-intent prewarm with intentionally delayed icon/video/runtime (8 device and UI combinations)
+        run: node tools/pt_lite_phase25_parallel_test.mjs
+      - name: Verify home has no eager script/character/font and routes function after touch/pointer/keyboard
+        run: node tools/pt_lite_phase25_modules.mjs
+      - name: Verify direct sheet URL, 44 stable move IDs and corrupt JSON rejection/retry
+        run: node tools/pt_lite_phase25_integrity.mjs
+      - name: Verify glyph font WOFF2 only begins on explicit sheet intent
+        run: node tools/pt_lite_phase25_intent.mjs
+      - name: Preserve mobile/PC checksheet, memo, mock login/video APIs and PR22 admin label synchronization
+        run: |
+          mkdir -p phase11-pages-package phase12-release-audit
+          ln -s ../phase25-performance/optimized-site phase11-pages-package/site
+          node tools/pt_lite_phase23_pages_smoke.mjs
+          node tools/pt_lite_phase23_api_mock_smoke.mjs
+          node tests/admin-move-label-sync.cjs
+          node tests/admin-all-tabs-mobile.cjs
+          node tests/admin-mobile-layout.cjs
+      - name: Phase25 strict final validation - no deploy
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for f in (
+            'phase25-performance/critical-path-build.json',
+            'phase25-performance/paired-repeat-report.json',
+            'phase25-performance/module-dependency-audit.json',
+            'phase25-performance/integrity-report.json',
+            'phase25-performance/intent-prewarm.json',
+            'phase25-performance/visual-report.json',
+            'phase25-performance/44-character-audit.json',
+            'phase25-performance/parallel-intent-report.json',
+            'phase11-pages-package/browser-report.json',
+            'phase12-release-audit/phase12-api-mock-browser.json'):
+            report=json.loads(Path(f).read_text())
+            assert report['passed'],(f,report.get('errors'),report.get('failures'))
+          print('PHASE25_FULL_REGRESSION_AND_ADMIN_SYNC_PASS')
+          PY
+      - name: Store source, performance runs, screenshots and test-only reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase25-mobile-performance-audit
+          path: |
+            phase25-performance/*.json
+            phase25-performance/repeats/*.json
+            phase25-performance/visual-*.png
+            phase11-pages-package/browser-report.json
+            phase12-release-audit/phase12-api-mock-browser.json
+            admin-all-tabs-*.png
+            admin-layout-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Save test website - never publish or deploy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-t-phase25-test-site-only
+          path: phase25-performance/optimized-site/
+          compression-level: 0
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: error
