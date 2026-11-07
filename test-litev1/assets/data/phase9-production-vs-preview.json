@@ -1,12 +1,12 @@
 {
   "phase": 9,
-  "at": "2026-11-07T03:18:24.048Z",
+  "at": "2026-11-07T03:23:39.708Z",
   "source": {
     "production": "https://www.project-t-god.com/",
     "preview": "https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/"
   },
   "scope": "read-only, anonymous, isolated localStorage",
-  "passed": false,
+  "passed": true,
   "devices": {
     "pc": {
       "production": {
@@ -555,22 +555,22 @@
           "vs": "phase9-compare-screenshots/pc-production-vs.png"
         },
         "timings": {
-          "homeNavigationMs": 5729,
+          "homeNavigationMs": 5736,
           "navResource": [
             {
               "transferSize": 35315604,
               "encodedBodySize": 35315304,
               "decodedBodySize": 50110793,
-              "domContentLoadedEventEnd": 3981,
-              "duration": 4006
+              "domContentLoadedEventEnd": 4003,
+              "duration": 4009
             }
           ],
-          "sheetMs": 1768,
-          "comboMs": 681,
-          "glossaryMs": 721,
-          "stageMs": 648,
+          "sheetMs": 1883,
+          "comboMs": 703,
+          "glossaryMs": 746,
+          "stageMs": 649,
           "vsMs": 652,
-          "galleryMs": 659,
+          "galleryMs": 662,
           "updateMs": 640
         },
         "errors": [],
@@ -650,8 +650,8 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
+              "iconModule": true,
+              "movieModule": true,
               "parallaxImage": "none",
               "parallaxKey": ""
             },
@@ -714,11 +714,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [],
@@ -783,11 +783,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -854,11 +854,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -926,11 +926,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -999,11 +999,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -1073,11 +1073,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -1148,11 +1148,11 @@
               "top": 0
             },
             "visual": {
-              "movieColumn": 0,
-              "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "movieColumn": 1,
+              "movieRows": 228,
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -1177,41 +1177,29 @@
           "vs": "phase9-compare-screenshots/pc-preview-vs.png"
         },
         "timings": {
-          "homeNavigationMs": 2659,
+          "homeNavigationMs": 2102,
           "navResource": [
             {
-              "transferSize": 5145,
-              "encodedBodySize": 4845,
-              "decodedBodySize": 14932,
-              "domContentLoadedEventEnd": 930,
-              "duration": 1527
+              "transferSize": 5179,
+              "encodedBodySize": 4879,
+              "decodedBodySize": 15016,
+              "domContentLoadedEventEnd": 369,
+              "duration": 574
             }
           ],
-          "sheetMs": 22000,
-          "comboMs": 1510,
-          "glossaryMs": 1419,
-          "stageMs": 1158,
-          "vsMs": 1278,
-          "galleryMs": 1034,
-          "updateMs": 1560
+          "sheetMs": 2240,
+          "comboMs": 754,
+          "glossaryMs": 796,
+          "stageMs": 687,
+          "vsMs": 692,
+          "galleryMs": 675,
+          "updateMs": 740
         },
         "errors": [],
         "requestFailures": [
           {
             "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
             "error": "net::ERR_CONNECTION_RESET"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
           }
         ],
         "firstPartyHttpErrors": [],
@@ -1219,11 +1207,7 @@
         "warnings": []
       },
       "comparison": {
-        "issues": [
-          "MOVIE column mismatch: production 1 preview 0",
-          "MOVIE row cells mismatch: production 228 preview 0",
-          "Preview parallax image CSS URL invalid: url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")"
-        ],
+        "issues": [],
         "warnings": [],
         "diff": [
           {
@@ -1273,21 +1257,21 @@
       },
       "screenshotDiffs": {
         "home": {
-          "differentPixels": 35854,
+          "differentPixels": 35819,
           "totalPixels": 1296000,
-          "differentPercent": 2.77,
+          "differentPercent": 2.76,
           "diffImage": "phase9-compare-screenshots/pc-diff-home.png"
         },
         "sheet": {
-          "differentPixels": 412141,
+          "differentPixels": 3550,
           "totalPixels": 1296000,
-          "differentPercent": 31.8,
+          "differentPercent": 0.27,
           "diffImage": "phase9-compare-screenshots/pc-diff-sheet.png"
         },
         "vs": {
-          "differentPixels": 6619,
+          "differentPixels": 6675,
           "totalPixels": 1296000,
-          "differentPercent": 0.51,
+          "differentPercent": 0.52,
           "diffImage": "phase9-compare-screenshots/pc-diff-vs.png"
         }
       }
@@ -1666,7 +1650,7 @@
               "exists": true,
               "shadow": true,
               "children": 2,
-              "textLength": 645401,
+              "textLength": 645368,
               "controls": 222
             },
             "html": {
@@ -1839,23 +1823,23 @@
           "vs": "phase9-compare-screenshots/sp-production-vs.png"
         },
         "timings": {
-          "homeNavigationMs": 5387,
+          "homeNavigationMs": 5294,
           "navResource": [
             {
               "transferSize": 35305306,
               "encodedBodySize": 35305006,
               "decodedBodySize": 50093131,
-              "domContentLoadedEventEnd": 3631,
-              "duration": 3656
+              "domContentLoadedEventEnd": 3499,
+              "duration": 3829
             }
           ],
-          "sheetMs": 1606,
-          "comboMs": 645,
-          "glossaryMs": 706,
-          "stageMs": 627,
-          "vsMs": 628,
-          "galleryMs": 664,
-          "updateMs": 617
+          "sheetMs": 1630,
+          "comboMs": 662,
+          "glossaryMs": 741,
+          "stageMs": 628,
+          "vsMs": 626,
+          "galleryMs": 657,
+          "updateMs": 613
         },
         "errors": [],
         "requestFailures": [
@@ -1934,8 +1918,8 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
+              "iconModule": true,
+              "movieModule": true,
               "parallaxImage": "none",
               "parallaxKey": ""
             },
@@ -2000,9 +1984,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [],
@@ -2069,9 +2053,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2140,9 +2124,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2212,9 +2196,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2285,9 +2269,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2359,9 +2343,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2434,9 +2418,9 @@
             "visual": {
               "movieColumn": 0,
               "movieRows": 0,
-              "iconModule": false,
-              "movieModule": false,
-              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
+              "iconModule": true,
+              "movieModule": true,
+              "parallaxImage": "url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
               "parallaxKey": "alisa"
             },
             "loadedModules": [
@@ -2461,41 +2445,29 @@
           "vs": "phase9-compare-screenshots/sp-preview-vs.png"
         },
         "timings": {
-          "homeNavigationMs": 2779,
+          "homeNavigationMs": 2057,
           "navResource": [
             {
-              "transferSize": 5443,
-              "encodedBodySize": 5143,
-              "decodedBodySize": 17082,
-              "domContentLoadedEventEnd": 1051,
-              "duration": 1097
+              "transferSize": 5467,
+              "encodedBodySize": 5167,
+              "decodedBodySize": 17166,
+              "domContentLoadedEventEnd": 326,
+              "duration": 477
             }
           ],
-          "sheetMs": 1815,
-          "comboMs": 1249,
-          "glossaryMs": 1286,
-          "stageMs": 1008,
-          "vsMs": 1285,
-          "galleryMs": 1129,
-          "updateMs": 1505
+          "sheetMs": 1828,
+          "comboMs": 676,
+          "glossaryMs": 769,
+          "stageMs": 672,
+          "vsMs": 689,
+          "galleryMs": 642,
+          "updateMs": 684
         },
         "errors": [],
         "requestFailures": [
           {
             "url": "https://worldtimeapi.org/api/timezone/Etc/UTC",
             "error": "net::ERR_CONNECTION_RESET"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
-          },
-          {
-            "url": "https://raw.githubusercontent.com/gguntama-mk2/gguntama-mk2.github.io/0e7b96a71ef3710160a6d9f233b3f30c74e33199/test-litev1/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif",
-            "error": "net::ERR_BLOCKED_BY_ORB"
           }
         ],
         "firstPartyHttpErrors": [],
@@ -2503,9 +2475,7 @@
         "warnings": []
       },
       "comparison": {
-        "issues": [
-          "Preview parallax image CSS URL invalid: url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")"
-        ],
+        "issues": [],
         "warnings": [],
         "diff": [
           {
@@ -2555,19 +2525,19 @@
       },
       "screenshotDiffs": {
         "home": {
-          "differentPixels": 14278,
+          "differentPixels": 14338,
           "totalPixels": 329160,
-          "differentPercent": 4.34,
+          "differentPercent": 4.36,
           "diffImage": "phase9-compare-screenshots/sp-diff-home.png"
         },
         "sheet": {
-          "differentPixels": 38338,
+          "differentPixels": 14071,
           "totalPixels": 329160,
-          "differentPercent": 11.65,
+          "differentPercent": 4.27,
           "diffImage": "phase9-compare-screenshots/sp-diff-sheet.png"
         },
         "vs": {
-          "differentPixels": 3549,
+          "differentPixels": 3560,
           "totalPixels": 329160,
           "differentPercent": 1.08,
           "diffImage": "phase9-compare-screenshots/sp-diff-vs.png"
@@ -2575,12 +2545,7 @@
       }
     }
   },
-  "failures": [
-    "pc: MOVIE column mismatch: production 1 preview 0",
-    "pc: MOVIE row cells mismatch: production 228 preview 0",
-    "pc: Preview parallax image CSS URL invalid: url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")",
-    "sp: Preview parallax image CSS URL invalid: url(\"https://project-t-lite-preview-20261107-guntama1205-4982.vercel.app/assets/css/assets/pxstore/2b27ad3a7d86d54c8a546282.avif\")"
-  ],
+  "failures": [],
   "warnings": [],
   "diffs": [],
   "expectedDifferences": [
