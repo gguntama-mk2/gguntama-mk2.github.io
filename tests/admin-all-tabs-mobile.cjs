@@ -84,6 +84,8 @@ const fixtures = (u) => {
           candidate_move_count_reported:33,raw_occurrences:254,priority_score:0,parameter_samples:[]},
         {requirement_id:439,source_character_id:"bryan",example_move_indexes:[74,75],
           matched_master_indexes:[1569],matched_sample_indexes:[],matched_graph_indexes:[1569],
+          graph_main_raw_destinations:[{raw_id:2170,occurrences:6}],
+          graph_peer_requirement_examples:[{requirement_id:452,shared_indexes:2,jaccard:0.5,same_condition_verified:false}],
           graph_edge_evidence:[{source_move_index:1569,cancel_index:8730,dest_move_id_raw:2170,
             requirement_index:2424,command_hex:"0x4000000600000020",
             frame_window_start_raw:1,frame_window_end_raw:1,
@@ -283,12 +285,25 @@ const fixtures = (u) => {
           const graphModal=page.locator(".pt-cloud-dialog");
           await graphModal.waitFor({state:"visible"});
           assert((await graphModal.innerText()).includes("内部move_id：3812518756"),"Original MOTBIN id remains distinct");
-          const graphInfo=graphModal.locator(".pt-cloud-graph-details");
-          await graphInfo.locator("summary").click();
+          const generic=graphModal.locator(".pt-cloud-cooccurrence");
+          assert(await generic.isVisible(),"Generic peer evidence appears for non-priority requirements");
+          const rawSummary=generic.locator(".pt-cloud-graph-details").first();
+          await rawSummary.locator(":scope > summary").click();
+          assert((await rawSummary.innerText()).includes("raw 2170"),"Generic raw destinations visible");
+          const peersSummary=generic.locator(".pt-cloud-graph-details").nth(1);
+          await peersSummary.locator(":scope > summary").click();
+          assert((await peersSummary.innerText()).includes("Requirements 452"),"Generic cooccurrence visible");
+          const graphInfo=graphModal.locator(".pt-cloud-graph-details")
+            .filter({hasText:"遷移候補の解析根拠"}).first();
+          await graphInfo.locator(":scope > summary").click();
           assert((await graphInfo.innerText()).includes("遷移先raw 2170"),"Raw transition is not called internal move ID");
           assert((await graphInfo.innerText()).includes("キャンセル行 8730"),"Graph cancel evidence visible");
           assert((await graphModal.innerText()).includes("境界の推定"),"Heuristic disclaimer visible");
           await page.keyboard.press("Escape");
+          await priority.locator(".pt-cloud-filter-label select").first().selectOption("graph_rows");
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"88","Graph row sorting works");
+          await priority.locator(".pt-cloud-filter-label select").first().selectOption("unmatched_count");
+          assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"1021","Unmatched index count sorting works");
           await priority.locator(".pt-cloud-filter-label select").first().selectOption("occurrences");
           assert.equal(await priority.locator(".pt-cloud-id-button").first().innerText(),"88","Occurrence sorting works");
           await priority.getByRole("button",{name:"1021",exact:true}).click();
@@ -339,6 +354,8 @@ const fixtures = (u) => {
             assert(csvText.includes("CSVサンプル照合件数"),"Provenance columns exported");
             assert(csvText.includes("遷移推定レコード数"),"Graph evidence count exported");
             assert(csvText.includes("技名未照合インデックス総数"),"Unnamed research leads exported");
+            assert(csvText.includes("主な遷移先raw候補"),"CSV includes raw destination provenance");
+            assert(csvText.includes("共通インデックスのあるRequirements ID"),"CSV includes shared ID provenance");
             assert(csvText.includes("実機未検証"),"CSV marks inferred data unverified");
           }
           assert(await priority.evaluate(node=>node.open),"Priority list is open by default");
