@@ -11710,19 +11710,23 @@ const SHEET_SPLIT = { LPRK: "LP.RK", RPLK: "RP.LK", WPWK: "WP.WK", WPRK: "WP.RK"
 const SHEET_BTN_NAME = { 1: "LP", 2: "RP", 3: "LK", 4: "RK" };
 const SHEET_SIMUL = ["挫掌"];
 const SHEET_SEQ = ["スナップショット～BT"];                                                       // 攻撃が1回でも、2つのボタンを順番に押す技（同時押しではない）
-/* 方向キーの「長入れ」：技名に「◯◯長入れ」「入れっぱなし」「入れっぱ」「入れ」が入っているときは、コマンドの方向キーを黒い矢印（ホールド）で表示する。
+/* 方向キーの「長入れ」：技名に「◯◯長入れ」「入れっぱなし」「入れっぱ」「入れ」が入っているときは、コマンドの「最後の方向キー1つだけ」を黒い矢印（ホールド）で表示する。
    データ（技名・コマンド）は変えず、表示のときだけ変換する。管理者ページで数字だけ入力した技（保存済みのデータ）にも、そのまま効く。
    すでに ^ が付いている方向キーはそのまま。5（ニュートラル）は対象外。「入れ替え」は対象外。 */
 const HOLD_NAME_RE = /長入れ|入れっぱなし|入れっぱ|入れ(?!替)/;
 function holdArrows(str) {
   str = String(str);
-  return str.replace(/([1-9])(\^?)/g, (m, d, hat, off) => {
-    if (hat || d === "5") return m;
+  let last = null;   // コマンドの中で、いちばん最後の方向キー（ここだけを黒にする）
+  str.replace(/([1-9])(\^?)/g, (m, d, hat, off) => {
+    if (d === "5") return m;
     const next = str[off + 1] || "";
     if (next && next.charCodeAt(0) > 127 && next !== "）" && next !== "】" && next !== "【") return m;   // 日本語が続く数字は方向キーではない（renderCmd と同じ判定）
     if (/レベル$/.test(str.slice(0, off))) return m;
-    return d + "^";
+    last = { off: off, hat: hat };
+    return m;
   });
+  if (!last || last.hat) return str;
+  return str.slice(0, last.off + 1) + "^" + str.slice(last.off + 1);
 }
 function sheetCmdText(str, name, a) {
   const r = sheetCmdText0(str, name, a);
