@@ -99,7 +99,7 @@
 
   // ------------------------------------------------------------ 起動
   var app = $("#app");
-  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
+  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), px: h("section", { id: "secPx", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
   async function boot() {
     // 他のページの中に埋め込まれて（クリックジャッキング）、管理者に気づかれず「公開」などを押させられないよう、枠の中では動かさない
     if (window.top !== window.self) { app.replaceChildren(h("div", { class: "center card" }, h("h2", { text: "このページは、他のページの中では使えません" }), h("p", null, h("a", { href: location.href, target: "_top", rel: "noopener", text: "新しいページとして開く" })))); return; }
@@ -115,9 +115,10 @@
       copyUserIdButton(S.me.project_t_id, "PROJECT T IDをコピー"));
     $("#tabs").hidden = false;
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
-    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.cloud);
+    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.px, sec.cloud);
     window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return S.chars; } });
     window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
+    window.PTAdminPxImages.mount(sec.px, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
     window.PTAdminCloudAnalysis.mount(sec.cloud, { csrf: function () { return S.csrf; } });
     buildSheetSkeleton();
     setTab("sheet");
@@ -183,7 +184,7 @@
       S.tags = J("INFO_TAGS.map(function(t){return {id:t.id,label:t.label,full:t.full}})");
       S.chars = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,moves:c.moves}})");
       window.PTAdminMoveMedia.updateCharacters(S.chars);
-      S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars);
+      S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars); window.PTAdminPxImages.updateCharacters(S.chars);
       S.win = W;
     } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
     if (!(window.crypto && crypto.subtle)) { D.chars.textContent = "この環境では元データの指紋（SHA-256）を計算できないため、編集できません。https で開いたページから使ってください。"; return; }

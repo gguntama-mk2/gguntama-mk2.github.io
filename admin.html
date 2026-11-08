@@ -69,6 +69,10 @@
   #secMedia .pt-mm-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; align-items:end; }
   #secMedia .pt-mm-form label { display:flex; flex-direction:column; gap:5px; }
   #secMedia .pt-mm-form button { justify-self:start; }
+  #secPx .pt-px-sec { margin:14px 0; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); } #secPx h3 { margin:0 0 6px; font-size:1rem; } #secPx .pt-px-sub { margin:4px 0 10px; color:var(--sub); font-size:.875rem; }
+  #secPx .pt-px-fig { margin:0 0 10px; max-width:420px; } #secPx .pt-px-fig img { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; background:#000; border-radius:8px; border:1px solid var(--line); }
+  #secPx .pt-px-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; } #secPx .pt-px-pick { display:inline-block; } #secPx select { max-width:100%; }
+  #secPx .pt-px-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; } #secPx .pt-px-card { display:grid; gap:6px; align-content:start; min-width:0; } #secPx .pt-px-card .pt-px-fig { margin:0; max-width:none; } #secPx .pt-px-card small { color:var(--sub); }
   #secIcons .pt-mi-bar { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; } #secIcons .pt-mi-bar input { flex:1 1 220px; }
   #secIcons .pt-mi-cell { display:flex; gap:3px; align-items:center; min-height:22px; } #secIcons table td { vertical-align:middle; } #secIcons .pt-mi-cell img { border-radius:4px; }
   #secIcons .pt-mi-wrap { display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:16px; align-items:start; }
@@ -433,6 +437,7 @@
     <button type="button" data-tab="users" aria-pressed="false">管理者</button>
     <button type="button" data-tab="media" aria-pressed="false">技動画登録</button>
     <button type="button" data-tab="icons" aria-pressed="false">技アイコン設定</button>
+    <button type="button" data-tab="px" aria-pressed="false">背景・ギャラリー</button>
     <button type="button" data-tab="cloud" aria-pressed="false">クラウド解析</button>
     <button type="button" data-tab="audit" aria-pressed="false">操作の記録</button>
   </nav>
@@ -442,6 +447,7 @@
 <script src="admin.js" defer></script>
 <script src="admin-move-media.js" defer></script>
 <script src="admin-move-icons.js" defer></script>
+<script src="admin-px-images.js" defer></script>
 <script src="admin-cloud-analysis.js" defer></script>
 </body>
 </html>
