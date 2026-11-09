@@ -1,0 +1,64 @@
+
+
+/*PTHEADER-START*/
+/* 元ビルドの見た目を保ったまま、右上を「時計 + MENU」、その下をページジャンプ専用行にする。 */
+.titlebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "pt-title" "pt-nav";
+  align-items: start;
+  gap: 9px;
+  min-width: 0;
+}
+.titlebar .titleleft {
+  grid-area: pt-title;
+  width: 100%;
+  min-width: 0;
+  padding-right: clamp(290px, 23vw, 390px);
+  box-sizing: border-box;
+}
+.titlebar .titleleft h1 { min-width: 0; max-width: 100%; }
+.titlebar > .pagenav {
+  grid-area: pt-nav;
+  justify-self: stretch;   /* 右寄せをやめ、タイトルと同じ左端から右端いっぱいに広げる */
+  align-self: start;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  gap: 8px;
+  box-sizing: border-box;
+}
+/* 右上の固定時計（高さ約70px）とMENUの下にページジャンプ行が来るよう、タイトル行を時計の高さ以上にする。 */
+@media (min-width: 761px) {
+  .titlebar .titleleft { min-height: var(--pt-top-h, 78px); }
+  .titlebar > .pagenav { margin-top: 0; }
+}
+/* ページへのジャンプ：リンクは 14 個＝いつも 7列×2段（横いっぱい・同じ幅・同じ高さ）。列の数は views.js が「リンクの数÷2」で決める（--pt-nav-cols）。
+   横にスクロールさせない。幅が足りないとき（1240px未満）は、長い名前を短い名前（.ls）に替え、文字も画面幅に合わせて小さくする。 */
+.titlebar > .pagenav {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--pt-nav-cols, 7), minmax(0, 1fr));
+  width: 100%;
+}
+.titlebar > .pagenav button { min-width: 0; }
+.pagenav .nb { display: inline-block; line-height: 1.05; }   /* 「ダウン／ロード」のように、狭いときは決まった位置で折り返す */
+@media (max-width: 1239.98px) {
+  .titlebar > .pagenav .lf { display: none; }
+  .titlebar > .pagenav .ls { display: inline; }
+  .titlebar > .pagenav { gap: 5px; }
+  .titlebar > .pagenav button { padding: 7px 3px; font-size: clamp(.5313rem, 1.9vw, .8125rem); letter-spacing: 0; }
+}
+@media (max-width: 760px) {
+  /* 時計とMENUを最上段に残し、長いページ名はその下へ逃がす。 */
+  .titlebar .titleleft { padding-right: 0; padding-top: calc(var(--mn-tab, 52px) + 9px); }
+  .titlebar { gap: 8px; }
+}
+@media (max-width: 760px) {
+  .titlebar > .pagenav { gap: 3px; }
+  .titlebar > .pagenav button { padding: 5px 1px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; letter-spacing: -.02em; }
+}
+/* 古い「titleleft内のpagenav」専用ルールを無効化する。 */
+@media (max-width: 1179.98px) { .titleleft .pagenav { width: auto; } }
+/*PTHEADER-END*/
+
