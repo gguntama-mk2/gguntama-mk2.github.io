@@ -25,6 +25,7 @@
     setMoves();
   }
   function setMoves(){
+    const prevMove=move.value;
     move.replaceChildren();
     const c=characters.find(x=>x.id===character.value);if(!c)return;
     c.moves.forEach((entry,index)=>{
@@ -32,7 +33,8 @@
       const option=make("option",String(k)+" · "+entry.name);
       option.value=String(k);option.dataset.moveName=entry.name;move.appendChild(option);
     });
-    if(c.id==="bryan"&&Array.from(move.options).some(x=>x.value==="2"))move.value="2";
+    if(Array.from(move.options).some(x=>x.value===prevMove))move.value=prevMove;
+    else if(c.id==="bryan"&&Array.from(move.options).some(x=>x.value==="2"))move.value="2";
   }
   async function refresh(){
     const data=await request("/api/v1/admin/move-media");
@@ -44,7 +46,8 @@
     for(const item of data.entries){
       const row=make("tr");
       row.appendChild(make("td",item.character_id));
-      row.appendChild(make("td",item.move_name+" / "+item.site_k));
+      const curMove=((characters.find(x=>x.id===item.character_id)||{moves:[]}).moves.find(x=>x.k===item.site_k))||null;
+      row.appendChild(make("td",(curMove?curMove.name:item.move_name)+" / "+item.site_k+(curMove&&curMove.name!==item.move_name?"（登録時の名前：" +item.move_name+"）":"")));
       row.appendChild(make("td",item.status==="published"?"公開中":"下書き"));
       const linkCell=make("td");
       if(item.status==="published"){

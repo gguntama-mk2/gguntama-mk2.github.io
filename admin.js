@@ -116,8 +116,8 @@
     $("#tabs").hidden = false;
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
     app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.px, sec.players, sec.tournaments, sec.cloud);
-    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return S.chars; } });
-    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
+    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); } });
+    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, win: function () { return S.win; } });
     var comCtx = { characters: function () { return S.chars || []; } };
     window.PTAdminCommunity.mountPlayers(sec.players, comCtx); window.PTAdminCommunity.mountTournaments(sec.tournaments, comCtx);
     window.PTAdminPxImages.mount(sec.px, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
@@ -133,10 +133,43 @@
         h("a", { class: "btn primary", href: API + "/auth/discord/start?mode=login&return_to=" + back, text: "Discord でログイン" }),
         h("a", { class: "btn", href: API + "/auth/google/start?mode=login&return_to=" + back, text: "Google でログイン" }))));
   }
+  // 技名・コマンドを技チェックシートで変えたら、アイコン設定・技動画登録にも同じ内容を出す
+  // いま開いているキャラ＝編集中の内容／ほかのキャラ＝保存済みの下書き（なければ公開中の内容、なければ元データ）
+  function effChars() {
+    return (S.chars || []).map(function (c) {
+      var mv = S.cur && S.cur.id === c.id && Array.isArray(S.cur.moves) ? S.cur.moves : (S.ovMoves && S.ovMoves[c.id]);
+      return Array.isArray(mv) ? { id: c.id, en: c.en, name: c.name, moves: mv } : c;
+    });
+  }
+  function syncMoveTabs(force) {
+    try {
+      if (!S.chars) return;
+      var sig = (S.cur ? S.cur.id + "|" + JSON.stringify((S.cur.moves || []).map(function (m) { return [m.k, m.name, m.a && m.a.command]; })) : "") + "|" + (S._ovVer || 0);
+      if (!force && S._effSig === sig && S._effBase === S.chars) return;
+      S._effSig = sig; S._effBase = S.chars;
+      var e = effChars(); window.PTAdminMoveIcons.updateCharacters(e); window.PTAdminMoveMedia.updateCharacters(e);
+    } catch (x) { console.error("[admin] アイコン・動画の一覧への反映に失敗しました", x); }
+  }
+  async function loadOverlays() {            // 上書き（下書き・公開）のあるキャラの技一覧を、まだ取っていないものだけ取得
+    if (!S.ovr || !S.chars) return;
+    S.ovMoves = S.ovMoves || {};
+    var ids = Object.keys(S.ovr).filter(function (id) { return !(id in S.ovMoves) && !(S.cur && S.cur.id === id); });
+    if (!ids.length) return;
+    var gen = (S._ovGen = (S._ovGen || 0) + 1);
+    for (var i = 0; i < ids.length; i += 6) {
+      await Promise.all(ids.slice(i, i + 6).map(async function (id) {
+        try { var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); S.ovMoves[id] = r.exists ? r.moves : (r.published ? r.published.moves : null); }
+        catch (e) { /* 取れなかったキャラは元データのまま表示する */ }
+      }));
+      if (gen !== S._ovGen) return;
+    }
+    S._ovVer = (S._ovVer || 0) + 1; syncMoveTabs();
+  }
   function setTab(t) {
     S.tab = t;
     Object.keys(sec).forEach(function (k) { sec[k].hidden = k !== t; });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.tab === t)); });
+    if (t === "icons" || t === "media") { syncMoveTabs(); loadOverlays(); }
     if (t === "users") loadUsers(); else if (t === "audit") loadAudit(); else if (t === "cloud") window.PTAdminCloudAnalysis.refresh();
   }
   window.addEventListener("beforeunload", function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
@@ -240,6 +273,7 @@
   window.addEventListener("resize", syncHeaderHeight); window.addEventListener("load", syncHeaderHeight); setTimeout(syncHeaderHeight, 300); setTimeout(syncHeaderHeight, 1500);
   async function openChar(id) {
     var base = baseOf(id); if (!base) return;
+    if (S.cur && S.cur.id !== id && S.ovMoves) { delete S.ovMoves[S.cur.id]; S._ovVer = (S._ovVer || 0) + 1; }   // 離れるキャラは、次にアイコン・動画の一覧を開くとき最新を取り直す
     banner("", "読み込み中…");
     var r;
     try { r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); }
@@ -258,7 +292,7 @@
     D.diff.hidden = true;
     S.colCache = {};
     renderChars(); renderAll(); loadHistory(); schedulePreview(0);
-    notifyBase();
+    notifyBase(); S._effBase = null; syncMoveTabs();
   }
   function renderAll() { renderTool(); renderEditor(); }
 
