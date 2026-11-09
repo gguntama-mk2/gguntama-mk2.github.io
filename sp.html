@@ -22631,8 +22631,8 @@ input[type="checkbox"] { border-radius: 8px; }
     const r = records(p.id), chars = (p.characters||[]).map(c=>c.name).slice(0,3).join(' / ');
     const team=p.teamFromSource ? ` · ${p.teamFromSource}` : '';
     return `<button type="button" class="ptg-person" data-player="${esc(p.id)}" aria-label="${esc(p.name)} の選手詳細">
-      <span class="ptg-avatar" aria-hidden="true">${esc(p.name.slice(0,2).toUpperCase())}</span><span class="ptg-person-body"><strong>${esc(p.name)}</strong><small>${esc(country(p.country))}${esc(team)}</small><small>${esc(chars||'使用キャラクター未登録')}${p.sourceUnverified?' · 資料未検証':''}</small></span>
-      <span class="ptg-person-right"><em>${r.length ? `${r.length}件の収録戦績` : '戦績登録待ち'}</em><span aria-hidden="true">›</span></span></button>`;
+      <span class="ptg-avatar" aria-hidden="true">${esc(p.name.slice(0,2).toUpperCase())}</span><span class="ptg-person-body"><strong>${esc(p.name)}</strong><small>${esc(country(p.country))}${esc(team)}</small>${chars?`<small>${esc(chars)}</small>`:''}</span>
+      <span class="ptg-person-right"><em>${r.length ? `${r.length}件の戦績` : ''}</em><span aria-hidden="true">›</span></span></button>`;
   }
 
   function renderPlayers(){
@@ -22691,7 +22691,6 @@ input[type="checkbox"] { border-radius: 8px; }
       <div class="ptg-roster-scroll"><div class="ptg-player-list" id="ptgPlayerList"></div></div>
       <div class="ptg-roster-footer">PLAYER DIRECTORY · 国別選手一覧 / 選手を選択して詳細を表示</div>
     </aside>
-    <p class="ptg-info">収録対象は段階的に拡充します。未登録のSNS・戦績・使用キャラクターは表示を補完せず、登録待ちとして扱います。更新基準日：${esc(DATA.lastReviewed)}</p>
   </div>`;
   function setRosterOpen(open, options={}){
     const drawer=$('#ptgPlayerResults',root),tab=$('#ptgRosterTab',root),veil=$('#ptgRosterVeil',root);
@@ -22795,29 +22794,26 @@ input[type="checkbox"] { border-radius: 8px; }
   function openPlayer(id,src){
     const p=byId.get(id);if(!p)return;
     const r=records(id);
-    const badges=p.characters&&p.characters.length?p.characters.map(c=>`<span class="ptg-chip"><b>${esc(c.name)}</b><small>${esc(c.context||'')} ${c.verification==='unverified'?'（未検証）':''}</small></span>`).join(''):'<p class="ptg-null">使用キャラクター：登録待ち</p>';
+    const badges=(p.characters||[]).filter(c=>c&&c.name).map(c=>`<span class="ptg-chip"><b>${esc(c.name)}</b></span>`).join('');
     const socials=[['x','X（旧Twitter）'],['youtube','YouTube'],['twitch','Twitch']];
     const sns=socials.map(([key,name])=>{
       const u=safeURL((p.socials||{})[key]);
-      const verify=(p.socials||{})[key+'_verification']==='source-unverified';
-      const xv=(p.socials||{}).x_verification==='verified';const xh=xv?(String((p.socials||{}).x||'').replace(/\/+$/,'').split('/').pop()||''):(p.sourceXHandle||'');const shown=key==='x' && xh ? ` @${xh}` : '';
-      return u ? makeLink(u,name+shown+(verify?'（資料記載・未確認）':'')):
-        `<span class="ptg-social-off">${esc(name)}<small>URL未登録</small></span>`;
+      if(!u)return '';
+      const xh=key==='x'?(String((p.socials||{}).x||'').replace(/[?#].*$/,'').replace(/\/+$/,'').split('/').pop()||''):'';
+      return makeLink(u,name+(xh?` @${xh}`:''));
     }).join('');
-    const streams=p.sourceStreaming?`<p class="ptg-data-note"><b>資料記載の配信サービス：</b>${esc(p.sourceStreaming)}<br>※各サービスのチャンネルURLは提供されていないため、未登録です。</p>`:'';
-    const affiliations=p.teamFromSource?`<div class="ptg-modal-section"><h3>所属・活動情報 <small>提供資料・未検証</small></h3><p class="ptg-data-note"><b>${esc(p.teamFromSource)}</b></p>${p.sourceCountryOriginal && p.sourceCountryOriginal!==country(p.country)?`<p class="ptg-data-note">資料の国籍・活動拠点表記：${esc(p.sourceCountryOriginal)}</p>`:''}</div>`:'';
-    const note=p.sourceSummary?`<div class="ptg-modal-section"><h3>プロフィール・主な実績 <small>提供資料の説明文・未検証</small></h3><p class="ptg-data-note">${esc(p.sourceSummary)}</p><p class="ptg-data-note">この文章は公式の大会順位として登録していません。</p></div>`:'';
-    const raw=p.sourceUnclearCharacters?.length?`<p class="ptg-data-note">原資料に旧作品・表記不明のキャラクターがあります（参考のみ）：${esc(p.sourceUnclearCharacters.join(' / '))}</p>`:'';
-    const result=r.length?r.map(x=>`<button type="button" class="ptg-result-entry" data-modaltournament="${esc(x.t.id)}"><strong>${esc(x.t.name)}</strong><span>${esc(x.t.dateLabel)}</span><b>${x.r}位 <span aria-hidden="true">›</span></b></button>`).join(''):'<p class="ptg-null">公式出典と照合できた大会戦績はまだ登録されていません。</p>';
+    const affiliations=p.teamFromSource?`<div class="ptg-modal-section"><h3>所属</h3><p class="ptg-data-note"><b>${esc(p.teamFromSource)}</b></p></div>`:'';
+    const note=p.sourceSummary?`<div class="ptg-modal-section"><h3>プロフィール</h3><p class="ptg-data-note">${esc(p.sourceSummary)}</p></div>`:'';
+    const result=r.length?r.map(x=>`<button type="button" class="ptg-result-entry" data-modaltournament="${esc(x.t.id)}"><strong>${esc(x.t.name)}</strong><span>${esc(x.t.dateLabel)}</span><b>${x.r}位 <span aria-hidden="true">›</span></b></button>`).join(''):'';
     const sources=(p.sources||[]).map((u,i)=>makeLink(u,`出典 ${i+1}`)).filter(Boolean).join('');
     const region=regionOf(p.country);
-    openDialog(`<div class="ptg-profile-top"><div class="ptg-avatar ptg-avatar-xl">${esc(p.name.slice(0,2).toUpperCase())}</div><div><span class="ptg-kicker">PLAYER PROFILE · ${esc(region?.english||'')}</span><h2 id="ptgModalTitle">${esc(p.name)}</h2><p>${esc(country(p.country))}</p>${p.sourceUnverified?'<span class="ptg-import-label">資料提供・未検証</span>':''}</div></div>
+    openDialog(`<div class="ptg-profile-top"><div class="ptg-avatar ptg-avatar-xl">${esc(p.name.slice(0,2).toUpperCase())}</div><div><span class="ptg-kicker">PLAYER PROFILE · ${esc(region?.english||'')}</span><h2 id="ptgModalTitle">${esc(p.name)}</h2><p>${esc(country(p.country))}</p></div></div>
       ${affiliations}
-      <div class="ptg-modal-section"><h3>使用キャラクター <small>既存大会記録・提供資料の候補を区別</small></h3><div class="ptg-chipgroup">${badges}</div>${raw}</div>
-      <div class="ptg-modal-section"><h3>SNS・配信サイト</h3><div class="ptg-socials">${sns}</div>${streams}</div>
+      ${badges?`<div class="ptg-modal-section"><h3>使用キャラクター</h3><div class="ptg-chipgroup">${badges}</div></div>`:''}
+      ${sns?`<div class="ptg-modal-section"><h3>SNS・配信サイト</h3><div class="ptg-socials">${sns}</div></div>`:''}
       ${note}
-      <div class="ptg-modal-section"><h3>大会個人戦績 <small>既存の収録 ${r.length}件</small></h3><div class="ptg-records">${result}</div></div>
-      <div class="ptg-modal-section"><h3>出典・注意事項</h3><div class="ptg-sources">${sources||'<span class="ptg-null">外部リンク出典未登録</span>'}</div>${p.importedFrom?`<p class="ptg-data-note">追加資料：${esc(p.importedFrom)}（${esc(p.importedDate)}、ユーザー提供・内容未検証）</p>`:''}<p class="ptg-data-note">提供資料の所属・使用キャラクター・実績・SNS名は未検証です。大会順位は従来の記録だけを表示します。</p></div>`,src);
+      ${result?`<div class="ptg-modal-section"><h3>大会個人戦績</h3><div class="ptg-records">${result}</div></div>`:''}
+      ${sources?`<div class="ptg-modal-section"><h3>出典</h3><div class="ptg-sources">${sources}</div></div>`:''}`,src);
   }
 
   function openTournament(id,src){
@@ -22827,7 +22823,7 @@ input[type="checkbox"] { border-radius: 8px; }
       return r.playerId&&byId.has(r.playerId)?`<button type="button" class="ptg-result-entry" data-modalplayer="${esc(r.playerId)}">${inner}<span aria-hidden="true">›</span></button>`:`<div class="ptg-result-entry">${inner}</div>`;
     }).join('');
     openDialog(`<span class="ptg-kicker">TOURNAMENT RESULTS</span><h2 id="ptgModalTitle" class="ptg-event-name">${esc(t.name)}</h2><p class="ptg-event-meta">${esc(t.dateLabel)} · ${esc(t.category)} · ${esc(t.place)}</p>
-      <div class="ptg-modal-section"><h3>個人戦順位 <small>収録対象のみ</small></h3><div class="ptg-records">${ranking||'<p class="ptg-null">順位未登録</p>'}</div></div>
+      <div class="ptg-modal-section"><h3>個人戦順位</h3><div class="ptg-records">${ranking||'<p class="ptg-null">順位未登録</p>'}</div></div>
       <div class="ptg-modal-section"><h3>出典・結果</h3><div class="ptg-sources">${makeLink(t.source,'結果の参照元')}</div><p class="ptg-data-note">ここに表示していない順位が存在する場合があります。出典資料の全順位を収録したものではありません。</p></div>`,src);
   }
   window.PTCommunity={show(){},hide(){},version:DATA.version};

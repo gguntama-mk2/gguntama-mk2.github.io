@@ -245,12 +245,15 @@
     var isNew = !id, src = isNew ? { id: "", name: "", country: "", characters: [], socials: {}, sources: [], verification: "unverified" } : clone(ST.players.filter(function (p) { return p.id === id; })[0]);
     var p = src; p.socials = p.socials || {}; p.characters = p.characters || []; var srcs = (p.sources || []).slice();
     var el = ui.p.root; el.replaceChildren(); var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: isNew ? "プレイヤーの新規登録" : "プレイヤーの編集：" + p.name }));
-    var fId = inp(p.id, { disabled: !isNew, placeholder: "例：nobi（登録後は変更できません）" });
+    var fId = inp(p.id, { placeholder: "例：nobi（半角の英小文字・数字・-_）" });
     var fName = inp(p.name), fAlias = h("textarea", { rows: 2, placeholder: "別名・日本語名（改行かカンマ区切り）" }); fAlias.value = (p.aliases || []).join("\n");
     var fCountry = sel(allCountries(), p.country, function () {}, "未登録");
     var fTeam = inp(p.teamFromSource || "", { placeholder: "未確認なら空欄" });
     var fDesc = h("textarea", { rows: 3 }); fDesc.value = p.sourceSummary || "";
-    var fRaw = inp(p.sourceCharactersOriginal || "", { disabled: true });
+    // 資料の原文メモ（公開ページには出ない。すべて編集できる）
+    var MEMO = [["sourceCharactersOriginal", "提出資料の元の記載（キャラクター）", "元の表記のメモです。ここから使用キャラクターへ自動変換はしません。"], ["sourceNameOriginal", "資料上の名前"], ["sourceCountryOriginal", "資料上の国・活動拠点"], ["sourceXHandle", "資料上のXユーザー名（@なし）"], ["sourceStreaming", "資料上の配信サービス"], ["sourceUnclearCharacters", "表記不明のキャラクター（カンマ区切り）"], ["importedFrom", "取り込み元の資料名"], ["importedDate", "取り込み日", "例：2026-11-08"]];
+    var memoIn = {}; MEMO.forEach(function (m) { var v = p[m[0]]; memoIn[m[0]] = inp(Array.isArray(v) ? v.join("、") : (v == null ? "" : v)); });
+    var memoBox = h("details", { class: "pt-cm-memo", open: MEMO.some(function (m) { return p[m[0]] != null && p[m[0]] !== "" && !(Array.isArray(p[m[0]]) && !p[m[0]].length); }) }, [h("summary", { text: "資料の原文メモ（公開ページには表示されません）" }), h("div", {}, MEMO.map(function (m) { return field(m[1], memoIn[m[0]], m[2]); }))]);
     var chars = p.characters.map(function (c) { return { name: c.name || "", context: c.context || "", verification: c.verification || "unverified" }; });
     var known = ctx.characters().map(function (c) { return c.name; }), dl = h("datalist", { id: "ptCmChars" }); known.forEach(function (n) { dl.appendChild(h("option", { value: n })); });
     var cEd = rowsEditor(chars, function (c) {
@@ -262,18 +265,26 @@
     var fVer = sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), playerVerif(p), function () {});
     var srcModel = srcs.map(function (u) { return { u: u }; });
     var sEd2 = rowsEditor(srcModel, function (o) { return [inp(o.u, { placeholder: "https://…", oninput: function (e) { o.u = e.target.value; } })]; }, function () { return { u: "" }; }, "情報源を追加");
-    var form = h("div", { class: "pt-cm-form" }, [field("固定ID", fId, "一度登録したら変更しません。大会戦績との紐付けに使います。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), field("所属チーム", fTeam),
-      p.sourceCharactersOriginal ? field("提出資料の元の記載（変更不可）", fRaw, "元の表記を残しています。ここから確定キャラへ自動変換はしません。") : null,
+    var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), field("所属チーム", fTeam),
       h("div", { class: "pt-cm-f" }, [h("span", { text: "使用キャラクター" }), cEd, dl]), h("div", { class: "pt-cm-f" }, [h("span", { text: "SNS（確認できたものだけ入力）" }), sBox]),
-      field("紹介文", fDesc), h("div", { class: "pt-cm-f" }, [h("span", { text: "情報源（https）" }), sEd2]), field("情報確認状態", fVer, "「確認済み」には情報源が必要です。")]);
+      field("紹介文", fDesc), h("div", { class: "pt-cm-f" }, [h("span", { text: "情報源（https）" }), sEd2]), field("情報確認状態", fVer, "「確認済み」には情報源が必要です。"), memoBox]);
     var save = btn("保存", function () {
-      var np = clone(src); np.id = isNew ? fId.value.trim() : src.id; np.name = fName.value.trim(); np.aliases = lines(fAlias.value); np.country = fCountry.value;
+      var np = clone(src); np.id = fId.value.trim(); np.name = fName.value.trim(); np.aliases = lines(fAlias.value); np.country = fCountry.value;
       if (fTeam.value.trim()) np.teamFromSource = fTeam.value.trim(); else delete np.teamFromSource;
       np.characters = chars.filter(function (c) { return c.name.trim(); }).map(function (c) { return { name: c.name.trim(), context: c.context.trim(), verification: c.verification }; });
       np.socials = Object.assign({}, src.socials); SOC.forEach(function (s) { var u = soc[s[0]][0].value.trim(), v = soc[s[0]][1].value; if (u) { np.socials[s[0]] = u; np.socials[s[0] + "_verification"] = u && v === "verified" ? "verified" : "source-unverified"; } else { delete np.socials[s[0]]; delete np.socials[s[0] + "_verification"]; } });
       if (fDesc.value.trim()) np.sourceSummary = fDesc.value.trim(); else delete np.sourceSummary;
+      MEMO.forEach(function (m) { var v = memoIn[m[0]].value.trim(); if (!v) delete np[m[0]]; else if (m[0] === "sourceUnclearCharacters") np[m[0]] = v.split(/[、,，\n]+/).map(function (x) { return x.trim(); }).filter(Boolean); else np[m[0]] = v; });
       np.sources = srcModel.map(function (o) { return o.u.trim(); }).filter(Boolean); np.verification = fVer.value; np.sourceUnverified = fVer.value !== "verified"; np.updatedAt = nowIso();
-      if (commit(function (S) { var i = S.players.findIndex(function (x) { return x.id === np.id; }); if (isNew) { if (i >= 0) throw new Error("そのIDは既に使われています：" + np.id); S.players.push(np); } else S.players[i] = np; }, "保存しました（この端末の下書き）。")) drawPlayers();
+      if (commit(function (S) {
+        if (isNew) { if (S.players.some(function (x) { return x.id === np.id; })) throw new Error("そのIDは既に使われています：" + np.id); S.players.push(np); return; }
+        var i = S.players.findIndex(function (x) { return x.id === src.id; });
+        if (np.id !== src.id) {          // IDを変えたら、大会戦績の選手IDも一緒に直す（紐付けが切れないように）
+          if (S.players.some(function (x) { return x.id === np.id; })) throw new Error("そのIDは既に使われています：" + np.id);
+          S.tournaments.forEach(function (t) { (t.placements || []).forEach(function (x) { if (x.playerId === src.id) x.playerId = np.id; }); });
+        }
+        S.players[i] = np;
+      }, np.id !== src.id && !isNew ? "保存しました（IDを変えたので、大会戦績の選手IDも更新しました）。" : "保存しました（この端末の下書き）。")) drawPlayers();
     }, "primary");
     card.append(form, h("div", { class: "pt-cm-bar" }, [save, btn("キャンセル", drawPlayers)]), ui.p.note); el.appendChild(card);
   }
@@ -317,7 +328,7 @@
   function editTournament(id) {
     var isNew = !id, t = isNew ? { id: "", name: "", date: "", country: "", category: "", placements: [], source: "", verification: "unverified" } : clone(ST.tournaments.filter(function (x) { return x.id === id; })[0]);
     var el = ui.t.root; el.replaceChildren(); var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: isNew ? "大会の登録" : "大会の編集：" + t.name }));
-    var fId = inp(t.id, { disabled: !isNew, placeholder: "例：example2026（登録後は変更できません）" }), fName = inp(t.name), fDate = inp(t.date, { placeholder: "2026-07-18 または 2026-07" }), fLabel = inp(t.dateLabel || "", { placeholder: "表示用（任意）例：2026年7月" });
+    var fId = inp(t.id, { placeholder: "例：example2026（半角の英小文字・数字・-_）" }), fName = inp(t.name), fDate = inp(t.date, { placeholder: "2026-07-18 または 2026-07" }), fLabel = inp(t.dateLabel || "", { placeholder: "表示用（任意）例：2026年7月" });
     var fCountry = sel(allCountries(), t.country, function () {}, "未登録"), fCat = inp(t.category || "", { placeholder: "例：TWT 2026 Master" }), fPlace = inp(t.place || ""), fSrc = inp(t.source || "", { placeholder: "https://…（公式結果）" });
     var fVer = sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), VERIF.indexOf(t.verification) >= 0 ? t.verification : "unverified", function () {});
     var pl = (t.placements || []).map(function (x) { return { rank: x.rank, playerId: x.playerId || "", playerName: x.playerName || "" }; });
@@ -327,14 +338,22 @@
       var s = sel(opts, x.playerId, function (e) { x.playerId = e.target.value; }, x.playerName ? "（未登録）" + x.playerName : "選手を選ぶ");
       return [r, s];
     }, function () { var m = pl.reduce(function (a, b) { return Math.max(a, b.rank || 0); }, 0); return { rank: m + 1, playerId: "", playerName: "" }; }, "順位を追加");
-    var form = h("div", { class: "pt-cm-form" }, [field("大会ID", fId, "固定です。選手の戦績の紐付けに使います。"), field("大会名", fName), field("開催日", fDate, "YYYY-MM-DD（月だけ分かる場合は YYYY-MM）"), field("表示用の日付", fLabel), field("国", fCountry), field("開催地の表示", fPlace), field("大会区分", fCat), field("公式結果URL", fSrc), field("情報確認状態", fVer),
+    var form = h("div", { class: "pt-cm-form" }, [field("大会ID", fId, "選手の戦績・イベントとの紐付けに使います。変更すると、関連づけも一緒に更新します。"), field("大会名", fName), field("開催日", fDate, "YYYY-MM-DD（月だけ分かる場合は YYYY-MM）"), field("表示用の日付", fLabel), field("国", fCountry), field("開催地の表示", fPlace), field("大会区分", fCat), field("公式結果URL", fSrc), field("情報確認状態", fVer),
       h("div", { class: "pt-cm-f" }, [h("span", { text: "順位と選手（同順位は同じ番号）" }), pEd])]);
     var save = btn("保存", function () {
-      var nt = clone(t); nt.id = isNew ? fId.value.trim() : t.id; nt.name = fName.value.trim(); nt.date = fDate.value.trim(); ["dateLabel", "place", "category", "source"].forEach(function (k) { delete nt[k]; });
+      var nt = clone(t); nt.id = fId.value.trim(); nt.name = fName.value.trim(); nt.date = fDate.value.trim(); ["dateLabel", "place", "category", "source"].forEach(function (k) { delete nt[k]; });
       if (fLabel.value.trim()) nt.dateLabel = fLabel.value.trim(); if (fPlace.value.trim()) nt.place = fPlace.value.trim(); if (fCat.value.trim()) nt.category = fCat.value.trim(); if (fSrc.value.trim()) nt.source = fSrc.value.trim();
       if (fCountry.value) nt.country = fCountry.value; else delete nt.country; nt.verification = fVer.value; nt.updatedAt = nowIso();
       nt.placements = pl.filter(function (x) { return x.playerId || x.playerName; }).map(function (x) { var o = { rank: x.rank }; if (x.playerId) o.playerId = x.playerId; else o.playerName = x.playerName; return o; }).sort(function (a, b) { return a.rank - b.rank; });
-      if (commit(function (S) { var i = S.tournaments.findIndex(function (x) { return x.id === nt.id; }); if (isNew) { if (i >= 0) throw new Error("その大会IDは既に使われています：" + nt.id); S.tournaments.push(nt); } else S.tournaments[i] = nt; }, "保存しました（この端末の下書き）。")) drawT();
+      if (commit(function (S) {
+        if (isNew) { if (S.tournaments.some(function (x) { return x.id === nt.id; })) throw new Error("その大会IDは既に使われています：" + nt.id); S.tournaments.push(nt); return; }
+        var i = S.tournaments.findIndex(function (x) { return x.id === t.id; });
+        if (nt.id !== t.id) {            // IDを変えたら、イベントの「関連する大会結果」も一緒に直す
+          if (S.tournaments.some(function (x) { return x.id === nt.id; })) throw new Error("その大会IDは既に使われています：" + nt.id);
+          S.events.forEach(function (e) { if (e.tournamentId === t.id) e.tournamentId = nt.id; });
+        }
+        S.tournaments[i] = nt;
+      }, nt.id !== t.id && !isNew ? "保存しました（IDを変えたので、関連づけも更新しました）。" : "保存しました（この端末の下書き）。")) drawT();
     }, "primary");
     card.append(form, h("div", { class: "pt-cm-bar" }, [save, btn("キャンセル", drawT)]), ui.t.note); el.appendChild(card);
   }
@@ -372,11 +391,11 @@
     var manual = isManual(e0), e = isNew ? e0 : effEvent(e0), el = ui.t.root; el.replaceChildren(); var card = h("section", { class: "card" });
     card.appendChild(h("h2", { text: isNew ? "イベントの追加" : "イベントの編集：" + e.name }));
     if (!manual) card.appendChild(h("p", { class: "pt-cm-sub", text: "自動取得・初期登録のイベントです。修正は「管理者の修正」として別に保存され、取得した元の値は残ります。次回の自動取得でも、管理者の修正は上書きされません。" }));
-    var f = {}; f.id = inp(e0.id, { disabled: !isNew, placeholder: "例：manual-example-2026" }); f.name = inp(e.name || ""); f.start_date = inp(e.start_date || "", { type: "date" }); f.end_date = inp(e.end_date || "", { type: "date" });
+    var f = {}; f.id = inp(e0.id, { placeholder: "例：manual-example-2026（半角の英小文字・数字・-_）" }); f.name = inp(e.name || ""); f.start_date = inp(e.start_date || "", { type: "date" }); f.end_date = inp(e.end_date || "", { type: "date" });
     f.start_time_jst = inp(e.start_time_jst || "", { type: "time" }); f.location = inp(e.location || "", { placeholder: "例：東京・日本" }); f.country = sel(allCountries(), e.country, function () {}, "未登録");
     f.mode = sel([["オフライン", "オフライン"], ["オンライン", "オンライン"], ["ハイブリッド", "ハイブリッド"], ["未確認", "未確認"]], e.mode || "未確認", function () {}); f.category = inp(e.category || ""); f.source_url = inp(e.source_url || "", { placeholder: "https://…（公式ページ）" }); f.source_name = inp(e.source_name || "", { placeholder: "取得元の名前" }); f.description = h("textarea", { rows: 2 }); f.description.value = e.description || "";
     var tOpts = ST.tournaments.map(function (t) { return [t.id, t.name]; }); f.tournamentId = sel(tOpts, e0.tournamentId || "", function () {}, "（関連づけなし）");
-    var form = h("div", { class: "pt-cm-form" }, [field("イベントID", f.id, "固定です。"), field("イベント名", f.name), field("開始日", f.start_date, "開催地の日付です。日本時間の日付と違うことがあります。"), field("終了日", f.end_date), field("開始時刻（日本時間）", f.start_time_jst, "未確認なら空欄のままにします（推測で入れません）。"),
+    var form = h("div", { class: "pt-cm-form" }, [field("イベントID", f.id, manual || isNew ? "変更できます。" : "変更できます。ただし自動取得のイベントは、次回の自動取得で別のイベントとして追加されることがあります。"), field("イベント名", f.name), field("開始日", f.start_date, "開催地の日付です。日本時間の日付と違うことがあります。"), field("終了日", f.end_date), field("開始時刻（日本時間）", f.start_time_jst, "未確認なら空欄のままにします（推測で入れません）。"),
       field("開催地", f.location), field("国", f.country), field("開催形態", f.mode), field("大会区分", f.category), field("公式ページURL", f.source_url), field("取得元の名前", f.source_name), field("メモ", f.description), field("関連する大会結果", f.tournamentId, "大会が終わったあとで、結果と関連づけます（結果は自動では作りません）。")]);
     var save = btn("保存", function () {
       function vals() { var o = {}; ["name", "start_date", "end_date", "start_time_jst", "location", "country", "mode", "category", "source_url", "source_name", "description"].forEach(function (k) { var v = String(f[k].value || "").trim(); o[k] = v || null; }); return o; }
@@ -384,6 +403,7 @@
       if (commit(function (S) {
         if (isNew) { var nid = f.id.value.trim(); if (S.events.some(function (x) { return x.id === nid; })) throw new Error("そのイベントIDは既に使われています：" + nid); var ne = Object.assign({ id: nid, source_kind: "manual", status: "scheduled", game: "TEKKEN 8", updatedAt: nowIso() }, v); if (!ne.source_name) ne.source_name = "管理者の手動追加"; if (f.tournamentId.value) ne.tournamentId = f.tournamentId.value; Object.keys(ne).forEach(function (k) { if (ne[k] == null) delete ne[k]; }); S.events.push(ne); return; }
         var t = S.events.filter(function (x) { return x.id === e0.id; })[0];
+        var nid2 = f.id.value.trim(); if (nid2 !== e0.id) { if (S.events.some(function (x) { return x.id === nid2; })) throw new Error("そのイベントIDは既に使われています：" + nid2); t.id = nid2; }
         if (manual) { Object.keys(v).forEach(function (k) { if (v[k] == null) delete t[k]; else t[k] = v[k]; }); t.updatedAt = nowIso(); }
         else { var ov = {}; Object.keys(v).forEach(function (k) { if ((v[k] == null ? null : v[k]) !== (t[k] == null ? null : t[k])) ov[k] = v[k]; }); if (Object.keys(ov).length) { t.override = ov; t.override_updatedAt = nowIso(); } else delete t.override; }
         if (f.tournamentId.value) t.tournamentId = f.tournamentId.value; else delete t.tournamentId;
