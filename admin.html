@@ -69,6 +69,14 @@
   #secMedia .pt-mm-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; align-items:end; }
   #secMedia .pt-mm-form label { display:flex; flex-direction:column; gap:5px; }
   #secMedia .pt-mm-form button { justify-self:start; }
+  .pt-cm-sub { color:var(--sub); font-size:.875rem; margin:4px 0 10px; } .pt-cm-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; } .pt-cm-bar input[type=search] { min-width:200px; flex:1 1 200px; width:auto; } .pt-cm-bar select, .pt-cm-bar input[type=month], .pt-cm-bar input[type=date] { width:auto; max-width:100%; flex:0 1 auto; } .pt-cm-count { color:var(--sub); font-size:.85rem; margin:6px 0; }
+  .pt-cm-tbl { width:100%; border-collapse:collapse; font-size:.9rem; } .pt-cm-tbl th, .pt-cm-tbl td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; } .pt-cm-tbl th { color:var(--sub); font-weight:600; white-space:nowrap; } .pt-cm-tbl tr.is-hidden { opacity:.55; } .pt-cm-tbl small { color:var(--sub); }
+  .pt-cm-act { display:flex; flex-wrap:wrap; gap:4px; } .pt-cm-act .btn { padding:3px 9px; font-size:.82rem; } .pt-cm-chip { display:inline-block; margin:0 4px 3px 0; padding:1px 8px; border-radius:99px; background:var(--panel2); border:1px solid var(--line); font-size:.8rem; } .pt-cm-chip.unv { border-style:dashed; color:var(--sub); }
+  .pt-cm-badge { display:inline-block; padding:1px 8px; border-radius:6px; font-size:.78rem; border:1px solid var(--line); } .pt-cm-badge.v-verified { border-color:var(--ok); color:var(--ok); } .pt-cm-badge.v-partial { border-color:var(--warn); color:var(--warn); } .pt-cm-badge.v-unverified { color:var(--sub); }
+  .pt-cm-tabs { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; } .pt-cm-tabs .btn[aria-pressed=true] { background:var(--accent); color:#1a1330; border-color:var(--accent); font-weight:700; }
+  .pt-cm-form { display:grid; gap:12px; max-width:760px; } .pt-cm-f { display:grid; gap:4px; min-width:0; } .pt-cm-f > span { font-weight:600; font-size:.9rem; } .pt-cm-f small { color:var(--sub); } .pt-cm-f input, .pt-cm-f select, .pt-cm-f textarea { width:100%; max-width:100%; box-sizing:border-box; }
+  .pt-cm-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:6px; } .pt-cm-row input, .pt-cm-row select { flex:1 1 150px; min-width:0; } .pt-cm-row input.pt-cm-rank { flex:0 0 80px; } .pt-cm-warn { color:var(--warn); } .pt-cm-chk { display:inline-flex; gap:4px; align-items:center; white-space:nowrap; } .pt-cm-chk input { width:auto; } .pt-cm-exp { display:inline-flex; flex-wrap:wrap; gap:4px; }
+  @media (max-width:640px) { .pt-cm-tbl thead { display:none; } .pt-cm-tbl, .pt-cm-tbl tbody, .pt-cm-tbl tr, .pt-cm-tbl td { display:block; width:100%; } .pt-cm-tbl tr { border:1px solid var(--line); border-radius:8px; margin-bottom:8px; padding:4px; } .pt-cm-tbl td { border:0; padding:3px 6px; } }
   #secPx .pt-px-sec { margin:14px 0; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); } #secPx h3 { margin:0 0 6px; font-size:1rem; } #secPx .pt-px-sub { margin:4px 0 10px; color:var(--sub); font-size:.875rem; }
   #secPx .pt-px-fig { margin:0 0 10px; max-width:420px; } #secPx .pt-px-fig img { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; background:#000; border-radius:8px; border:1px solid var(--line); }
   #secPx .pt-px-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; } #secPx .pt-px-pick { display:inline-block; } #secPx select { max-width:100%; }
@@ -438,6 +446,8 @@
     <button type="button" data-tab="media" aria-pressed="false">技動画登録</button>
     <button type="button" data-tab="icons" aria-pressed="false">技アイコン設定</button>
     <button type="button" data-tab="px" aria-pressed="false">背景・ギャラリー</button>
+    <button type="button" data-tab="players" aria-pressed="false">プレイヤー管理</button>
+    <button type="button" data-tab="tournaments" aria-pressed="false">トーナメント管理</button>
     <button type="button" data-tab="cloud" aria-pressed="false">クラウド解析</button>
     <button type="button" data-tab="audit" aria-pressed="false">操作の記録</button>
   </nav>
@@ -448,6 +458,8 @@
 <script src="admin-move-media.js" defer></script>
 <script src="admin-move-icons.js" defer></script>
 <script src="admin-px-images.js" defer></script>
+<script src="community-seed.js" defer></script>
+<script src="admin-community.js" defer></script>
 <script src="admin-cloud-analysis.js" defer></script>
 </body>
 </html>
