@@ -7,7 +7,7 @@
   var KEY = "PROJECT_T_ADMIN_COMMUNITY_DRAFT_V1", BKEY = KEY + "_BACKUP";
   var CC_RE = /^[A-Z]{2}$/, ID_RE = /^[a-z0-9][a-z0-9_-]{0,47}$/, VERIF = ["unverified", "partial", "verified"];
   var VLABEL = { unverified: "未確認", partial: "一部確認", verified: "確認済み" };
-  var PCATS = ["pro", "streamer"], PCLABEL = { pro: "PRO", streamer: "STREAMER" };   // 公開ページの PRO / STREAMER 区分
+  var PCATS = ["pro", "highlevel", "streamer"], PCLABEL = { pro: "PRO", highlevel: "HIGH LEVEL", streamer: "STREAMER" };   // 公開ページの PRO / HIGH LEVEL / STREAMER 区分
   /* SNS・配信サイト：決まった種類（1種類につき1件までは socials の中に、同じ種類の2件目以降と「その他」は socials.others に入れる） */
   var SOC = [["x", "X"], ["youtube", "YouTube"], ["twitch", "Twitch"], ["instagram", "Instagram"], ["tiktok", "TikTok"], ["niconico", "ニコニコ"], ["bluesky", "Bluesky"], ["facebook", "Facebook"], ["discord", "Discord"], ["kick", "Kick"], ["website", "ホームページ・ブログ"]];
   var SOC_MAX = 20, SOC_LABEL_MAX = 24;
@@ -72,7 +72,7 @@
     return e;
   }
   function emptyState() { return { schema: 1, meta: {}, countries: {}, regions: [], players: [], tournaments: [], events: [], calendar: { sources: [] } }; }
-  function playerCat(p) { return p.category === "pro" ? "pro" : "streamer"; }
+  function playerCat(p) { return PCATS.indexOf(p.category) >= 0 ? p.category : "streamer"; }
   function playerVerif(p) { return VERIF.indexOf(p.verification) >= 0 ? p.verification : (p.sourceUnverified === false ? "verified" : "unverified"); }
   function effEvent(e) { return Object.assign({}, e, e.override || {}); }
   function refsOf(pid) {
@@ -94,7 +94,7 @@
       if (p.sources != null && !Array.isArray(p.sources)) er.push(n + "：情報源が配列ではありません");
       (p.sources || []).forEach(function (u) { if (!safeUrl(u)) er.push(n + "：情報源のURLが https ではありません：" + u); });
       if (p.verification != null && VERIF.indexOf(p.verification) < 0) er.push(n + "：情報確認状態が不正です：" + p.verification);
-      if (p.category != null && PCATS.indexOf(p.category) < 0) er.push(n + "：カテゴリが不正です（pro か streamer）：" + p.category);
+      if (p.category != null && PCATS.indexOf(p.category) < 0) er.push(n + "：カテゴリが不正です（pro・highlevel・streamer のどれか）：" + p.category);
       if (p.categoryBasis != null && (typeof p.categoryBasis !== "string" || p.categoryBasis.length > 200)) er.push(n + "：カテゴリの根拠メモは200文字までです");
       if (p.verification === "verified" && !(p.sources || []).length) er.push(n + "：「確認済み」にするには、情報源が1件以上必要です");
       if (p.thumbnail != null && p.thumbnail !== "" && (typeof p.thumbnail !== "string" || !THUMB_RE.test(p.thumbnail) || p.thumbnail.length > THUMB_MAX)) er.push(n + "：サムネイル画像の形式が正しくありません（webp / jpeg / png、約90KBまで）");
@@ -151,7 +151,7 @@
       return null;
     } catch (e) { try { if (old) localStorage.setItem(KEY, old); } catch (e2) {} return e && e.message ? e.message : String(e); }
   }
-  /* 下書きが PRO / STREAMER の区分を持たない古い形のとき、保存済みの登録内容（seed）の区分をこの画面の中だけで補う（保存は次に変更したとき） */
+  /* 下書きが PRO / HIGH LEVEL / STREAMER の区分を持たない古い形のとき、保存済みの登録内容（seed）の区分をこの画面の中だけで補う（保存は次に変更したとき） */
   function fillCats(S) {
     var seed = window.PT_COMMUNITY_SEED; if (!seed || !Array.isArray(seed.players) || !S || !Array.isArray(S.players)) return;
     var m = {}; seed.players.forEach(function (p) { if (p && PCATS.indexOf(p.category) >= 0) m[p.id] = p; });
@@ -270,14 +270,14 @@
     var teams = Array.from(new Set(list.map(function (p) { return p.teamFromSource; }).filter(Boolean))).sort().map(function (t) { return [t, t]; });
     var cs = Array.from(new Set(list.map(function (p) { return p.country; }).filter(Boolean))).sort().map(function (c) { return [c, cname(c)]; });
     bar.append(q, sel(cs, PF.country, function (e) { PF.country = e.target.value; drawRows(); }, "すべての国・地域"), sel(teams, PF.team, function (e) { PF.team = e.target.value; drawRows(); }, "すべての所属"),
-      sel(PCATS.map(function (c) { return [c, PCLABEL[c]]; }), PF.cat, function (e) { PF.cat = e.target.value; drawRows(); }, "PRO / STREAMER すべて"),
+      sel(PCATS.map(function (c) { return [c, PCLABEL[c]]; }), PF.cat, function (e) { PF.cat = e.target.value; drawRows(); }, "区分すべて"),
       sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), PF.verif, function (e) { PF.verif = e.target.value; drawRows(); }, "すべての確認状態"),
       h("label", { class: "pt-cm-chk" }, [h("input", { type: "checkbox", checked: PF.hidden, onchange: function (e) { PF.hidden = e.target.checked; drawRows(); } }), " 非表示も表示"]));
     card.appendChild(bar);
     var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), btn("並び順を入れ替える", function () { reorderPlayers(PF.country || ""); }), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
     card.appendChild(bar2);
     var count = h("p", { class: "pt-cm-count" }), tbl = h("table", { class: "pt-cm-tbl" }); var body = h("tbody");
-    tbl.appendChild(h("thead", {}, h("tr", {}, ["名前", "国・地域", "PRO / STREAMER", "所属", "使用キャラクター", "確認状態", ""].map(function (t) { return h("th", { text: t }); })))); tbl.appendChild(body);
+    tbl.appendChild(h("thead", {}, h("tr", {}, ["名前", "国・地域", "区分", "所属", "使用キャラクター", "確認状態", ""].map(function (t) { return h("th", { text: t }); })))); tbl.appendChild(body);
     function drawRows() {
       body.replaceChildren(); var qq = PF.q.trim().toLowerCase(), n = 0;
       list.forEach(function (p) {
@@ -358,7 +358,7 @@
     var fName = inp(p.name), fAlias = h("textarea", { rows: 2, placeholder: "別名・日本語名（改行かカンマ区切り）" }); fAlias.value = (p.aliases || []).join("\n");
     var fCountry = sel(allCountries(), p.country, function () {}, "未登録");
     var fTeam = inp(p.teamFromSource || "", { placeholder: "未確認なら空欄" });
-    var fCat = sel(PCATS.map(function (c) { return [c, c === "pro" ? "PRO（プロゲーマー）" : "STREAMER（配信者・コミュニティ）"]; }), playerCat(p), function () {});
+    var fCat = sel(PCATS.map(function (c) { return [c, { pro: "PRO（プロゲーマー）", highlevel: "HIGH LEVEL（上級者・大会上位）", streamer: "STREAMER（配信者・コミュニティ）" }[c]]; }), playerCat(p), function () {});
     var fCatBasis = inp(p.categoryBasis || "", { placeholder: "例：所属：Team Falcons（区分の根拠メモ。公開ページには出ません）", maxlength: 200 });
     var fDesc = h("textarea", { rows: 3 }); fDesc.value = p.sourceSummary || "";
     // 資料の原文メモ（公開ページには出ない。すべて編集できる）
@@ -423,11 +423,11 @@
     fName.addEventListener("input", drawThumb); drawThumb();
     var srcModel = srcs.map(function (u) { return { u: u }; });
     var sEd2 = rowsEditor(srcModel, function (o) { return [inp(o.u, { placeholder: "https://…", oninput: function (e) { o.u = e.target.value; } })]; }, function () { return { u: "" }; }, "情報源を追加");
-    var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), field("PRO / STREAMER", fCat, "公開ページで、国を選んだあとに出る「PRO」「STREAMER」のどちらに載せるかを決めます。"), field("区分の根拠メモ", fCatBasis, "なぜその区分にしたかのメモです（任意・公開ページには出ません）。"), h("div", { class: "pt-cm-f" }, [h("span", { text: "サムネイル（選手一覧の四角い画像）" }), thumbBox]), field("所属チーム", fTeam),
+    var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), field("区分（PRO / HIGH LEVEL / STREAMER）", fCat, "公開ページで、国を選んだあとに出る「PRO」「HIGH LEVEL」「STREAMER」のどれに載せるかを決めます。"), field("区分の根拠メモ", fCatBasis, "なぜその区分にしたかのメモです（任意・公開ページには出ません）。"), h("div", { class: "pt-cm-f" }, [h("span", { text: "サムネイル（選手一覧の四角い画像）" }), thumbBox]), field("所属チーム", fTeam),
       h("div", { class: "pt-cm-f" }, [h("span", { text: "使用キャラクター" }), cEd, dl]), h("div", { class: "pt-cm-f" }, [h("span", { text: "SNS・配信サイト（確認できたものだけ入力。「SNSを追加」で何件でも追加できます）" }), sBox]),
       field("紹介文", fDesc), h("div", { class: "pt-cm-f" }, [h("span", { text: "情報源（https）" }), sEd2]), field("情報確認状態", fVer, "「確認済み」には情報源が必要です。"), memoBox]);
     var save = btn("保存", function () {
-      var np = clone(src); np.id = fId.value.trim(); np.name = fName.value.trim(); np.aliases = lines(fAlias.value); np.country = fCountry.value; np.category = fCat.value === "pro" ? "pro" : "streamer"; if (fCatBasis.value.trim()) np.categoryBasis = fCatBasis.value.trim(); else delete np.categoryBasis;
+      var np = clone(src); np.id = fId.value.trim(); np.name = fName.value.trim(); np.aliases = lines(fAlias.value); np.country = fCountry.value; np.category = PCATS.indexOf(fCat.value) >= 0 ? fCat.value : "streamer"; if (fCatBasis.value.trim()) np.categoryBasis = fCatBasis.value.trim(); else delete np.categoryBasis;
       if (fTeam.value.trim()) np.teamFromSource = fTeam.value.trim(); else delete np.teamFromSource;
       np.characters = chars.filter(function (c) { return c.name.trim(); }).map(function (c) { return { name: c.name.trim(), context: c.context.trim(), verification: c.verification }; });
       np.socials = socPack(socItems, src.socials);
