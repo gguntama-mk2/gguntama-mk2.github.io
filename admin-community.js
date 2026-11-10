@@ -7,7 +7,30 @@
   var KEY = "PROJECT_T_ADMIN_COMMUNITY_DRAFT_V1", BKEY = KEY + "_BACKUP";
   var CC_RE = /^[A-Z]{2}$/, ID_RE = /^[a-z0-9][a-z0-9_-]{0,47}$/, VERIF = ["unverified", "partial", "verified"];
   var VLABEL = { unverified: "未確認", partial: "一部確認", verified: "確認済み" };
-  var SOC = [["x", "X"], ["youtube", "YouTube"], ["twitch", "Twitch"]];
+  /* SNS・配信サイト：決まった種類（1種類につき1件までは socials の中に、同じ種類の2件目以降と「その他」は socials.others に入れる） */
+  var SOC = [["x", "X"], ["youtube", "YouTube"], ["twitch", "Twitch"], ["instagram", "Instagram"], ["tiktok", "TikTok"], ["niconico", "ニコニコ"], ["bluesky", "Bluesky"], ["facebook", "Facebook"], ["discord", "Discord"], ["kick", "Kick"], ["website", "ホームページ・ブログ"]];
+  var SOC_MAX = 20, SOC_LABEL_MAX = 24;
+  function socName(k) { for (var i = 0; i < SOC.length; i++) if (SOC[i][0] === k) return SOC[i][1]; return ""; }
+  /* 保存形式（socials）→ 編集画面の行 */
+  function socRows(socials) {
+    var so = socials || {}, rows = [];
+    SOC.forEach(function (s) { if (so[s[0]]) rows.push({ k: s[0], label: so[s[0] + "_label"] || "", url: so[s[0]], ver: so[s[0] + "_verification"] === "verified" ? "verified" : "" }); });
+    (Array.isArray(so.others) ? so.others : []).forEach(function (o) { if (o && o.url) rows.push({ k: socName(o.platform) ? o.platform : "other", label: o.label || "", url: o.url, ver: o.verification === "verified" ? "verified" : "" }); });
+    return rows;
+  }
+  /* 編集画面の行 → 保存形式。入力のないSNSは消える。元の socials にある、このSNS欄以外の項目はそのまま残す */
+  function socPack(rows, old) {
+    var out = Object.assign({}, old || {}); delete out.others;
+    SOC.forEach(function (s) { delete out[s[0]]; delete out[s[0] + "_verification"]; delete out[s[0] + "_label"]; });
+    var others = [];
+    rows.forEach(function (r) {
+      var u = String(r.url || "").trim(), lab = String(r.label || "").trim(), ver = r.ver === "verified" ? "verified" : "source-unverified"; if (!u) return;
+      if (r.k !== "other" && socName(r.k) && !out[r.k]) { out[r.k] = u; out[r.k + "_verification"] = ver; if (lab) out[r.k + "_label"] = lab; }
+      else others.push({ platform: socName(r.k) ? r.k : "other", label: lab, url: u, verification: ver });
+    });
+    if (others.length) out.others = others;
+    return out;
+  }
   var ST = null, ctx = { characters: function () { return []; } }, loadNote = "", ui = {};
 
   /* ---------- 小道具 ---------- */
@@ -73,6 +96,20 @@
       if (p.thumbnail != null && p.thumbnail !== "" && (typeof p.thumbnail !== "string" || !THUMB_RE.test(p.thumbnail) || p.thumbnail.length > THUMB_MAX)) er.push(n + "：サムネイル画像の形式が正しくありません（webp / jpeg / png、約90KBまで）");
       if (p.thumbText != null && (typeof p.thumbText !== "string" || p.thumbText.length > 4)) er.push(n + "：サムネイルの表示文字は4文字までです");
       SOC.forEach(function (s) { var u = p.socials && p.socials[s[0]]; if (u && !safeUrl(u)) er.push(n + "：" + s[1] + "のURLが https ではありません"); if (p.socials && p.socials[s[0] + "_verification"] === "verified" && !u) er.push(n + "：" + s[1] + "が「確認済み」ですがURLがありません"); });
+      if (p.socials && p.socials.others != null) {
+        if (!Array.isArray(p.socials.others)) er.push(n + "：SNSの追加分（others）が配列ではありません");
+        else {
+          if (p.socials.others.length + SOC.filter(function (s) { return p.socials[s[0]]; }).length > SOC_MAX) er.push(n + "：SNSは" + SOC_MAX + "件までです");
+          p.socials.others.forEach(function (o, i) {
+            var m = n + "：追加したSNS " + (i + 1) + "件目";
+            if (!o || typeof o !== "object") { er.push(m + "の形が正しくありません"); return; }
+            if (!o.url || !safeUrl(o.url)) er.push(m + "のURLが https ではありません");
+            if ((o.platform === "other" || !socName(o.platform)) && !String(o.label || "").trim()) er.push(m + "（その他）には表示名が必要です");
+            if (o.label != null && String(o.label).length > SOC_LABEL_MAX) er.push(m + "の表示名は" + SOC_LABEL_MAX + "文字までです");
+          });
+        }
+      }
+      SOC.forEach(function (s) { if (p.socials && p.socials[s[0] + "_label"] != null && String(p.socials[s[0] + "_label"]).length > SOC_LABEL_MAX) er.push(n + "：" + s[1] + "の表示名は" + SOC_LABEL_MAX + "文字までです"); });
     });
     S.tournaments.forEach(function (t) {
       var n = "大会「" + t.id + "」", seen = {}, tie = {};
@@ -321,8 +358,19 @@
       var n = inp(c.name, { list: "ptCmChars", placeholder: "キャラクター名", oninput: function () { c.name = n.value; hint.textContent = known.length && n.value && known.indexOf(n.value) < 0 ? "鉄拳8の登録キャラと一致しません" : ""; } }), hint = h("small", { class: "pt-cm-warn" });
       return [n, inp(c.context, { placeholder: "根拠・出典", oninput: function (e) { c.context = e.target.value; } }), sel([["unverified", "未確認"], ["confirmed", "確認済み"]], c.verification, function (e) { c.verification = e.target.value; }), hint];
     }, function () { return { name: "", context: "", verification: "unverified" }; }, "キャラクターを追加");
-    var soc = {}; var sBox = h("div", { class: "pt-cm-soc" });
-    SOC.forEach(function (s) { var u = inp(p.socials[s[0]] || "", { placeholder: "https://…（未確認なら空欄）" }), v = sel([["", "未確認"], ["verified", "本人確認済み"]], p.socials[s[0] + "_verification"] === "verified" ? "verified" : "", function () {}); soc[s[0]] = [u, v]; sBox.appendChild(h("div", { class: "pt-cm-row" }, [h("b", { text: s[1] }), u, v])); });
+    var socItems = socRows(p.socials);
+    var socOpts = SOC.map(function (s) { return [s[0], s[1]]; }).concat([["other", "その他（名称を入力）"]]);
+    var sBox = h("div", { class: "pt-cm-soc" }, [rowsEditor(socItems, function (it) {
+      var lab = inp(it.label, { placeholder: it.k === "other" ? "表示名（必須）" : "表示名（任意）", maxlength: String(SOC_LABEL_MAX), "aria-label": "SNSの表示名", oninput: function (e) { it.label = e.target.value; } });
+      var kSel = sel(socOpts, it.k, function (e) { it.k = e.target.value; lab.placeholder = it.k === "other" ? "表示名（必須）" : "表示名（任意）"; }); kSel.setAttribute("aria-label", "SNSの種類");
+      var url = inp(it.url, { placeholder: "https://…", "aria-label": "SNSのURL", oninput: function (e) { it.url = e.target.value; } });
+      var ver = sel([["", "未確認"], ["verified", "本人確認済み"]], it.ver, function (e) { it.ver = e.target.value; }); ver.setAttribute("aria-label", "確認状態");
+      return [kSel, lab, url, ver];
+    }, function () {
+      var used = {}; socItems.forEach(function (x) { used[x.k] = 1; });
+      var free = SOC.filter(function (s) { return !used[s[0]]; })[0];
+      return { k: free ? free[0] : "other", label: "", url: "", ver: "" };
+    }, "SNSを追加")]);
     var fVer = sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), playerVerif(p), function () {});
     /* サムネイル：画像（正方形に切り抜いて小さくする）か、文字。画像があれば画像が優先 */
     var tm = { img: (p.thumbnail && THUMB_RE.test(p.thumbnail)) ? p.thumbnail : "" }, crop = { img: null, zoom: 1, x: 0, y: 0 };
@@ -363,13 +411,13 @@
     var srcModel = srcs.map(function (u) { return { u: u }; });
     var sEd2 = rowsEditor(srcModel, function (o) { return [inp(o.u, { placeholder: "https://…", oninput: function (e) { o.u = e.target.value; } })]; }, function () { return { u: "" }; }, "情報源を追加");
     var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), h("div", { class: "pt-cm-f" }, [h("span", { text: "サムネイル（選手一覧の四角い画像）" }), thumbBox]), field("所属チーム", fTeam),
-      h("div", { class: "pt-cm-f" }, [h("span", { text: "使用キャラクター" }), cEd, dl]), h("div", { class: "pt-cm-f" }, [h("span", { text: "SNS（確認できたものだけ入力）" }), sBox]),
+      h("div", { class: "pt-cm-f" }, [h("span", { text: "使用キャラクター" }), cEd, dl]), h("div", { class: "pt-cm-f" }, [h("span", { text: "SNS・配信サイト（確認できたものだけ入力。「SNSを追加」で何件でも追加できます）" }), sBox]),
       field("紹介文", fDesc), h("div", { class: "pt-cm-f" }, [h("span", { text: "情報源（https）" }), sEd2]), field("情報確認状態", fVer, "「確認済み」には情報源が必要です。"), memoBox]);
     var save = btn("保存", function () {
       var np = clone(src); np.id = fId.value.trim(); np.name = fName.value.trim(); np.aliases = lines(fAlias.value); np.country = fCountry.value;
       if (fTeam.value.trim()) np.teamFromSource = fTeam.value.trim(); else delete np.teamFromSource;
       np.characters = chars.filter(function (c) { return c.name.trim(); }).map(function (c) { return { name: c.name.trim(), context: c.context.trim(), verification: c.verification }; });
-      np.socials = Object.assign({}, src.socials); SOC.forEach(function (s) { var u = soc[s[0]][0].value.trim(), v = soc[s[0]][1].value; if (u) { np.socials[s[0]] = u; np.socials[s[0] + "_verification"] = u && v === "verified" ? "verified" : "source-unverified"; } else { delete np.socials[s[0]]; delete np.socials[s[0] + "_verification"]; } });
+      np.socials = socPack(socItems, src.socials);
       if (fDesc.value.trim()) np.sourceSummary = fDesc.value.trim(); else delete np.sourceSummary;
       if (tm.img) np.thumbnail = tm.img; else delete np.thumbnail;
       if (tText.value.trim()) np.thumbText = tText.value.trim(); else delete np.thumbText;
@@ -524,6 +572,6 @@
 
   window.PTAdminCommunity = Object.freeze({
     mountPlayers: mountPlayers, mountTournaments: mountTournaments, onCharacters: function () {},
-    _test: { validate: validate, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
+    _test: { validate: validate, socRows: socRows, socPack: socPack, SOC: SOC, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
   });
 })();
