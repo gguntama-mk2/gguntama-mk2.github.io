@@ -257,41 +257,78 @@
   }
 
   /* ================= プレイヤー管理 ================= */
-  var PF = { q: "", country: "", team: "", verif: "", cat: "", hidden: false };
+  var PF = { q: "", country: "", team: "", verif: "", cat: "", hidden: false, flash: "" };
   function mountPlayers(el, context) {
     ctx = context || ctx; if (!ST) boot(); var U = ui.p = { root: el, note: h("p", { role: "status", "aria-live": "polite", text: loadNote }) }; drawPlayers();
   }
   function drawPlayers() {
     var el = ui.p.root, list = ST.players; el.replaceChildren();
+    var flash = PF.flash || ""; PF.flash = "";
     var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "プレイヤー管理" }));
     card.appendChild(h("p", { class: "pt-cm-sub", text: "変更はこの端末の下書きに保存されます。公開サイトには自動では反映されません。" }));
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "区分（PRO / HIGH LEVEL / STREAMER）は、一覧の「区分」欄でそのまま切り替えられます。下のボタンで区分ごとに絞り込めます。" }));
+    var catTabs = h("div", { class: "pt-cm-tabs", role: "group", "aria-label": "区分で絞り込み" });
+    card.appendChild(catTabs);
     var bar = h("div", { class: "pt-cm-bar" });
-    var q = h("input", { type: "search", placeholder: "名前・IDで検索", value: PF.q, oninput: function () { PF.q = q.value; drawRows(); } });
+    var q = h("input", { type: "search", placeholder: "名前・IDで検索", value: PF.q, oninput: function () { PF.q = q.value; refilter(); } });
     var teams = Array.from(new Set(list.map(function (p) { return p.teamFromSource; }).filter(Boolean))).sort().map(function (t) { return [t, t]; });
     var cs = Array.from(new Set(list.map(function (p) { return p.country; }).filter(Boolean))).sort().map(function (c) { return [c, cname(c)]; });
-    bar.append(q, sel(cs, PF.country, function (e) { PF.country = e.target.value; drawRows(); }, "すべての国・地域"), sel(teams, PF.team, function (e) { PF.team = e.target.value; drawRows(); }, "すべての所属"),
-      sel(PCATS.map(function (c) { return [c, PCLABEL[c]]; }), PF.cat, function (e) { PF.cat = e.target.value; drawRows(); }, "区分すべて"),
-      sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), PF.verif, function (e) { PF.verif = e.target.value; drawRows(); }, "すべての確認状態"),
-      h("label", { class: "pt-cm-chk" }, [h("input", { type: "checkbox", checked: PF.hidden, onchange: function (e) { PF.hidden = e.target.checked; drawRows(); } }), " 非表示も表示"]));
+    bar.append(q, sel(cs, PF.country, function (e) { PF.country = e.target.value; refilter(); }, "すべての国・地域"), sel(teams, PF.team, function (e) { PF.team = e.target.value; refilter(); }, "すべての所属"),
+      sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), PF.verif, function (e) { PF.verif = e.target.value; refilter(); }, "すべての確認状態"),
+      h("label", { class: "pt-cm-chk" }, [h("input", { type: "checkbox", checked: PF.hidden, onchange: function (e) { PF.hidden = e.target.checked; refilter(); } }), " 非表示も表示"]));
     card.appendChild(bar);
     var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), btn("並び順を入れ替える", function () { reorderPlayers(PF.country || ""); }), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
     card.appendChild(bar2);
+    var bulk = sel(PCATS.map(function (c) { return [c, PCLABEL[c]]; }), "", function () {}, "区分を選ぶ"); bulk.setAttribute("aria-label", "まとめて変更する区分");
+    var bar3 = h("div", { class: "pt-cm-bar" });
+    bar3.append(h("span", { class: "pt-cm-sub", text: "いま表示している選手を、まとめて：" }), bulk, btn("この区分にする", function () {
+      var v = bulk.value; if (!v) { count.textContent = "変更先の区分を選んでください。"; return; }
+      var vis = list.filter(pass), diff = vis.filter(function (p) { return playerCat(p) !== v; });
+      if (!vis.length) { count.textContent = "表示中の選手がいません。"; return; }
+      if (!diff.length) { count.textContent = "表示中の " + vis.length + " 名は、すべてすでに " + PCLABEL[v] + " です。"; return; }
+      if (!confirm("表示中の " + vis.length + " 名のうち " + diff.length + " 名を「" + PCLABEL[v] + "」に変更します。よろしいですか？（直前の状態は「直前に戻す」で復元できます）")) return;
+      setCat(diff.map(function (p) { return p.id; }), v);
+    }));
+    card.appendChild(bar3);
     var count = h("p", { class: "pt-cm-count" }), tbl = h("table", { class: "pt-cm-tbl" }); var body = h("tbody");
     tbl.appendChild(h("thead", {}, h("tr", {}, ["名前", "国・地域", "区分", "所属", "使用キャラクター", "確認状態", ""].map(function (t) { return h("th", { text: t }); })))); tbl.appendChild(body);
+    function pass(p) {
+      var qq = PF.q.trim().toLowerCase();
+      if (p.hidden && !PF.hidden) return false; if (PF.country && p.country !== PF.country) return false; if (PF.team && p.teamFromSource !== PF.team) return false;
+      if (PF.verif && playerVerif(p) !== PF.verif) return false; if (PF.cat && playerCat(p) !== PF.cat) return false;
+      if (qq && ![p.id, p.name].concat(p.aliases || []).join(" ").toLowerCase().includes(qq)) return false; return true;
+    }
+    function refilter() { flash = ""; drawRows(); }
+    function setCat(ids, v, label) {      // 区分を変更して保存（1名でも複数名でも同じ）。保存後は一覧を描き直す
+      var set = {}; ids.forEach(function (id) { set[id] = 1; });
+      var ok = commit(function (S) { S.players.forEach(function (x) { if (set[x.id] && x.category !== v) { x.category = v; x.updatedAt = nowIso(); } }); });
+      if (ok) PF.flash = (ids.length === 1 && label ? label : ids.length + " 名") + " を " + PCLABEL[v] + " にしました（この端末の下書きに保存済み）";
+      drawPlayers();
+    }
+    function catSel(p) {
+      var c = playerCat(p), s2 = sel(PCATS.map(function (k) { return [k, PCLABEL[k]]; }), c, function (e) { setCat([p.id], e.target.value, p.name); });
+      s2.className = "pt-cm-catsel cat-" + c; s2.setAttribute("aria-label", p.name + " の区分"); return s2;
+    }
+    function drawCatTabs() {
+      catTabs.replaceChildren();
+      [["", "すべて"]].concat(PCATS.map(function (c) { return [c, PCLABEL[c]]; })).forEach(function (t) {
+        var n = list.filter(function (p) { return !t[0] || playerCat(p) === t[0]; }).length;
+        var b2 = btn(t[1] + "　" + n + "名", function () { PF.cat = t[0]; drawCatTabs(); refilter(); }); b2.setAttribute("aria-pressed", PF.cat === t[0] ? "true" : "false"); catTabs.appendChild(b2);
+      });
+    }
     function drawRows() {
-      body.replaceChildren(); var qq = PF.q.trim().toLowerCase(), n = 0;
+      body.replaceChildren(); var n = 0;
       list.forEach(function (p) {
-        if (p.hidden && !PF.hidden) return; if (PF.country && p.country !== PF.country) return; if (PF.team && p.teamFromSource !== PF.team) return; if (PF.verif && playerVerif(p) !== PF.verif) return; if (PF.cat && playerCat(p) !== PF.cat) return;
-        if (qq && ![p.id, p.name].concat(p.aliases || []).join(" ").toLowerCase().includes(qq)) return; n++;
+        if (!pass(p)) return; n++;
         var chars = (p.characters || []).map(function (c) { return h("span", { class: "pt-cm-chip" + (c.verification === "unverified" || !c.verification ? " unv" : ""), text: c.name }); });
         body.appendChild(h("tr", { class: p.hidden ? "is-hidden" : "" }, [
-          h("td", {}, [h("div", { class: "pt-cm-namecell" }, [thumbEl(p), h("span", {}, [h("strong", { text: p.name }), h("small", { text: " " + p.id })])])]), h("td", { text: cname(p.country) }), h("td", {}, h("span", { class: "pt-cm-badge cat-" + playerCat(p), text: PCLABEL[playerCat(p)] })), h("td", { text: p.teamFromSource || "—" }),
+          h("td", {}, [h("div", { class: "pt-cm-namecell" }, [thumbEl(p), h("span", {}, [h("strong", { text: p.name }), h("small", { text: " " + p.id })])])]), h("td", { text: cname(p.country) }), h("td", {}, catSel(p)), h("td", { text: p.teamFromSource || "—" }),
           h("td", {}, chars.length ? chars : [h("small", { text: "未登録" })]), h("td", {}, badge(playerVerif(p))),
           h("td", { class: "pt-cm-act" }, [btn("編集", function () { editPlayer(p.id); }), btn(p.hidden ? "再表示" : "非表示", function () { commit(function (S) { S.players.forEach(function (x) { if (x.id === p.id) { x.hidden = !p.hidden; x.updatedAt = nowIso(); } }); }); drawPlayers(); }), btn("削除", function () { delPlayer(p); }, "danger")])]));
       });
-      count.textContent = n + " 名を表示（登録 " + list.length + " 名）";
+      count.textContent = n + " 名を表示（登録 " + list.length + " 名）" + (flash ? "　／　" + flash : "");
     }
-    card.append(count, tbl, ui.p.note); el.appendChild(card); drawRows();
+    card.append(count, tbl, ui.p.note); el.appendChild(card); drawCatTabs(); drawRows();
   }
   /* ---------- 並び順の入れ替え（国ごと／全体） ---------- */
   var RC = { country: "" };
