@@ -30,10 +30,12 @@ PATCHES = (
     { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC", pick: j => j && j.dateTime }
   ];'''),
     ("calendar_missing_api",
-     " const paths=['/api/v1/calendar/events','calendar-events.json'];",
-     ''' // The public GitHub Pages origin has neither calendar API nor JSON feed.
+     "async function loadData(){\n const paths=['/api/v1/calendar/events','calendar-events.json'];",
+     '''// The public GitHub Pages origin has neither calendar API nor JSON feed.
  // Only the opt-in localhost calendar companion (port 8766) serves these.
- const localCalendarApi = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') && location.port === '8766';
+ // This variable must be outside loadData so refresh() can use it.
+const localCalendarApi = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') && location.port === '8766';
+async function loadData(){
  const paths = localCalendarApi ? ['/api/v1/calendar/events','calendar-events.json'] : [];'''),
     ("calendar_refresh_missing_api",
      '''async function refresh(){
