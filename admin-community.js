@@ -39,6 +39,14 @@
   function badge(v) { return h("span", { class: "pt-cm-badge v-" + (VERIF.indexOf(v) >= 0 ? v : "unverified"), text: VLABEL[v] || "未確認" }); }
 
   /* ---------- データの形 ---------- */
+  /* ---------- サムネイル（公開ページの選手一覧に出る四角い画像。画像が無いときは文字） ---------- */
+  var THUMB_RE = /^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+\/=]+$/, THUMB_MAX = 120000;
+  function initials(p) { var t = String(p.thumbText == null ? "" : p.thumbText).trim(); return t || String(p.name || "").slice(0, 2).toUpperCase(); }
+  function thumbEl(p, big) {
+    var e = h("span", { class: "pt-cm-thumb" + (big ? " big" : ""), "aria-hidden": "true" });
+    if (p.thumbnail && THUMB_RE.test(p.thumbnail)) { e.classList.add("has-img"); e.appendChild(h("img", { src: p.thumbnail, alt: "" })); } else e.textContent = initials(p);
+    return e;
+  }
   function emptyState() { return { schema: 1, meta: {}, countries: {}, regions: [], players: [], tournaments: [], events: [], calendar: { sources: [] } }; }
   function playerVerif(p) { return VERIF.indexOf(p.verification) >= 0 ? p.verification : (p.sourceUnverified === false ? "verified" : "unverified"); }
   function effEvent(e) { return Object.assign({}, e, e.override || {}); }
@@ -62,6 +70,8 @@
       (p.sources || []).forEach(function (u) { if (!safeUrl(u)) er.push(n + "：情報源のURLが https ではありません：" + u); });
       if (p.verification != null && VERIF.indexOf(p.verification) < 0) er.push(n + "：情報確認状態が不正です：" + p.verification);
       if (p.verification === "verified" && !(p.sources || []).length) er.push(n + "：「確認済み」にするには、情報源が1件以上必要です");
+      if (p.thumbnail != null && p.thumbnail !== "" && (typeof p.thumbnail !== "string" || !THUMB_RE.test(p.thumbnail) || p.thumbnail.length > THUMB_MAX)) er.push(n + "：サムネイル画像の形式が正しくありません（webp / jpeg / png、約90KBまで）");
+      if (p.thumbText != null && (typeof p.thumbText !== "string" || p.thumbText.length > 4)) er.push(n + "：サムネイルの表示文字は4文字までです");
       SOC.forEach(function (s) { var u = p.socials && p.socials[s[0]]; if (u && !safeUrl(u)) er.push(n + "：" + s[1] + "のURLが https ではありません"); if (p.socials && p.socials[s[0] + "_verification"] === "verified" && !u) er.push(n + "：" + s[1] + "が「確認済み」ですがURLがありません"); });
     });
     S.tournaments.forEach(function (t) {
@@ -216,7 +226,7 @@
       sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), PF.verif, function (e) { PF.verif = e.target.value; drawRows(); }, "すべての確認状態"),
       h("label", { class: "pt-cm-chk" }, [h("input", { type: "checkbox", checked: PF.hidden, onchange: function (e) { PF.hidden = e.target.checked; drawRows(); } }), " 非表示も表示"]));
     card.appendChild(bar);
-    var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
+    var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), btn("並び順を入れ替える", function () { reorderPlayers(PF.country || ""); }), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
     card.appendChild(bar2);
     var count = h("p", { class: "pt-cm-count" }), tbl = h("table", { class: "pt-cm-tbl" }); var body = h("tbody");
     tbl.appendChild(h("thead", {}, h("tr", {}, ["名前", "国・地域", "所属", "使用キャラクター", "確認状態", ""].map(function (t) { return h("th", { text: t }); })))); tbl.appendChild(body);
@@ -227,13 +237,64 @@
         if (qq && ![p.id, p.name].concat(p.aliases || []).join(" ").toLowerCase().includes(qq)) return; n++;
         var chars = (p.characters || []).map(function (c) { return h("span", { class: "pt-cm-chip" + (c.verification === "unverified" || !c.verification ? " unv" : ""), text: c.name }); });
         body.appendChild(h("tr", { class: p.hidden ? "is-hidden" : "" }, [
-          h("td", {}, [h("strong", { text: p.name }), h("small", { text: " " + p.id })]), h("td", { text: cname(p.country) }), h("td", { text: p.teamFromSource || "—" }),
+          h("td", {}, [h("div", { class: "pt-cm-namecell" }, [thumbEl(p), h("span", {}, [h("strong", { text: p.name }), h("small", { text: " " + p.id })])])]), h("td", { text: cname(p.country) }), h("td", { text: p.teamFromSource || "—" }),
           h("td", {}, chars.length ? chars : [h("small", { text: "未登録" })]), h("td", {}, badge(playerVerif(p))),
           h("td", { class: "pt-cm-act" }, [btn("編集", function () { editPlayer(p.id); }), btn(p.hidden ? "再表示" : "非表示", function () { commit(function (S) { S.players.forEach(function (x) { if (x.id === p.id) { x.hidden = !p.hidden; x.updatedAt = nowIso(); } }); }); drawPlayers(); }), btn("削除", function () { delPlayer(p); }, "danger")])]));
       });
       count.textContent = n + " 名を表示（登録 " + list.length + " 名）";
     }
     card.append(count, tbl, ui.p.note); el.appendChild(card); drawRows();
+  }
+  /* ---------- 並び順の入れ替え（国ごと／全体） ---------- */
+  var RC = { country: "" };
+  function subsetIds(country) { return ST.players.filter(function (p) { return !country || p.country === country; }).map(function (p) { return p.id; }); }
+  function applyOrder(S, country, ids) {   // 選んだ国の選手だけを新しい順に並べ直す。ほかの国の選手の位置は動かさない
+    var slots = [], byId = {};
+    S.players.forEach(function (p, i) { byId[p.id] = p; if (!country || p.country === country) slots.push(i); });
+    if (slots.length !== ids.length || ids.some(function (id, k) { return !byId[id] || (country && byId[id].country !== country) || ids.indexOf(id) !== k; })) throw new Error("並び順を更新できませんでした（選手の一覧が変わっています）。画面を開き直してください。");
+    slots.forEach(function (pos, k) { S.players[pos] = byId[ids[k]]; });
+  }
+  function reorderPlayers(country, focus) {
+    RC.country = country || "";
+    var el = ui.p.root, drag = null; el.replaceChildren();
+    var card = h("section", { class: "card pt-cm-order" }); card.appendChild(h("h2", { text: "プレイヤーの並び順を入れ替える" }));
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "国を選ぶと、その国のプレイヤーだけが並びます。「↑」「↓」ボタン、または左の「⋮⋮」をつかんでドラッグすると順番が変わります。押した時点で保存され、公開ページの国別一覧にもこの順番で表示されます（この端末の下書き）。" }));
+    var cs = Array.from(new Set(ST.players.map(function (p) { return p.country; }).filter(Boolean))).sort().map(function (c) { return [c, cname(c) + "　" + ST.players.filter(function (p) { return p.country === c; }).length + "名"]; });
+    var pick = sel(cs, RC.country, function (e) { reorderPlayers(e.target.value); }, "すべての国（全体の順番）");
+    var list = h("ol", { class: "pt-cm-olist" }), count = h("p", { class: "pt-cm-count" });
+    function save(ids, msg, f) { if (commit(function (S) { applyOrder(S, RC.country, ids); }, msg || "並び順を保存しました。")) reorderPlayers(RC.country, f); }
+    function moveTo(id, targetId, before) {
+      var ids = subsetIds(RC.country).filter(function (x) { return x !== id; }), at = ids.indexOf(targetId);
+      if (at < 0) return; ids.splice(before ? at : at + 1, 0, id); save(ids, null, { id: id, act: "drag" });
+    }
+    function shift(id, delta) { var ids = subsetIds(RC.country), i = ids.indexOf(id), j = i + delta; if (i < 0 || j < 0 || j >= ids.length) return; ids.splice(i, 1); ids.splice(j, 0, id); save(ids, null, { id: id, act: delta < 0 ? "up" : "down" }); }
+    function edge(id, last) { var ids = subsetIds(RC.country).filter(function (x) { return x !== id; }); if (last) ids.push(id); else ids.unshift(id); save(ids, null, { id: id, act: last ? "last" : "first" }); }
+    function clearMarks() { list.querySelectorAll(".drop-before,.drop-after,.dragging").forEach(function (x) { x.classList.remove("drop-before", "drop-after", "dragging"); }); }
+    var ids = subsetIds(RC.country), n = ids.length;
+    ids.forEach(function (id, i) {
+      var p = ST.players.filter(function (x) { return x.id === id; })[0];
+      var li = h("li", { class: "pt-cm-orow" + (p.hidden ? " is-hidden" : ""), "data-id": id });
+      var handle = h("span", { class: "pt-cm-handle", draggable: "true", title: "つかんでドラッグ", "aria-hidden": "true", text: "⋮⋮" });
+      handle.addEventListener("dragstart", function (e) { drag = id; li.classList.add("dragging"); try { e.dataTransfer.setData("text/plain", id); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setDragImage(li, 14, 14); } catch (x) {} });
+      handle.addEventListener("dragend", function () { drag = null; clearMarks(); });
+      li.addEventListener("dragover", function (e) { if (!drag || drag === id) return; e.preventDefault(); var r = li.getBoundingClientRect(), before = e.clientY < r.top + r.height / 2; li.classList.toggle("drop-before", before); li.classList.toggle("drop-after", !before); });
+      li.addEventListener("dragleave", function () { li.classList.remove("drop-before", "drop-after"); });
+      li.addEventListener("drop", function (e) { e.preventDefault(); if (!drag || drag === id) return; var r = li.getBoundingClientRect(), before = e.clientY < r.top + r.height / 2, from = drag; drag = null; clearMarks(); moveTo(from, id, before); });
+      function ab(t, act, fn, dis, title) { var b = btn(t, fn); b.dataset.act = act; b.disabled = !!dis; b.title = title || t; b.setAttribute("aria-label", p.name + "：" + (title || t)); return b; }
+      li.append(h("span", { class: "pt-cm-no", text: String(i + 1) }), handle, thumbEl(p),
+        h("span", { class: "pt-cm-oname" }, [h("strong", { text: p.name }), h("small", { text: " " + p.id + (p.hidden ? "（非表示）" : "") + (RC.country ? "" : " · " + cname(p.country)) })]),
+        h("span", { class: "pt-cm-oact" }, [ab("先頭へ", "first", function () { edge(id, false); }, i === 0, "先頭へ"), ab("↑", "up", function () { shift(id, -1); }, i === 0, "1つ上へ"), ab("↓", "down", function () { shift(id, 1); }, i === n - 1, "1つ下へ"), ab("最後へ", "last", function () { edge(id, true); }, i === n - 1, "最後へ"), ab("編集", "edit", function () { editPlayer(id); }, false, "編集（サムネイルの設定もここ）")]));
+      list.appendChild(li);
+    });
+    count.textContent = n + " 名" + (RC.country ? "（" + cname(RC.country) + "）" : "（すべての国。国ごとの順番は、全体の順番の中の相対的な並びが使われます）");
+    var bar = h("div", { class: "pt-cm-bar" }, [h("label", { class: "pt-cm-f inline" }, [h("span", { text: "国・地域" }), pick]),
+      btn("名前順（A→Z）に並べる", function () {
+        if (n < 2) return; if (!confirm((RC.country ? cname(RC.country) : "すべての国") + "の " + n + " 名を、名前順（A→Z）に並べ替えます。よろしいですか？（「直前に戻す」で1回分は元に戻せます）")) return;
+        var sorted = subsetIds(RC.country).map(function (x) { return ST.players.filter(function (p) { return p.id === x; })[0]; }).sort(function (a, b) { return String(a.name).toLowerCase().localeCompare(String(b.name).toLowerCase(), "ja"); }).map(function (p) { return p.id; });
+        save(sorted, "名前順に並べ替えました。");
+      }), restoreBtn(function () { reorderPlayers(RC.country); }), btn("プレイヤー一覧へ戻る", drawPlayers, "primary")]);
+    card.append(bar, count, list, ui.p.note); el.appendChild(card);
+    if (focus) { var r = list.querySelector('[data-id="' + focus.id + '"]'); if (r) { var b = r.querySelector('[data-act="' + focus.act + '"]:not([disabled])') || r.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: false }); r.scrollIntoView({ block: "nearest" }); } }
   }
   function delPlayer(p) {
     var r = refsOf(p.id);
@@ -263,9 +324,45 @@
     var soc = {}; var sBox = h("div", { class: "pt-cm-soc" });
     SOC.forEach(function (s) { var u = inp(p.socials[s[0]] || "", { placeholder: "https://…（未確認なら空欄）" }), v = sel([["", "未確認"], ["verified", "本人確認済み"]], p.socials[s[0] + "_verification"] === "verified" ? "verified" : "", function () {}); soc[s[0]] = [u, v]; sBox.appendChild(h("div", { class: "pt-cm-row" }, [h("b", { text: s[1] }), u, v])); });
     var fVer = sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), playerVerif(p), function () {});
+    /* サムネイル：画像（正方形に切り抜いて小さくする）か、文字。画像があれば画像が優先 */
+    var tm = { img: (p.thumbnail && THUMB_RE.test(p.thumbnail)) ? p.thumbnail : "" }, crop = { img: null, zoom: 1, x: 0, y: 0 };
+    var tText = inp(p.thumbText || "", { maxlength: "4", placeholder: "例：NO（空欄なら名前の先頭2文字）", oninput: function () { drawThumb(); } });
+    var tPrev = h("div", { class: "pt-cm-thumbprev" }), tHint = h("small", { class: "pt-cm-warn" });
+    function drawThumb() { tPrev.replaceChildren(thumbEl({ name: fName.value, thumbnail: tm.img, thumbText: tText.value }, true)); }
+    var cv = h("canvas", { width: "200", height: "200", class: "pt-cm-cv", "aria-label": "切り抜きのプレビュー" });
+    function paintCrop(c, S, bg) {
+      var g = c.getContext("2d"), im = crop.img; g.clearRect(0, 0, S, S); if (bg) { g.fillStyle = bg; g.fillRect(0, 0, S, S); }
+      var base = Math.max(S / im.naturalWidth, S / im.naturalHeight) * crop.zoom, dw = im.naturalWidth * base, dh = im.naturalHeight * base, mx = Math.max(0, (dw - S) / 2), my = Math.max(0, (dh - S) / 2);
+      g.drawImage(im, (S - dw) / 2 - crop.x / 100 * mx, (S - dh) / 2 - crop.y / 100 * my, dw, dh);
+    }
+    function slider(label, min, max, step, key) { var r = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(crop[key]), "aria-label": label, oninput: function () { crop[key] = parseFloat(r.value); if (crop.img) paintCrop(cv, 200, "#0b1d33"); } }); return h("label", { class: "pt-cm-sl" }, [h("span", { text: label }), r]); }
+    var cropBox = h("div", { class: "pt-cm-crop", hidden: true }, [cv, h("div", { class: "pt-cm-crop-ctl" }, [slider("拡大", 1, 4, 0.05, "zoom"), slider("左右の位置", -100, 100, 1, "x"), slider("上下の位置", -100, 100, 1, "y"),
+      h("div", { class: "pt-cm-bar" }, [btn("この範囲を使う", function () {
+        if (!crop.img) return;
+        var out = "", S = 160;
+        for (var k = 0; k < 3 && (!out || out.length > 90000); k++) {
+          var c = document.createElement("canvas"); c.width = c.height = S; paintCrop(c, S, null);
+          out = c.toDataURL("image/webp", k === 0 ? 0.86 : 0.7);
+          if (out.indexOf("data:image/webp") !== 0) { paintCrop(c, S, "#ffffff"); out = c.toDataURL("image/jpeg", k === 0 ? 0.86 : 0.7); }
+          S = S === 160 ? 128 : 96;
+        }
+        if (!THUMB_RE.test(out) || out.length > THUMB_MAX) { tHint.textContent = "画像を小さくできませんでした。別の画像でお試しください。"; return; }
+        tm.img = out; tHint.textContent = ""; cropBox.hidden = true; crop.img = null; drawThumb();
+      }, "primary"), btn("やめる", function () { cropBox.hidden = true; crop.img = null; })])])]);
+    var tFile = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp,image/gif", hidden: true, onchange: function () {
+      var file = tFile.files && tFile.files[0]; tFile.value = ""; if (!file) return;
+      if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) { tHint.textContent = "画像は png / jpeg / webp / gif を選んでください。"; return; }
+      if (file.size > 12 * 1024 * 1024) { tHint.textContent = "画像が大きすぎます（12MBまで）。"; return; }
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () { URL.revokeObjectURL(url); if (!im.naturalWidth || !im.naturalHeight) { tHint.textContent = "画像を読み込めませんでした。"; return; } crop.img = im; crop.zoom = 1; crop.x = 0; crop.y = 0; cropBox.querySelectorAll("input[type=range]").forEach(function (r, i) { r.value = i === 0 ? "1" : "0"; }); tHint.textContent = ""; cropBox.hidden = false; paintCrop(cv, 200, "#0b1d33"); };
+      im.onerror = function () { URL.revokeObjectURL(url); tHint.textContent = "画像を読み込めませんでした。"; };
+      im.src = url;
+    } });
+    var thumbBox = h("div", { class: "pt-cm-thumbbox" }, [h("div", { class: "pt-cm-bar" }, [tPrev, btn("画像を選ぶ", function () { tFile.click(); }), btn("画像を削除", function () { tm.img = ""; tHint.textContent = ""; drawThumb(); }), tFile]), cropBox, field("表示する文字（画像が無いときに表示）", tText, "画像を設定すると、画像が優先して表示されます。"), tHint]);
+    fName.addEventListener("input", drawThumb); drawThumb();
     var srcModel = srcs.map(function (u) { return { u: u }; });
     var sEd2 = rowsEditor(srcModel, function (o) { return [inp(o.u, { placeholder: "https://…", oninput: function (e) { o.u = e.target.value; } })]; }, function () { return { u: "" }; }, "情報源を追加");
-    var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), field("所属チーム", fTeam),
+    var form = h("div", { class: "pt-cm-form" }, [field("ID", fId, "大会戦績との紐付けに使います。変更すると、大会側の選手IDも一緒に更新します。"), field("登録名", fName), field("別名・日本語名", fAlias), field("国・地域", fCountry), h("div", { class: "pt-cm-f" }, [h("span", { text: "サムネイル（選手一覧の四角い画像）" }), thumbBox]), field("所属チーム", fTeam),
       h("div", { class: "pt-cm-f" }, [h("span", { text: "使用キャラクター" }), cEd, dl]), h("div", { class: "pt-cm-f" }, [h("span", { text: "SNS（確認できたものだけ入力）" }), sBox]),
       field("紹介文", fDesc), h("div", { class: "pt-cm-f" }, [h("span", { text: "情報源（https）" }), sEd2]), field("情報確認状態", fVer, "「確認済み」には情報源が必要です。"), memoBox]);
     var save = btn("保存", function () {
@@ -274,6 +371,8 @@
       np.characters = chars.filter(function (c) { return c.name.trim(); }).map(function (c) { return { name: c.name.trim(), context: c.context.trim(), verification: c.verification }; });
       np.socials = Object.assign({}, src.socials); SOC.forEach(function (s) { var u = soc[s[0]][0].value.trim(), v = soc[s[0]][1].value; if (u) { np.socials[s[0]] = u; np.socials[s[0] + "_verification"] = u && v === "verified" ? "verified" : "source-unverified"; } else { delete np.socials[s[0]]; delete np.socials[s[0] + "_verification"]; } });
       if (fDesc.value.trim()) np.sourceSummary = fDesc.value.trim(); else delete np.sourceSummary;
+      if (tm.img) np.thumbnail = tm.img; else delete np.thumbnail;
+      if (tText.value.trim()) np.thumbText = tText.value.trim(); else delete np.thumbText;
       MEMO.forEach(function (m) { var v = memoIn[m[0]].value.trim(); if (!v) delete np[m[0]]; else if (m[0] === "sourceUnclearCharacters") np[m[0]] = v.split(/[、,，\n]+/).map(function (x) { return x.trim(); }).filter(Boolean); else np[m[0]] = v; });
       np.sources = srcModel.map(function (o) { return o.u.trim(); }).filter(Boolean); np.verification = fVer.value; np.sourceUnverified = fVer.value !== "verified"; np.updatedAt = nowIso();
       if (commit(function (S) {
@@ -425,6 +524,6 @@
 
   window.PTAdminCommunity = Object.freeze({
     mountPlayers: mountPlayers, mountTournaments: mountTournaments, onCharacters: function () {},
-    _test: { validate: validate, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY }
+    _test: { validate: validate, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
   });
 })();
