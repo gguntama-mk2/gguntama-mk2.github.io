@@ -68,6 +68,7 @@
     try {
       var r = await api("/api/v1/admin/community/publish", { method: "POST", body: { data: dr, note: note, expected_version: S.current } });
       if (ui.noteInput) ui.noteInput.value = "";
+      if (r.changed && C.markSaved) C.markSaved();
       await load();
       say(r.changed ? "公開しました（版 " + r.current + "）。" : "公開中の内容と同じだったため、新しい版は作られませんでした。", "ok");
     } catch (e) {

@@ -4,7 +4,8 @@
    - 本番のサーバー・公開サイトには、いっさい接続しない（サーバー連携は別段階） */
 (function () {
   "use strict";
-  var KEY = "PROJECT_T_ADMIN_COMMUNITY_DRAFT_V1", BKEY = KEY + "_BACKUP";
+  var KEY = "PROJECT_T_ADMIN_COMMUNITY_DRAFT_V1", BKEY = KEY + "_BACKUP", CKEY = KEY + "_CHANGES";   // CKEY：最後の書き出し・公開からの変更回数と日時
+  var HIST_DB = "PROJECT_T_ADMIN_COMMUNITY_HISTORY", HIST_KEEP = 20;   // 下書きの履歴（IndexedDB。localStorage は容量が小さいので別に持つ）
   var CC_RE = /^[A-Z]{2}$/, ID_RE = /^[a-z0-9][a-z0-9_-]{0,47}$/, VERIF = ["unverified", "partial", "verified"];
   var VLABEL = { unverified: "未確認", partial: "一部確認", verified: "確認済み" };
   var PCATS = ["pro", "highlevel", "streamer"], PCLABEL = { pro: "PRO", highlevel: "HIGH LEVEL", streamer: "STREAMER" };   // 公開ページの PRO / HIGH LEVEL / STREAMER 区分
@@ -140,6 +141,42 @@
     return er;
   }
 
+  /* ---------- 下書きの履歴（直近 HIST_KEEP 回の変更前の状態を IndexedDB に残す） ---------- */
+  function histOpen() {
+    return new Promise(function (res, rej) {
+      if (!window.indexedDB) return rej(new Error("この環境では履歴を保存できません"));
+      var r = indexedDB.open(HIST_DB, 1);
+      r.onupgradeneeded = function () { var db = r.result; if (!db.objectStoreNames.contains("snap")) db.createObjectStore("snap", { keyPath: "id", autoIncrement: true }); };
+      r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error || new Error("履歴を開けませんでした")); };
+    });
+  }
+  function histTx(mode, fn) {
+    return histOpen().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction("snap", mode), st = tx.objectStore("snap"), out = fn(st);
+        tx.oncomplete = function () { db.close(); res(out && out.result !== undefined ? out.result : out); };
+        tx.onerror = function () { db.close(); rej(tx.error || new Error("履歴の読み書きに失敗しました")); };
+        tx.onabort = tx.onerror;
+      });
+    });
+  }
+  function histAdd(raw, label) {      // raw：変更前の下書き（文字列）。label：そのあと行った変更
+    if (!raw) return Promise.resolve();
+    var j; try { j = JSON.parse(raw); } catch (e) { return Promise.resolve(); }
+    var rec = { at: nowIso(), label: String(label || "変更").slice(0, 120), size: raw.length, counts: { players: (j.players || []).length, tournaments: (j.tournaments || []).length, events: (j.events || []).length }, raw: raw };
+    return histTx("readwrite", function (st) { st.add(rec); }).then(function () {
+      return histTx("readwrite", function (st) {
+        var req = st.getAllKeys(); req.onsuccess = function () { var keys = req.result || []; keys.slice(0, Math.max(0, keys.length - HIST_KEEP)).forEach(function (k) { st.delete(k); }); };
+      });
+    }).catch(function () {});
+  }
+  function histList() {
+    return histTx("readonly", function (st) { return st.getAll(); }).then(function (rows) { return (rows || []).map(function (r) { return { id: r.id, at: r.at, label: r.label, size: r.size, counts: r.counts }; }).reverse(); }).catch(function () { return []; });
+  }
+  function histGet(id) { return histTx("readonly", function (st) { return st.get(id); }).then(function (r) { return r && r.raw; }); }
+  function changes() { try { return JSON.parse(localStorage.getItem(CKEY) || "null") || { n: 0, since: null, lastExport: null }; } catch (e) { return { n: 0, since: null, lastExport: null }; } }
+  function bumpChanges() { var c = changes(); c.n += 1; if (!c.since) c.since = nowIso(); try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) {} }
+  function markSaved(kind) { var c = changes(); c.n = 0; c.since = null; c.lastExport = nowIso(); c.lastKind = kind || "export"; try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) {} }
   /* ---------- 保存（下書き） ---------- */
   function readRaw() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function persist(S) {
@@ -171,9 +208,9 @@
     try { fn(next); } catch (e) { say(String(e.message || e), "error"); return false; }
     var er = validate(next);
     if (er.length) { say("保存できません：" + er.slice(0, 5).join(" / ") + (er.length > 5 ? " ほか" + (er.length - 5) + "件" : ""), "error"); return false; }
-    var pe = persist(next);
+    var before = readRaw() || JSON.stringify(Object.assign({ savedAt: nowIso() }, snap)), pe = persist(next);
     if (pe) { ST = snap; say("保存に失敗しました。変更は取り消しました：" + pe, "error"); return false; }
-    ST = next; say(ok || "保存しました（この端末の下書き）。", "ok"); return true;
+    ST = next; bumpChanges(); histAdd(before, ok || "変更"); say(ok || "保存しました（この端末の下書き）。", "ok"); return true;
   }
   function say(t, state) { Object.keys(ui).forEach(function (k) { if (ui[k] && ui[k].note) { ui[k].note.textContent = t; ui[k].note.dataset.state = state || "neutral"; } }); }
 
@@ -213,6 +250,37 @@
     return h("label", { class: "btn" }, [h("span", { text: text }), inp]);
   }
   function restoreBtn(after) {
+    return btn("戻す…", function () { restorePanel(after); });
+  }
+  /* 直近の変更前の状態を選んで戻す（IndexedDB の履歴。無ければ localStorage の1世代） */
+  function restorePanel(after) {
+    var note = (ui.p && ui.p.note) || (ui.t && ui.t.note), host = note && note.parentElement; if (!host) return;
+    var old = host.querySelector(".pt-cm-restore"); if (old) old.remove();
+    var box = h("div", { class: "pt-cm-restore card" }, h("h3", { text: "下書きを以前の状態に戻す" })); host.insertBefore(box, note);
+    box.appendChild(h("p", { class: "pt-cm-sub", text: "直近 " + HIST_KEEP + " 回分の「変更する前の状態」です。選ぶと、いまの下書きはその状態に置き換わります（置き換える前の状態も履歴に残ります）。" }));
+    var list = h("div", { class: "pt-cm-hlist" }); box.appendChild(list); box.appendChild(h("div", { class: "pt-cm-bar" }, btn("閉じる", function () { box.remove(); })));
+    function restoreRaw(raw, label) {
+      var j; try { j = JSON.parse(raw); } catch (e) { say("履歴を読めませんでした。", "error"); return; }
+      var er = validate(j); if (er.length) { say("その履歴に問題があり、戻せません：" + er[0], "error"); return; }
+      if (!confirm(label + " に戻します。いまの内容は置き換わります。よろしいですか？")) return;
+      if (commit(function (n) { Object.keys(n).forEach(function (k) { delete n[k]; }); Object.keys(j).forEach(function (k) { if (k !== "savedAt") n[k] = j[k]; }); }, label + " に戻しました。")) { box.remove(); after(); }
+    }
+    histList().then(function (rows) {
+      if (!rows.length) {
+        var b; try { b = localStorage.getItem(BKEY); } catch (e) { b = null; }
+        if (!b) { list.appendChild(h("p", { text: "戻せる履歴がありません。" })); return; }
+        list.appendChild(h("div", { class: "pt-cm-hrow" }, [h("span", { text: "直前の状態" }), btn("この状態に戻す", function () { restoreRaw(b, "直前の状態"); })]));
+        return;
+      }
+      rows.forEach(function (r) {
+        var when = (function (iso) { try { return new Date(iso).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", hour12: false }); } catch (e) { return iso; } })(r.at);
+        list.appendChild(h("div", { class: "pt-cm-hrow" }, [
+          h("span", {}, [h("strong", { text: when }), h("small", { text: "　この後の変更：" + r.label + "　（P " + r.counts.players + " / T " + r.counts.tournaments + " / E " + r.counts.events + "）" })]),
+          btn("この状態に戻す", function () { histGet(r.id).then(function (raw) { if (!raw) { say("履歴を読めませんでした。", "error"); return; } restoreRaw(raw, when + " の状態"); }); })]));
+      });
+    });
+  }
+  function restoreBtnLegacy() {
     return btn("直前に戻す", function () {
       var b; try { b = localStorage.getItem(BKEY); } catch (e) { b = null; }
       if (!b) { say("戻せる下書きがありません。", "error"); return; }
@@ -228,10 +296,25 @@
       btn("players.json", function () { download("players.json", { schema: 1, players: ST.players, countries: ST.countries, regions: ST.regions, meta: ST.meta }); }),
       btn("tournaments.json", function () { download("tournaments.json", { schema: 1, tournaments: ST.tournaments }); }),
       btn("calendar-events.json", function () { download("calendar-events.json", Object.assign({ schema: 1 }, ST.calendar, { events: ST.events })); }),
-      btn("全部まとめて", function () { download("community-all.json", Object.assign({ savedAt: nowIso() }, ST)); }));
+      btn("全部まとめて", function () { download("community-all.json", Object.assign({ savedAt: nowIso() }, ST)); markSaved("export"); drawBackupNote(); }));
     return wrap;
   }
 
+  /* ---------- バックアップの促し（書き出し・公開からの変更回数と経過日数で判断） ---------- */
+  var BACKUP_AFTER_CHANGES = 10, BACKUP_AFTER_DAYS = 7;
+  function backupNeeded() {
+    var c = changes(); if (!c.n) return "";
+    var days = c.since ? (Date.now() - Date.parse(c.since)) / 86400000 : 0;
+    if (c.n >= BACKUP_AFTER_CHANGES) return "最後の書き出し・公開から " + c.n + " 回変更しています。";
+    if (days >= BACKUP_AFTER_DAYS) return "書き出していない変更が " + Math.floor(days) + " 日分あります。";
+    return "";
+  }
+  function backupNote() {
+    var why = backupNeeded(), box = h("div", { class: "pt-cm-backup", hidden: !why });
+    if (why) box.append(h("strong", { text: "バックアップをおすすめします：" }), h("span", { text: why + " 下書きはこのブラウザの中にしかないため、ブラウザのデータを消すと失われます。「全部まとめて」で書き出すか、「公開」タブから公開してください。" }));
+    return box;
+  }
+  function drawBackupNote() { document.querySelectorAll(".pt-cm-backup").forEach(function (b) { var n = backupNote(); b.replaceWith(n); }); }
   /* ---------- 一覧の共通部品 ---------- */
   function sel(options, value, onchange, allLabel) {
     var s = h("select", { onchange: onchange });
@@ -257,7 +340,7 @@
   }
 
   /* ================= プレイヤー管理 ================= */
-  var PF = { q: "", country: "", team: "", verif: "", cat: "", hidden: false, flash: "" };
+  var PF = { q: "", country: "", team: "", verif: "", cat: "", hidden: false, flash: "", only: null };
   function mountPlayers(el, context) {
     ctx = context || ctx; if (!ST) boot(); var U = ui.p = { root: el, note: h("p", { role: "status", "aria-live": "polite", text: loadNote }) }; drawPlayers();
   }
@@ -265,8 +348,9 @@
     var el = ui.p.root, list = ST.players; el.replaceChildren();
     var flash = PF.flash || ""; PF.flash = "";
     var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "プレイヤー管理" }));
-    card.appendChild(h("p", { class: "pt-cm-sub", text: "変更はこの端末の下書きに保存されます。公開サイトには自動では反映されません。" }));
-    card.appendChild(h("p", { class: "pt-cm-sub", text: "区分（PRO / HIGH LEVEL / STREAMER）は、一覧の「区分」欄でそのまま切り替えられます。下のボタンで区分ごとに絞り込めます。" }));
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "変更はこの端末の下書きに保存されます。公開サイトに載せるには「公開」タブから公開してください。" }));
+    card.appendChild(backupNote());
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "区分（PRO / HIGH LEVEL / STREAMER）と確認状態は、一覧の「区分」欄でそのまま切り替えられます。下のボタンで区分ごとに絞り込めます。" }));
     var catTabs = h("div", { class: "pt-cm-tabs", role: "group", "aria-label": "区分で絞り込み" });
     card.appendChild(catTabs);
     var bar = h("div", { class: "pt-cm-bar" });
@@ -277,7 +361,7 @@
       sel(VERIF.map(function (v) { return [v, VLABEL[v]]; }), PF.verif, function (e) { PF.verif = e.target.value; refilter(); }, "すべての確認状態"),
       h("label", { class: "pt-cm-chk" }, [h("input", { type: "checkbox", checked: PF.hidden, onchange: function (e) { PF.hidden = e.target.checked; refilter(); } }), " 非表示も表示"]));
     card.appendChild(bar);
-    var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), btn("並び順を入れ替える", function () { reorderPlayers(PF.country || ""); }), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
+    var bar2 = h("div", { class: "pt-cm-bar" }); bar2.append(btn("新規登録", function () { editPlayer(null); }, "primary"), btn("データ点検", function () { checkPanel(card, count); }), btn("並び順を入れ替える", function () { reorderPlayers(PF.country || ""); }), filePick("JSON読込", "players", drawPlayers), restoreBtn(drawPlayers), exportSet());
     card.appendChild(bar2);
     var bulk = sel(PCATS.map(function (c) { return [c, PCLABEL[c]]; }), "", function () {}, "区分を選ぶ"); bulk.setAttribute("aria-label", "まとめて変更する区分");
     var bar3 = h("div", { class: "pt-cm-bar" });
@@ -290,20 +374,30 @@
       setCat(diff.map(function (p) { return p.id; }), v);
     }));
     card.appendChild(bar3);
+    if (PF.only) card.appendChild(h("div", { class: "pt-cm-bar" }, btn("絞り込みを解除（データ点検）", function () { PF.only = null; PF.flash = ""; drawPlayers(); })));
     var count = h("p", { class: "pt-cm-count" }), tbl = h("table", { class: "pt-cm-tbl" }); var body = h("tbody");
     tbl.appendChild(h("thead", {}, h("tr", {}, ["名前", "国・地域", "区分", "所属", "使用キャラクター", "確認状態", ""].map(function (t) { return h("th", { text: t }); })))); tbl.appendChild(body);
     function pass(p) {
       var qq = PF.q.trim().toLowerCase();
+      if (PF.only && PF.only.indexOf(p.id) < 0) return false;
       if (p.hidden && !PF.hidden) return false; if (PF.country && p.country !== PF.country) return false; if (PF.team && p.teamFromSource !== PF.team) return false;
       if (PF.verif && playerVerif(p) !== PF.verif) return false; if (PF.cat && playerCat(p) !== PF.cat) return false;
       if (qq && ![p.id, p.name].concat(p.aliases || []).join(" ").toLowerCase().includes(qq)) return false; return true;
     }
-    function refilter() { flash = ""; drawRows(); }
+    function refilter() { flash = ""; PF.only = null; drawRows(); }
     function setCat(ids, v, label) {      // 区分を変更して保存（1名でも複数名でも同じ）。保存後は一覧を描き直す
       var set = {}; ids.forEach(function (id) { set[id] = 1; });
-      var ok = commit(function (S) { S.players.forEach(function (x) { if (set[x.id] && x.category !== v) { x.category = v; x.updatedAt = nowIso(); } }); });
-      if (ok) PF.flash = (ids.length === 1 && label ? label : ids.length + " 名") + " を " + PCLABEL[v] + " にしました（この端末の下書きに保存済み）";
+      var what = (ids.length === 1 && label ? label : ids.length + " 名") + " を " + PCLABEL[v] + " にしました";
+      var ok = commit(function (S) { S.players.forEach(function (x) { if (set[x.id] && x.category !== v) { x.category = v; x.updatedAt = nowIso(); } }); }, what + "（この端末の下書き）。");
+      if (ok) PF.flash = what + "（この端末の下書きに保存済み）";
       drawPlayers();
+    }
+    function verifSel(p) {
+      var v = playerVerif(p), s2 = sel(VERIF.map(function (k) { return [k, VLABEL[k]]; }), v, function (e) {
+        var nv = e.target.value, ok = commit(function (S) { S.players.forEach(function (x) { if (x.id === p.id) { x.verification = nv; x.updatedAt = nowIso(); } }); }, p.name + " を「" + VLABEL[nv] + "」にしました（この端末の下書き）。");
+        if (ok) { PF.flash = p.name + " を " + VLABEL[nv] + " にしました"; drawPlayers(); } else e.target.value = v;
+      });
+      s2.className = "pt-cm-verifsel v-" + v; s2.setAttribute("aria-label", p.name + " の確認状態"); return s2;
     }
     function catSel(p) {
       var c = playerCat(p), s2 = sel(PCATS.map(function (k) { return [k, PCLABEL[k]]; }), c, function (e) { setCat([p.id], e.target.value, p.name); });
@@ -323,12 +417,54 @@
         var chars = (p.characters || []).map(function (c) { return h("span", { class: "pt-cm-chip" + (c.verification === "unverified" || !c.verification ? " unv" : ""), text: c.name }); });
         body.appendChild(h("tr", { class: p.hidden ? "is-hidden" : "" }, [
           h("td", {}, [h("div", { class: "pt-cm-namecell" }, [thumbEl(p), h("span", {}, [h("strong", { text: p.name }), h("small", { text: " " + p.id })])])]), h("td", { text: cname(p.country) }), h("td", {}, catSel(p)), h("td", { text: p.teamFromSource || "—" }),
-          h("td", {}, chars.length ? chars : [h("small", { text: "未登録" })]), h("td", {}, badge(playerVerif(p))),
+          h("td", {}, chars.length ? chars : [h("small", { text: "未登録" })]), h("td", {}, verifSel(p)),
           h("td", { class: "pt-cm-act" }, [btn("編集", function () { editPlayer(p.id); }), btn(p.hidden ? "再表示" : "非表示", function () { commit(function (S) { S.players.forEach(function (x) { if (x.id === p.id) { x.hidden = !p.hidden; x.updatedAt = nowIso(); } }); }); drawPlayers(); }), btn("削除", function () { delPlayer(p); }, "danger")])]));
       });
       count.textContent = n + " 名を表示（登録 " + list.length + " 名）" + (flash ? "　／　" + flash : "");
     }
     card.append(count, tbl, ui.p.note); el.appendChild(card); drawCatTabs(); drawRows();
+  }
+  /* ---------- データ点検（同じXアカウント・サムネイル未設定・所属の表記ゆれ・未設定の区分や確認状態） ---------- */
+  function xHandle(u) { var m = /(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})(?:[\/?#]|$)/i.exec(String(u || "")); return m ? m[1].toLowerCase() : ""; }
+  function teamKey(t) { return String(t || "").replace(/（[^）]*）|\([^)]*\)/g, "").replace(/\s+/g, " ").trim().toLowerCase(); }
+  function dataChecks() {
+    var out = [], P = ST.players.filter(function (p) { return !p.hidden; });
+    var byX = {}; P.forEach(function (p) { var hx = xHandle(p.socials && p.socials.x); if (hx) (byX[hx] = byX[hx] || []).push(p); });
+    var dupX = Object.keys(byX).filter(function (k) { return byX[k].length > 1; });
+    out.push({ key: "dupx", label: "同じ X アカウントが複数の選手に登録", items: dupX.map(function (k) { return { text: "@" + k + "：" + byX[k].map(function (p) { return p.name; }).join("、"), ids: byX[k].map(function (p) { return p.id; }) }; }) });
+    out.push({ key: "thumb", label: "サムネイルが未設定", items: P.filter(function (p) { return !p.thumbnail; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    var teams = {}; P.forEach(function (p) { var t = p.teamFromSource; if (!t) return; var k = teamKey(t); (teams[k] = teams[k] || {})[t] = (teams[k][t] || []).concat([p]); });
+    var vari = Object.keys(teams).filter(function (k) { return Object.keys(teams[k]).length > 1; }).map(function (k) { var vs = Object.keys(teams[k]); return { text: vs.map(function (v) { return "「" + v + "」（" + teams[k][v].length + "名）"; }).join(" ／ "), ids: vs.reduce(function (a, v) { return a.concat(teams[k][v].map(function (p) { return p.id; })); }, []) }; });
+    var noted = P.filter(function (p) { return /（20\d\d年[^）]*）|記事時点/.test(String(p.teamFromSource || "")); });
+    out.push({ key: "team", label: "所属の表記ゆれ（同じチームを違う書き方で登録）", items: vari });
+    out.push({ key: "teamnote", label: "所属に「（20xx年x月時点の記事）」などの注記が付いたまま", items: noted.map(function (p) { return { text: p.name + "：" + p.teamFromSource, ids: [p.id] }; }) });
+    out.push({ key: "cat", label: "区分（PRO / HIGH LEVEL / STREAMER）が未設定", items: P.filter(function (p) { return PCATS.indexOf(p.category) < 0; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    out.push({ key: "verif", label: "確認状態が未確認のまま", items: P.filter(function (p) { return playerVerif(p) === "unverified"; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    out.push({ key: "country", label: "国・地域が未登録", items: P.filter(function (p) { return !p.country; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    out.push({ key: "chars", label: "使用キャラクターが未登録", items: P.filter(function (p) { return !(p.characters || []).length; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    out.push({ key: "nosrc", label: "情報源（URL）がない", items: P.filter(function (p) { return !(p.sources || []).length; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    var pid = {}; ST.players.forEach(function (p) { pid[p.id] = 1; });
+    out.push({ key: "tref", label: "大会結果に、登録されていない選手名（IDなし）が入っている", items: ST.tournaments.map(function (t) { var n = (t.placements || []).filter(function (x) { return !x.playerId; }).length; return n ? { text: t.name + "：" + n + "件", ids: [] } : null; }).filter(Boolean) });
+    return out;
+  }
+  function checkPanel(card, count) {
+    var old = card.querySelector(".pt-cm-check"); if (old) { old.remove(); return; }
+    var res = dataChecks(), box = h("section", { class: "pt-cm-check card" }, h("h3", { text: "データ点検（非表示の選手は除く）" }));
+    var total = res.reduce(function (a, r) { return a + r.items.length; }, 0);
+    box.appendChild(h("p", { class: "pt-cm-sub", text: total ? "気になる点が " + total + " 件あります。項目を開くと該当する選手が出ます。「この一覧だけ表示」で、下の一覧をその選手に絞り込めます。" : "問題は見つかりませんでした。" }));
+    res.forEach(function (r) {
+      var d = h("details", { class: "pt-cm-memo" }, h("summary", { text: r.label + "：" + r.items.length + "件" })); if (!r.items.length) d.classList.add("is-empty");
+      var inner = h("div");
+      if (r.items.length) {
+        var ids = r.items.reduce(function (a, i) { return a.concat(i.ids); }, []);
+        if (ids.length) inner.appendChild(h("div", { class: "pt-cm-bar" }, btn("この一覧だけ表示", function () { PF.only = ids; PF.q = ""; PF.country = ""; PF.team = ""; PF.verif = ""; PF.cat = ""; PF.flash = r.label + "：" + ids.length + " 名に絞り込み中"; drawPlayers(); })));
+        r.items.slice(0, 200).forEach(function (i) { inner.appendChild(h("div", { class: "pt-cm-hrow" }, [h("span", { text: i.text }), i.ids.length === 1 ? btn("編集", function () { editPlayer(i.ids[0]); }) : ""])); });
+        if (r.items.length > 200) inner.appendChild(h("p", { text: "ほか " + (r.items.length - 200) + " 件" }));
+      }
+      d.appendChild(inner); box.appendChild(d);
+    });
+    box.appendChild(h("div", { class: "pt-cm-bar" }, btn("閉じる", function () { box.remove(); })));
+    card.insertBefore(box, count);
   }
   /* ---------- 並び順の入れ替え（国ごと／全体） ---------- */
   var RC = { country: "" };
@@ -629,7 +765,7 @@
   function redraw() { if (ui.p && ui.p.root && ui.p.root.isConnected) drawPlayers(); if (ui.t && ui.t.root && ui.t.root.isConnected) drawT(); }
   window.PTAdminCommunity = Object.freeze({
     mountPlayers: mountPlayers, mountTournaments: mountTournaments, onCharacters: function () {},
-    getState: getState, replaceState: replaceState, redraw: redraw, validate: function (S) { return validate(S); }, ui: { h: h, btn: btn, sel: sel },
+    getState: getState, replaceState: replaceState, redraw: redraw, markSaved: function () { markSaved("publish"); drawBackupNote(); }, validate: function (S) { return validate(S); }, ui: { h: h, btn: btn, sel: sel },
     labels: { cat: PCLABEL, verif: VLABEL },
     _test: { validate: validate, socRows: socRows, socPack: socPack, SOC: SOC, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
   });
