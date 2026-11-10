@@ -99,7 +99,7 @@
 
   // ------------------------------------------------------------ 起動
   var app = $("#app");
-  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), px: h("section", { id: "secPx", hidden: true }), players: h("section", { id: "secPlayers", hidden: true }), tournaments: h("section", { id: "secTournaments", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
+  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), px: h("section", { id: "secPx", hidden: true }), players: h("section", { id: "secPlayers", hidden: true }), tournaments: h("section", { id: "secTournaments", hidden: true }), publish: h("section", { id: "secPublish", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
   async function boot() {
     // 他のページの中に埋め込まれて（クリックジャッキング）、管理者に気づかれず「公開」などを押させられないよう、枠の中では動かさない
     if (window.top !== window.self) { app.replaceChildren(h("div", { class: "center card" }, h("h2", { text: "このページは、他のページの中では使えません" }), h("p", null, h("a", { href: location.href, target: "_top", rel: "noopener", text: "新しいページとして開く" })))); return; }
@@ -115,11 +115,12 @@
       copyUserIdButton(S.me.project_t_id, "PROJECT T IDをコピー"));
     $("#tabs").hidden = false;
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
-    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.px, sec.players, sec.tournaments, sec.cloud);
+    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.px, sec.players, sec.tournaments, sec.publish, sec.cloud);
     window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); } });
     window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, win: function () { return S.win; } });
     var comCtx = { characters: function () { return S.chars || []; } };
     window.PTAdminCommunity.mountPlayers(sec.players, comCtx); window.PTAdminCommunity.mountTournaments(sec.tournaments, comCtx);
+    window.PTAdminModal = confirmModal; window.PTAdminCommunityPublish.mount(sec.publish, { api: api, csrf: function () { return S.csrf; } });
     window.PTAdminPxImages.mount(sec.px, { csrf: function () { return S.csrf; }, characters: function () { return S.chars || []; }, win: function () { return S.win; } });
     window.PTAdminCloudAnalysis.mount(sec.cloud, { csrf: function () { return S.csrf; } });
     buildSheetSkeleton();
@@ -170,7 +171,7 @@
     Object.keys(sec).forEach(function (k) { sec[k].hidden = k !== t; });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.tab === t)); });
     if (t === "icons" || t === "media") { syncMoveTabs(); loadOverlays(); }
-    if (t === "users") loadUsers(); else if (t === "audit") loadAudit(); else if (t === "cloud") window.PTAdminCloudAnalysis.refresh();
+    if (t === "users") loadUsers(); else if (t === "audit") loadAudit(); else if (t === "cloud") window.PTAdminCloudAnalysis.refresh(); else if (t === "publish") window.PTAdminCommunityPublish.refresh();
   }
   window.addEventListener("beforeunload", function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
 

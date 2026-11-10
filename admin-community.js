@@ -620,8 +620,17 @@
     }, "primary"), btn("戻る", drawT)]), ui.t.note); el.appendChild(card);
   }
 
+  /* 「公開」画面（admin-community-publish.js）から使う：いまの下書き、下書きの置き換え（検証→保存）、画面の描き直し */
+  function getState() { if (!ST) boot(); return clone(ST); }
+  function replaceState(next, okMsg) {
+    if (!ST) boot();
+    return commit(function (S) { Object.keys(S).forEach(function (k) { delete S[k]; }); Object.assign(S, clone(next)); if (!S.schema) S.schema = 1; }, okMsg);
+  }
+  function redraw() { if (ui.p && ui.p.root && ui.p.root.isConnected) drawPlayers(); if (ui.t && ui.t.root && ui.t.root.isConnected) drawT(); }
   window.PTAdminCommunity = Object.freeze({
     mountPlayers: mountPlayers, mountTournaments: mountTournaments, onCharacters: function () {},
+    getState: getState, replaceState: replaceState, redraw: redraw, validate: function (S) { return validate(S); }, ui: { h: h, btn: btn, sel: sel },
+    labels: { cat: PCLABEL, verif: VLABEL },
     _test: { validate: validate, socRows: socRows, socPack: socPack, SOC: SOC, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
   });
 })();
