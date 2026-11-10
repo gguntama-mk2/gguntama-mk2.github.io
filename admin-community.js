@@ -1,4 +1,4 @@
-/* PROJECT T 管理者ページ：プレイヤー管理／トーナメント管理（大会結果・イベントカレンダー）。テスト版・ローカル保存のみ。
+/* PROJECT T 管理者ページ：プレイヤー管理／トーナメント管理（大会結果・イベントカレンダー）。ローカル保存のみ。
    - データの形は、公開テスト版（PROJECT_T_PC_PLAYERS_GEMINI_IMPORT_TEST）の DATA / SEED と同じ。読めない項目も、消さずにそのまま持ち回る
    - 下書きは localStorage「PROJECT_T_ADMIN_COMMUNITY_DRAFT_V1」。保存の前に検証し、保存に失敗したら変更を取り消す（保存できたように見せない）
    - 本番のサーバー・公開サイトには、いっさい接続しない（サーバー連携は別段階） */
@@ -113,11 +113,11 @@
   function boot() {
     var raw = readRaw(), seed = window.PT_COMMUNITY_SEED;
     if (raw) {
-      try { var j = JSON.parse(raw), er = validate(j); if (!er.length) { ST = j; loadNote = "端末内の下書きを読み込みました。"; return; } loadNote = "下書きに問題があるため、初期データで開きました（" + er[0] + "）。「直前に戻す」で直前の下書きを復元できます。"; }
-      catch (e) { loadNote = "下書きを読めなかったため、初期データで開きました。「直前に戻す」で直前の下書きを復元できます。"; }
+      try { var j = JSON.parse(raw), er = validate(j); if (!er.length) { ST = j; loadNote = "端末内の下書きを読み込みました。"; return; } loadNote = "下書きに問題があるため、保存済みの登録内容で開きました（" + er[0] + "）。「直前に戻す」で直前の下書きを復元できます。"; }
+      catch (e) { loadNote = "下書きを読めなかったため、保存済みの登録内容で開きました。「直前に戻す」で直前の下書きを復元できます。"; }
     }
     ST = seed ? clone(seed) : emptyState();
-    if (!raw) loadNote = seed ? "初期データ（公開テスト版の登録内容）で開きました。" : "初期データがありません。JSONを読み込んでください。";
+    if (!raw) loadNote = seed ? "登録内容を読み込みました。" : "登録データがありません。JSONを読み込んでください。";
   }
   function commit(fn, ok) {            // 変更→検証→保存。どれかに失敗したら、変更を取り消す
     var snap = clone(ST), next = clone(ST);
@@ -217,7 +217,7 @@
   function drawPlayers() {
     var el = ui.p.root, list = ST.players; el.replaceChildren();
     var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "プレイヤー管理" }));
-    card.appendChild(h("p", { class: "pt-cm-sub", text: "テスト版です。変更はこの端末の下書きに保存され、公開サイトや本番には反映されません。未確認の情報は、確認済みとして扱われません。" }));
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "変更はこの端末の下書きに保存されます。公開サイトには自動では反映されません。" }));
     var bar = h("div", { class: "pt-cm-bar" });
     var q = h("input", { type: "search", placeholder: "名前・IDで検索", value: PF.q, oninput: function () { PF.q = q.value; drawRows(); } });
     var teams = Array.from(new Set(list.map(function (p) { return p.teamFromSource; }).filter(Boolean))).sort().map(function (t) { return [t, t]; });
@@ -395,7 +395,7 @@
   }
   function drawT() {
     var el = ui.t.root; el.replaceChildren(); var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "トーナメント管理" }));
-    card.appendChild(h("p", { class: "pt-cm-sub", text: "「大会結果」（確定した戦績）と「イベントカレンダー」（開催予定）は別のデータです。テスト版で、変更は端末の下書きだけに保存されます。" }));
+    card.appendChild(h("p", { class: "pt-cm-sub", text: "「大会結果」（確定した戦績）と「イベントカレンダー」（開催予定）は別のデータです。変更は端末の下書きに保存されます。" }));
     var tabs = h("div", { class: "pt-cm-tabs", role: "tablist" });
     [["results", "大会結果管理"], ["calendar", "イベントカレンダー管理"]].forEach(function (t) { tabs.appendChild(h("button", { type: "button", role: "tab", class: "btn", "aria-pressed": String(TF.tab === t[0]), onclick: function () { TF.tab = t[0]; drawT(); }, text: t[1] })); });
     card.appendChild(tabs); el.appendChild(card);
@@ -476,7 +476,7 @@
         var edited = e0.override && Object.keys(e0.override).length;
         body.appendChild(h("tr", { class: e0.hidden ? "is-hidden" : "" }, [h("td", {}, [h("strong", { text: e.name }), e0.hidden ? h("small", { text: " （非表示）" }) : null, edited ? h("small", { class: "pt-cm-warn", text: " 管理者が修正済み" }) : null]),
           h("td", { text: e.start_date + (e.end_date && e.end_date !== e.start_date ? " 〜 " + e.end_date : "") + "　" + (e.start_time_jst ? e.start_time_jst + "（JST）" : "開始時刻：未確認") }), h("td", { text: (e.location || "—") + " / " + (e.mode || "—") }),
-          h("td", {}, [h("span", { text: isManual(e0) ? "手動追加" : (e0.source_kind === "seed" ? "初期登録" : "自動取得") }), h("small", { text: " " + (e.source_name || "") + (e0.fetched_at ? "（取得 " + e0.fetched_at + "）" : "") })]),
+          h("td", {}, [h("span", { text: isManual(e0) ? "手動追加" : (e0.source_kind === "seed" ? "登録済み" : "自動取得") }), h("small", { text: " " + (e.source_name || "") + (e0.fetched_at ? "（取得 " + e0.fetched_at + "）" : "") })]),
           h("td", { class: "pt-cm-act" }, [btn("編集", function () { editEvent(e0.id); }), btn(e0.hidden ? "再表示" : "非表示", function () { commit(function (S) { S.events.forEach(function (x) { if (x.id === e0.id) x.hidden = !e0.hidden; }); }); drawT(); }),
             edited ? btn("取得値に戻す", function () { if (confirm("管理者の修正を取り消して、取得した元の値に戻します。よろしいですか？")) { commit(function (S) { S.events.forEach(function (x) { if (x.id === e0.id) delete x.override; }); }, "取得した値に戻しました。"); drawT(); } }) : null,
             isManual(e0) ? btn("削除", function () { if (confirm("イベント「" + e.name + "」を削除します。よろしいですか？")) { commit(function (S) { S.events = S.events.filter(function (x) { return x.id !== e0.id; }); }, "削除しました。"); drawT(); } }, "danger") : null])]));
@@ -489,7 +489,7 @@
     var isNew = !id, e0 = isNew ? { id: "", source_kind: "manual", status: "scheduled", game: "TEKKEN 8", mode: "オフライン" } : clone(ST.events.filter(function (x) { return x.id === id; })[0]);
     var manual = isManual(e0), e = isNew ? e0 : effEvent(e0), el = ui.t.root; el.replaceChildren(); var card = h("section", { class: "card" });
     card.appendChild(h("h2", { text: isNew ? "イベントの追加" : "イベントの編集：" + e.name }));
-    if (!manual) card.appendChild(h("p", { class: "pt-cm-sub", text: "自動取得・初期登録のイベントです。修正は「管理者の修正」として別に保存され、取得した元の値は残ります。次回の自動取得でも、管理者の修正は上書きされません。" }));
+    if (!manual) card.appendChild(h("p", { class: "pt-cm-sub", text: "自動取得・登録済みのイベントです。修正は「管理者の修正」として別に保存され、取得した元の値は残ります。次回の自動取得でも、管理者の修正は上書きされません。" }));
     var f = {}; f.id = inp(e0.id, { placeholder: "例：manual-example-2026（半角の英小文字・数字・-_）" }); f.name = inp(e.name || ""); f.start_date = inp(e.start_date || "", { type: "date" }); f.end_date = inp(e.end_date || "", { type: "date" });
     f.start_time_jst = inp(e.start_time_jst || "", { type: "time" }); f.location = inp(e.location || "", { placeholder: "例：東京・日本" }); f.country = sel(allCountries(), e.country, function () {}, "未登録");
     f.mode = sel([["オフライン", "オフライン"], ["オンライン", "オンライン"], ["ハイブリッド", "ハイブリッド"], ["未確認", "未確認"]], e.mode || "未確認", function () {}); f.category = inp(e.category || ""); f.source_url = inp(e.source_url || "", { placeholder: "https://…（公式ページ）" }); f.source_name = inp(e.source_name || "", { placeholder: "取得元の名前" }); f.description = h("textarea", { rows: 2 }); f.description.value = e.description || "";
