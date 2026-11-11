@@ -1,7 +1,7 @@
 /* PROJECT T 管理者ページ：背景の差し替え・ギャラリーの画像追加。
    - 背景：キャラの背景を、選んだ画像に替える（16:9にそろえて保存）。「元に戻す」で、サイトに入っている絵に戻る
    - ギャラリー：キャラの画像を増やす（元の画像はそのまま）。追加した画像は削除できる
-   権限（管理者・CSRF・Origin）・画像の種類の判定・容量の上限・監査ログは、すべてサーバー側。公開サイトには1分ほどで反映される */
+   権限（管理者・CSRF・Origin）・画像の種類の判定・容量の上限・監査ログは、すべてサーバー側。公開サイトは、開き直す（または再読み込みする）と反映される */
 (function () {
   "use strict";
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
@@ -70,7 +70,7 @@
   }
   async function run(label, fn) {
     if (busy) return; busy = true; ui.root.setAttribute("aria-busy", "true");
-    try { await fn(); await loadItems(); render(); say(label + "しました。公開サイトには、1分ほどで反映されます。", "ok"); }
+    try { await fn(); await loadItems(); render(); say(label + "しました。公開サイトは、開き直す（または再読み込みする）と反映されます。", "ok"); }
     catch (e) { say(label + "できませんでした：" + e.message, "error"); }
     finally { busy = false; ui.root.removeAttribute("aria-busy"); }
   }

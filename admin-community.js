@@ -442,6 +442,8 @@
     out.push({ key: "verif", label: "確認状態が未確認のまま", items: P.filter(function (p) { return playerVerif(p) === "unverified"; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     out.push({ key: "country", label: "国・地域が未登録", items: P.filter(function (p) { return !p.country; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     out.push({ key: "chars", label: "使用キャラクターが未登録", items: P.filter(function (p) { return !(p.characters || []).length; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
+    var known = {}; ctx.characters().forEach(function (c) { if (c && c.name) known[c.name] = 1; });
+    if (Object.keys(known).length) out.push({ key: "charname", label: "使用キャラクターの名前が、標準の日本語名と違う（英語表記・表記ゆれ）", items: P.map(function (p) { var bad = (p.characters || []).map(function (c) { return c && c.name; }).filter(function (n) { return n && !known[n]; }); return bad.length ? { text: p.name + "：" + bad.join("、"), ids: [p.id] } : null; }).filter(Boolean) });
     out.push({ key: "nosrc", label: "情報源（URL）がない", items: P.filter(function (p) { return !(p.sources || []).length; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     var pid = {}; ST.players.forEach(function (p) { pid[p.id] = 1; });
     out.push({ key: "tref", label: "大会結果に、登録されていない選手名（IDなし）が入っている", items: ST.tournaments.map(function (t) { var n = (t.placements || []).filter(function (x) { return !x.playerId; }).length; return n ? { text: t.name + "：" + n + "件", ids: [] } : null; }).filter(Boolean) });
