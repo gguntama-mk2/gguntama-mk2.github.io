@@ -145,11 +145,12 @@
     updateBulkBar(); renderList(); closeEditor();
     say(done + "件を" + (which === "set" ? "保存しました。公開サイトには、1分ほどで反映されます。" : "自動の判定に戻しました。") + (skipped ? "　（変更がなかった" + skipped + "件は、そのままです）" : "") + (failed.length ? "　保存できなかった技が" + failed.length + "件あります（チェックは残してあります）：" + failed.slice(0, 3).join("、") : ""), failed.length ? "error" : "ok");
   }
+  function pageSize() { return window.matchMedia("(max-width:800px)").matches ? 36 : 250; }      // 1ページ分の件数（スマホ36／PC250）
   function currentChar() { return characters.find(function (c) { return c.id === ui.char.value; }); }
   function renderList() {
     var c = currentChar(); ui.list.replaceChildren(); if (!c) return;
     var q = ui.q.value.normalize("NFKC").toLowerCase().trim(), shown = 0;
-    var limit = window.matchMedia("(max-width:800px)").matches ? (ui.visibleLimit || 36) : 250;
+    var limit = ui.visibleLimit || pageSize();         // 表示する件数（最初は1ページ分。「さらに表示」で1ページ分ずつ増える）
     var matchedTotal = c.moves.filter(function (mv, i) {
       var cmd = (mv.a && mv.a.command) || "";
       return !q || (String(kOf(mv, i)) + " " + mv.name + " " + cmd).normalize("NFKC").toLowerCase().indexOf(q) >= 0;
@@ -188,7 +189,7 @@
     ui.count.textContent = shown + " / " + matchedTotal + "件表示";
     if (ui.more) {
       ui.more.hidden = shown >= matchedTotal;
-      ui.more.textContent = "さらに " + Math.min(36, matchedTotal - shown) + "件を表示（残り " + (matchedTotal - shown) + "件）";
+      ui.more.textContent = "さらに " + Math.min(pageSize(), matchedTotal - shown) + "件を表示（残り " + (matchedTotal - shown) + "件）";
     }
   }
   function choose(c, mv, k) {
@@ -231,13 +232,13 @@
     var panel = make("section", undefined, "card");
     panel.appendChild(make("h2", "技のアイコン設定"));
     panel.appendChild(make("p", "技ごとに、技表に出すアイコンを設定します。ホーミング・パワークラッシュは、コマンドの右はし。そのほかは、「地上ヒット・ガード時」「空中ヒット時」の欄に出ます。設定していない技は、自動の判定（トルネード・ヒートエンゲージ・リカバリアブルダメージ→地上ヒット・ガード時、ホーミング・パワークラッシュ→コマンドの横）のままです。"));
-    ui.char = make("select"); ui.char.addEventListener("change", function () { ui.visibleLimit = 36; closeEditor(); renderList(); });
+    ui.char = make("select"); ui.char.addEventListener("change", function () { ui.visibleLimit = 0; closeEditor(); renderList(); });
     ui.q = make("input"); ui.q.type = "search"; ui.q.placeholder = "技名・コマンド・kで検索";
-    ui.q.addEventListener("input", function () { ui.visibleLimit = 36; renderList(); });
+    ui.q.addEventListener("input", function () { ui.visibleLimit = 0; renderList(); });
     var bar = make("div", undefined, "pt-mi-bar"); bar.append(ui.char, ui.q);
-    ui.visibleLimit = 36;
+    ui.visibleLimit = 0;
     ui.more = make("button", "さらに表示", "btn pt-mi-more"); ui.more.type = "button"; ui.more.hidden = true;
-    ui.more.addEventListener("click", function () { ui.visibleLimit += 36; renderList(); });
+    ui.more.addEventListener("click", function () { ui.visibleLimit = (ui.visibleLimit || pageSize()) + pageSize(); renderList(); });
     ui.count = make("p", ""); ui.bulkBtn = make("button", "", "btn primary pt-mi-bulkbtn"); ui.bulkBtn.type = "button"; ui.bulkBtn.hidden = true; ui.bulkBtn.addEventListener("click", function () { if (!sel) renderBulk(); }); ui.list = make("div", undefined, "tw"); ui.editor = make("aside", undefined, "pt-mi-editor"); ui.editor.setAttribute("aria-label", "アイコンの設定"); closeEditor();
     var wrap = make("div", undefined, "pt-mi-wrap"); wrap.append(ui.list, ui.editor);
     ui.backdrop = make("div", undefined, "pt-mi-backdrop"); ui.backdrop.hidden = true;
