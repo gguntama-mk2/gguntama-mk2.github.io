@@ -62,6 +62,17 @@
   .modal h2 { font-size:16px; margin:0 0 8px; }
   .modal .mbody p { margin:6px 0; }
   .modal .mact { justify-content:flex-end; margin-top:14px; }
+  .pt-ord-back { z-index:60; } .pt-ord-panel { width:min(760px,100%); display:flex; flex-direction:column; max-height:92vh; } .pt-ord-note { font-size:12px; line-height:1.6; margin:0 0 8px; }
+  .pt-ord-tools { gap:6px; flex-wrap:wrap; } .pt-ord-tools input { flex:1 1 200px; min-width:0; } .pt-ord-meta { font-size:12px; margin:6px 0; }
+  .pt-ord-list { flex:1 1 auto; min-height:200px; overflow:auto; border:1px solid var(--line); border-radius:8px; -webkit-overflow-scrolling:touch; }
+  .pt-ord-row { display:flex; align-items:center; gap:6px; padding:5px 8px; border-bottom:1px solid var(--line); position:relative; background:var(--panel); }
+  .pt-ord-row.sel { box-shadow:inset 3px 0 0 var(--accent); } .pt-ord-row.flash { background:var(--panel2); outline:1px solid var(--accent); outline-offset:-1px; } .pt-ord-row.dragging { opacity:.45; }
+  .pt-ord-row.ins-before::before, .pt-ord-row.ins-after::after { content:""; position:absolute; left:0; right:0; height:3px; background:var(--accent); z-index:2; } .pt-ord-row.ins-before::before { top:-2px; } .pt-ord-row.ins-after::after { bottom:-2px; }
+  .pt-ord-handle { cursor:grab; touch-action:none; user-select:none; color:var(--sub); font-size:18px; line-height:1; padding:8px 6px; margin:-4px 0; letter-spacing:-3px; flex:0 0 auto; }
+  .pt-ord-pos { width:56px; flex:0 0 auto; padding:4px 5px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; font:inherit; text-align:right; }
+  .pt-ord-k { color:var(--sub); font-size:11px; flex:0 0 auto; min-width:34px; } .pt-ord-name { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; word-break:break-all; } .pt-ord-cmd { font-size:11px; }
+  .pt-ord-acts { display:flex; gap:4px; flex:0 0 auto; } .pt-ord-b { padding:4px 8px; font-size:12px; }
+  @media (max-width:640px) { .pt-ord-panel { max-height:96vh; padding:12px; } .pt-ord-row { flex-wrap:wrap; row-gap:4px; } .pt-ord-name { flex:1 1 calc(100% - 140px); } .pt-ord-acts { flex:1 1 100%; justify-content:flex-end; } .pt-ord-b { min-height:38px; min-width:44px; } .pt-ord-pos { width:60px; min-height:38px; } }
   dl.who-dl { display:grid; grid-template-columns:110px 1fr; gap:4px 10px; margin:8px 0; padding:8px 10px; background:var(--panel2); border-radius:8px; }
   dl.who-dl dt { color:var(--sub); font-size:12px; } dl.who-dl dd { margin:0; word-break:break-all; }
   .dsec { margin:10px 0 4px; font-weight:700; color:var(--accent); font-size:13px; } .drow { padding:3px 0; border-bottom:1px dashed var(--line); } .drow .k { color:var(--sub); font-size:11px; }
@@ -461,7 +472,7 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261111" defer></script>
+<script src="admin.js?v=20261112a" defer></script>
 <script src="admin-move-media.js?v=20261111" defer></script>
 <script src="admin-move-icons.js?v=20261111b" defer></script>
 <script src="admin-px-images.js?v=20261111" defer></script>

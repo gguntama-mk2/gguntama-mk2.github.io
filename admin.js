@@ -595,6 +595,7 @@
         h("label", { for: "ptSheetMovePicker", text: "編集する技" }), picker),
       h("div", { class: "row pt-sheet-list-actions" },
         h("button", { type: "button", class: "btn", text: "＋技を追加", onclick: addMove }),
+        h("button", { type: "button", class: "btn", id: "ptSheetOrderBtn", text: "並び順を変更", title: "技の並び順を入れ替える専用画面を開きます", onclick: openOrder }),
         missingBase().length ? h("select", { "aria-label": "元データから技を復元", onchange: function (ev) { restoreBase(+ev.target.value); } },
           h("option", { value: "", text: "元データから復元…" }),
           missingBase().map(function (m) { return h("option", { value: m.k, text: "#" + m.k + " " + m.name }); })) : null),
@@ -612,6 +613,122 @@
   function missingBase() { var have = {}; S.cur.moves.forEach(function (m) { have[m.k] = 1; }); return baseOf(S.cur.id).moves.filter(function (m) { return !have[m.k]; }); }
   function restoreBase(k) { var m = baseOf(S.cur.id).moves.find(function (x) { return x.k === k; }); if (!m) return; S.cur.moves.push(clone(m)); S.cur.sel = S.cur.moves.length - 1; touch(); renderEditor(); }
   function addMove() { var c = S.cur; c.moves.push({ k: nextK(), name: "新しい技", a: {}, off: [] }); c.sel = c.moves.length - 1; c.filter = ""; touch(); renderEditor(); }
+
+  // ------------------------------------------------------------ 並び順の変更（専用画面）
+  // 変わるのは配列の順番だけ。技の固定ID（k）は変えない：チェック・メモ・ブックマーク・アイコン・動画はkに結びついているので、並べ替えで外れない
+  function openOrder() {
+    var c = S.cur; if (!c) return;
+    var undo = [], selK = c.moves[c.sel] ? c.moves[c.sel].k : null, flashK = null, matchAt = -1, drag = null, scrollTimer = 0, lastY = 0;
+    var back = h("div", { class: "modal-back pt-ord-back" });
+    var list = h("div", { class: "pt-ord-list", id: "ptOrdList" });
+    var meta = h("span", { class: "muted pt-ord-meta" });
+    var undoBtn = h("button", { type: "button", class: "btn", id: "ptOrdUndo", text: "直前に戻す", disabled: true, onclick: function () { var s = undo.pop(); if (!s) return; setOrder(s, false); } });
+    var search = h("input", { type: "search", id: "ptOrdSearch", placeholder: "技名・コマンド・kで探す（Enterで次へ）", "aria-label": "技を探す",
+      oninput: function () { matchAt = -1; findNext(); }, onkeydown: function (ev) { if (ev.key === "Enter") { ev.preventDefault(); findNext(); } } });
+    var keys = function () { return c.moves.map(function (m) { return m.k; }); };
+    // ks の順に c.moves を並べ替える（kで引くので、技の中身は一切変えない）
+    function setOrder(ks, record) {
+      var by = {}; c.moves.forEach(function (m) { by[m.k] = m; });
+      var now = keys().join(",");
+      if (ks.join(",") === now) return;
+      if (record !== false) { undo.push(keys()); if (undo.length > 50) undo.shift(); }
+      c.moves = ks.map(function (k) { return by[k]; });
+      var si = c.moves.findIndex(function (m) { return m.k === selK; }); c.sel = si < 0 ? 0 : si;
+      touch(); draw();
+    }
+    function moveTo(from, to) {
+      var n = c.moves.length; to = Math.max(0, Math.min(n - 1, to)); if (from === to || from < 0 || from >= n) return;
+      var ks = keys(), k = ks.splice(from, 1)[0]; ks.splice(to, 0, k); flashK = k; setOrder(ks);
+      var row = list.querySelector('[data-k="' + k + '"]'); if (row) row.scrollIntoView({ block: "nearest" });
+    }
+    function toBaseOrder() {
+      var pos = {}; baseOf(c.id).moves.forEach(function (m, i) { pos[m.k] = i; });
+      var inBase = c.moves.filter(function (m) { return m.k in pos; }).sort(function (a, b) { return pos[a.k] - pos[b.k]; });
+      var extra = c.moves.filter(function (m) { return !(m.k in pos); });
+      setOrder(inBase.concat(extra).map(function (m) { return m.k; }));
+    }
+    function findNext() {
+      var q = search.value.normalize("NFKC").toLowerCase().trim().replace(/^#/, ""); if (!q) { matchAt = -1; return; }
+      var n = c.moves.length;
+      for (var d = 1; d <= n; d++) {
+        var i = (matchAt + d + n) % n, m = c.moves[i], cmd = (m.a && m.a.command) || "";
+        if ((String(m.k) + " " + m.name + " " + cmd + " " + (m.y || "")).normalize("NFKC").toLowerCase().indexOf(q) >= 0) {
+          matchAt = i; flashK = m.k; draw();
+          var row = list.querySelector('[data-k="' + m.k + '"]'); if (row) row.scrollIntoView({ block: "center" });
+          return;
+        }
+      }
+    }
+    function btn(label, title, fn, off) { return h("button", { type: "button", class: "btn pt-ord-b", text: label, title: title, "aria-label": title, disabled: off ? true : null, onclick: fn }); }
+    function draw() {
+      var n = c.moves.length, top = list.scrollTop;
+      list.replaceChildren();
+      c.moves.forEach(function (m, i) {
+        var cmd = (m.a && m.a.command) || "";
+        var pos = h("input", { type: "number", class: "pt-ord-pos", min: "1", max: String(n), value: String(i + 1), "aria-label": m.name + " の位置（1〜" + n + "）",
+          onchange: function (ev) { var v = parseInt(ev.target.value, 10); if (!isFinite(v)) { ev.target.value = String(i + 1); return; } moveTo(i, v - 1); ev.target.value = String(Math.max(1, Math.min(n, v))); },
+          onkeydown: function (ev) { if (ev.key === "Enter") ev.target.blur(); } });
+        var handle = h("span", { class: "pt-ord-handle", title: "つかんでドラッグ", "aria-hidden": "true", text: "⋮⋮", onpointerdown: function (ev) { startDrag(ev, i); } });
+        list.appendChild(h("div", { class: "pt-ord-row" + (m.k === flashK ? " flash" : "") + (m.k === selK ? " sel" : ""), "data-i": i, "data-k": m.k },
+          handle, pos,
+          h("span", { class: "pt-ord-k", text: "#" + m.k }),
+          h("span", { class: "pt-ord-name" }, h("span", { text: m.name }), cmd ? h("span", { class: "muted pt-ord-cmd", text: cmd }) : null),
+          h("span", { class: "pt-ord-acts" },
+            btn("先頭へ", "先頭へ移動", function () { moveTo(i, 0); }, i === 0),
+            btn("↑", "1つ上へ", function () { moveTo(i, i - 1); }, i === 0),
+            btn("↓", "1つ下へ", function () { moveTo(i, i + 1); }, i === n - 1),
+            btn("最後へ", "最後へ移動", function () { moveTo(i, n - 1); }, i === n - 1))));
+      });
+      list.scrollTop = top; flashK = null;
+      undoBtn.disabled = !undo.length;
+      meta.textContent = n + " 技　／　並び順は、元データと" + (keys().join(",") === baseOf(c.id).moves.map(function (m) { return m.k; }).join(",") ? "同じです" : "違います");
+    }
+    // ドラッグ：つかんだ行を離した位置に差し込む。マウス・指・ペンのどれでも動く（つかむのは左の「⋮⋮」だけなので、一覧のスクロールは邪魔しない）
+    function startDrag(ev, from) {
+      if (ev.button != null && ev.button !== 0) return;
+      ev.preventDefault();
+      var handle = ev.currentTarget; try { handle.setPointerCapture(ev.pointerId); } catch (_) {}
+      var rows = Array.prototype.slice.call(list.children);
+      drag = { from: from, ins: from, rows: rows, el: rows[from] }; drag.el.classList.add("dragging"); lastY = ev.clientY;
+      var move = function (e) { lastY = e.clientY; place(); };
+      var end = function (e) {
+        handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", end); handle.removeEventListener("pointercancel", cancel);
+        clearInterval(scrollTimer); scrollTimer = 0;
+        var d = drag; drag = null; if (!d) return;
+        d.rows.forEach(function (r) { r.classList.remove("dragging", "ins-before", "ins-after"); });
+        var to = d.ins > d.from ? d.ins - 1 : d.ins; if (to !== d.from) moveTo(d.from, to);
+      };
+      var cancel = function () { if (drag) drag.ins = drag.from; end(); };
+      handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", end); handle.addEventListener("pointercancel", cancel);
+      scrollTimer = setInterval(function () {      // 一覧の上端・下端に近づいたら、自動でスクロール
+        var r = list.getBoundingClientRect(), dy = lastY < r.top + 40 ? -14 : lastY > r.bottom - 40 ? 14 : 0;
+        if (dy) { list.scrollTop += dy; place(); }
+      }, 30);
+      place();
+    }
+    function place() {
+      if (!drag) return;
+      var ins = drag.rows.length;
+      for (var i = 0; i < drag.rows.length; i++) { var r = drag.rows[i].getBoundingClientRect(); if (lastY < r.top + r.height / 2) { ins = i; break; } }
+      drag.ins = ins;
+      drag.rows.forEach(function (r, i) { r.classList.toggle("ins-before", i === ins); r.classList.toggle("ins-after", ins === drag.rows.length && i === drag.rows.length - 1); });
+    }
+    function close() { document.removeEventListener("keydown", onKey, true); clearInterval(scrollTimer); back.remove(); renderEditor(); }
+    function onKey(ev) { if (ev.key === "Escape" && !drag) { ev.preventDefault(); ev.stopPropagation(); close(); } }
+    document.addEventListener("keydown", onKey, true);
+    var panel = h("div", { class: "modal pt-ord-panel" },
+      h("h2", { text: c.name + "：技の並び順を変更" }),
+      h("p", { class: "muted pt-ord-note", text: "左の「⋮⋮」をつかんで動かすか、ボタン・位置の数字で移動できます。変わるのは並び順だけです。技の番号（#k）は変わらないので、チェック・メモ・アイコン・動画はそのままです。「下書きを保存」→「公開する」で反映されます。" }),
+      h("div", { class: "row pt-ord-tools" }, search, undoBtn,
+        h("button", { type: "button", class: "btn", id: "ptOrdBase", text: "元データの並びに戻す", title: "元データの順番に並べ直します（新しく足した技は最後）",
+          onclick: function () { if (confirm("元データの並び順に戻します（新しく足した技は最後に置きます）。\n「直前に戻す」で取り消せます。")) toBaseOrder(); } })),
+      meta, list,
+      h("div", { class: "row mact" }, h("button", { type: "button", class: "btn primary", id: "ptOrdClose", text: "閉じる", onclick: close })));
+    back.appendChild(panel); back.addEventListener("mousedown", function (ev) { if (ev.target === back) close(); });
+    document.body.appendChild(back); draw();
+    var sr = list.querySelector(".sel"); if (sr) sr.scrollIntoView({ block: "center" });
+    document.getElementById("ptOrdClose").focus();
+  }
 
   function choices(colId) {
     if (S.colCache[colId]) return S.colCache[colId];
