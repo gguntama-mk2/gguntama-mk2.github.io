@@ -38,6 +38,13 @@
   #chars { display:flex; flex-wrap:wrap; gap:6px; }
   #chars button { background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 9px; cursor:pointer; font:inherit; display:flex; gap:6px; align-items:center; }
   #chars button[aria-pressed="true"] { border-color:var(--accent); outline:1px solid var(--accent); }
+  .pt-pk-field { display:flex; gap:6px; align-items:stretch; min-width:0; } .pt-pk-field input { flex:1 1 auto; min-width:0; } .pt-pk-btn { flex:0 0 auto; white-space:nowrap; font-size:12px; padding:4px 10px; }
+  .pt-pk-back { position:fixed; inset:0; z-index:80; } .pt-pk-back.sheet { background:rgba(5,6,12,.55); }
+  .pt-pk { position:fixed; display:flex; flex-direction:column; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.5); overflow:hidden; }
+  .pt-pk-q { margin:8px 8px 4px; padding:8px 10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; font:inherit; }
+  .pt-pk-info { font-size:11px; padding:0 12px 6px; } .pt-pk-list { overflow:auto; flex:1 1 auto; border-top:1px solid var(--line); -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+  .pt-pk-item { display:flex; gap:8px; justify-content:space-between; align-items:baseline; padding:7px 12px; cursor:pointer; border-bottom:1px solid var(--line); word-break:break-all; } .pt-pk-item.on { background:var(--panel2); box-shadow:inset 3px 0 0 var(--accent); } .pt-pk-n { font-size:11px; flex:0 0 auto; }
+  @media (max-width:640px) { .pt-pk-item { padding:11px 12px; } .pt-pk-q { font-size:16px; } }
   .editor { display:grid; grid-template-columns:minmax(220px,300px) 1fr; gap:12px; align-items:start; }
   :root { --hh:60px; }
   .editor > .mleft { position:sticky; top:calc(var(--hh) + 8px); display:flex; flex-direction:column; height:calc(100vh - var(--hh) - 20px); min-height:360px; }   /* 左の技一覧は、スクロールしても画面に留まる。一覧は残りの高さいっぱい */
@@ -472,7 +479,7 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261112a" defer></script>
+<script src="admin.js?v=20261112c" defer></script>
 <script src="admin-move-media.js?v=20261111" defer></script>
 <script src="admin-move-icons.js?v=20261111b" defer></script>
 <script src="admin-px-images.js?v=20261111" defer></script>

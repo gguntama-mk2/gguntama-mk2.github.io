@@ -730,13 +730,76 @@
     document.getElementById("ptOrdClose").focus();
   }
 
-  function choices(colId) {
+  // ------------------------------------------------------------ 候補の並び：数字 → 英語 → 日本語
+  // 数字（+8・-4・±0・15F など）＝数の小さい順（マイナス → ±0 → プラス）／英語（D・WP・LPorRP など）＝ABC順／日本語＝あいうえお順（記号は日本語の先頭側）
+  function choiceKey(v) {
+    var t = String(v).normalize("NFKC").trim(), m = /^([+\-−±])?\s*(\d+(?:\.\d+)?)/.exec(t);
+    if (m) { var n = parseFloat(m[2]); if (m[1] === "-" || m[1] === "−") n = -n; else if (m[1] === "±") n = 0; return { g: 0, n: n, s: t }; }
+    if (/^[A-Za-z]/.test(t)) return { g: 1, n: 0, s: t };
+    return { g: 2, n: 0, s: t };
+  }
+  function cmpChoice(a, b) {
+    var x = choiceKey(a), y = choiceKey(b);
+    if (x.g !== y.g) return x.g - y.g;
+    if (x.g === 0 && x.n !== y.n) return x.n - y.n;
+    return x.s.localeCompare(y.s, x.g === 2 ? "ja" : "en", { numeric: true, sensitivity: "base" }) || (x.s < y.s ? -1 : x.s > y.s ? 1 : 0);
+  }
+  // 絞り込み用：全角・半角、大文字・小文字、ひらがな・カタカナの違いを無視する
+  function fold(s) { return String(s).normalize("NFKC").toLowerCase().replace(/[ァ-ヶ]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0x60); }); }
+  function choices(colId) {                       // [{ v: 値, n: 使われている数 }] を、数字→英語→日本語の順で
     if (S.colCache[colId]) return S.colCache[colId];
     var cnt = {}, add = function (v) { if (v) cnt[v] = (cnt[v] || 0) + 1; };
     var feed = function (moves) { moves.forEach(function (m) { var v = m.a && m.a[colId]; if (typeof v !== "string") return; if (MULTI[colId]) v.split("\n").forEach(function (l) { add(l.trim()); }); else add(v.trim()); }); };
     S.chars.forEach(function (c) { feed(c.moves); });     // 元データの、全キャラの「同じ列」の値だけ
     feed(S.cur.moves);
-    return (S.colCache[colId] = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a] || a.localeCompare(b, "ja"); }).slice(0, 500));
+    var top = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a] || a.localeCompare(b, "ja"); }).slice(0, 500);   // 多すぎる列は、よく使われるもの500件まで
+    return (S.colCache[colId] = top.sort(cmpChoice).map(function (v) { return { v: v, n: cnt[v] }; }));
+  }
+  // ------------------------------------------------------------ 検索欄つきの候補プルダウン
+  var PK = null;
+  function closePicker() { if (!PK) return; var p = PK; PK = null; document.removeEventListener("keydown", p.onKey, true); window.removeEventListener("scroll", p.onScroll, true); window.removeEventListener("resize", p.close); p.back.remove(); if (p.anchor && p.anchor.focus) { try { p.anchor.focus({ preventScroll: true }); } catch (_) {} } }
+  function openPicker(anchor, opts, onPick, title) {
+    closePicker();
+    var LIMIT = 500, items = opts.map(function (o) { return { v: o.v, n: o.n, f: fold(o.v) }; }), shown = [], hi = 0;
+    var back = h("div", { class: "pt-pk-back" });
+    var q = h("input", { type: "search", class: "pt-pk-q", placeholder: "ことばを入力して候補を絞り込み", "aria-label": (title || "候補") + "を絞り込む", autocomplete: "off", spellcheck: "false" });
+    var list = h("div", { class: "pt-pk-list", role: "listbox", "aria-label": title || "候補" }), info = h("div", { class: "pt-pk-info muted" });
+    var pop = h("div", { class: "pt-pk", role: "dialog", "aria-label": (title || "候補") + "の選択" }, q, info, list);
+    function draw() {
+      var w = fold(q.value).trim().split(/\s+/).filter(Boolean);
+      var all = items.filter(function (it) { return w.every(function (x) { return it.f.indexOf(x) >= 0; }); });
+      shown = all.slice(0, LIMIT); if (hi >= shown.length) hi = Math.max(0, shown.length - 1);
+      list.replaceChildren();
+      shown.forEach(function (it, i) {
+        list.appendChild(h("div", { class: "pt-pk-item" + (i === hi ? " on" : ""), role: "option", "aria-selected": String(i === hi), "data-i": i,
+          onclick: function () { pick(it); }, onmousemove: function () { if (hi !== i) { hi = i; mark(); } } },
+          h("span", { class: "pt-pk-v", text: it.v }), h("span", { class: "pt-pk-n muted", text: it.n > 1 ? "×" + it.n : "" })));
+      });
+      info.textContent = !items.length ? "候補がありません" : !all.length ? "一致する候補がありません（入力欄には、そのまま自由に書けます）" : (all.length > LIMIT ? all.length + " 件中、先頭の " + LIMIT + " 件を表示（ことばを足すと絞れます）" : all.length + " 件") + "　数字 → 英語 → 日本語の順";
+      list.scrollTop = 0;
+    }
+    function mark() { Array.prototype.forEach.call(list.children, function (e, i) { e.classList.toggle("on", i === hi); e.setAttribute("aria-selected", String(i === hi)); }); var e = list.children[hi]; if (e) e.scrollIntoView({ block: "nearest" }); }
+    function pick(it) { var f = onPick; closePicker(); f(it.v); }
+    function place() {
+      var r = anchor.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+      if (vw <= 640) { pop.style.cssText = "left:8px;right:8px;bottom:8px;max-height:" + Math.round(vh * 0.72) + "px"; back.classList.add("sheet"); return; }
+      var w = Math.min(Math.max(r.width, 360), vw - 16), left = Math.max(8, Math.min(r.left, vw - w - 8)), below = vh - r.bottom - 8, above = r.top - 8;
+      var down = below >= 260 || below >= above, room = (down ? below : above) - 4, h2 = Math.max(160, Math.min(380, room)), top = down ? Math.min(r.bottom + 4, vh - h2 - 8) : Math.max(8, r.top - 4 - h2);
+      pop.style.cssText = "left:" + left + "px;top:" + top + "px;width:" + w + "px;max-height:" + h2 + "px";
+    }
+    var t0 = Date.now(), p = { back: back, anchor: anchor, close: closePicker,
+      onScroll: function (ev) { if (Date.now() - t0 < 400) return; if (!pop.contains(ev.target)) closePicker(); },       // 開いた直後の（ボタンを画面内に出すための）スクロールでは閉じない
+      onKey: function (ev) {
+        if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); closePicker(); }
+        else if (ev.key === "ArrowDown") { ev.preventDefault(); if (hi < shown.length - 1) { hi++; mark(); } }
+        else if (ev.key === "ArrowUp") { ev.preventDefault(); if (hi > 0) { hi--; mark(); } }
+        else if (ev.key === "Enter" && document.activeElement === q) { ev.preventDefault(); if (shown[hi]) pick(shown[hi]); }
+      } };
+    PK = p; q.addEventListener("input", function () { hi = 0; draw(); });
+    back.addEventListener("mousedown", function (ev) { if (ev.target === back) { ev.preventDefault(); closePicker(); } });
+    back.appendChild(pop); document.body.appendChild(back); place(); draw();
+    document.addEventListener("keydown", p.onKey, true); window.addEventListener("scroll", p.onScroll, true); window.addEventListener("resize", p.close);
+    q.focus();
   }
   function setAns(m, col, v) { m.a = m.a || {}; if (v === "") delete m.a[col]; else m.a[col] = v; touch(); }
   function form(m) {
@@ -751,13 +814,14 @@
       if (col.id === "ci") offBox = h("span");
       if (MULTI[col.id]) {
         var ta = h("textarea", { rows: "2", oninput: function (ev) { setAns(m, col.id, ev.target.value); } }); ta.value = v;
-        ctrl = h("div", null, ta, h("select", { onchange: function (ev) { if (!ev.target.value) return; ta.value = ta.value ? ta.value.replace(/\n+$/, "") + "\n" + ev.target.value : ev.target.value; ev.target.value = ""; setAns(m, col.id, ta.value); } },
-          h("option", { value: "", text: "候補から行を追加…" }), choices(col.id).map(function (x) { return h("option", { value: x, text: x }); })));
+        var addBtn = h("button", { type: "button", class: "btn pt-pk-btn", "data-col": col.id, text: "候補から行を追加…（検索できます）", onclick: function (ev) {
+          openPicker(ev.currentTarget, choices(col.id), function (val) { ta.value = ta.value ? ta.value.replace(/\n+$/, "") + "\n" + val : val; setAns(m, col.id, ta.value); }, col.label); } });
+        ctrl = h("div", null, ta, addBtn);
       } else {
-        var dlid = "dl-" + col.id, dl = document.getElementById(dlid);
-        if (!dl) { dl = h("datalist", { id: dlid }); document.body.appendChild(dl); }
-        if (dl.dataset.char !== c.id) { dl.replaceChildren.apply(dl, choices(col.id).map(function (x) { return h("option", { value: x }); })); dl.dataset.char = c.id; }
-        ctrl = h("input", { list: dlid, value: v, oninput: function (ev) { setAns(m, col.id, ev.target.value); } });
+        var inp = h("input", { value: v, oninput: function (ev) { setAns(m, col.id, ev.target.value); } });
+        var pkBtn = h("button", { type: "button", class: "btn pt-pk-btn", "data-col": col.id, text: "候補 ▾", title: "候補から選ぶ（検索できます）", "aria-label": col.label + "の候補を開く",
+          onclick: function (ev) { openPicker(ev.currentTarget, choices(col.id), function (val) { inp.value = val; setAns(m, col.id, val); }, col.label); } });
+        ctrl = h("div", { class: "pt-pk-field" }, inp, pkBtn);
       }
       field(col.label, ctrl, offBox);
     });
