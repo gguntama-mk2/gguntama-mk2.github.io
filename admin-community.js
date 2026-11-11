@@ -435,9 +435,10 @@
     out.push({ key: "thumb", label: "サムネイルが未設定", items: P.filter(function (p) { return !p.thumbnail; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     var teams = {}; P.forEach(function (p) { var t = p.teamFromSource; if (!t) return; var k = teamKey(t); (teams[k] = teams[k] || {})[t] = (teams[k][t] || []).concat([p]); });
     var vari = Object.keys(teams).filter(function (k) { return Object.keys(teams[k]).length > 1; }).map(function (k) { var vs = Object.keys(teams[k]); return { text: vs.map(function (v) { return "「" + v + "」（" + teams[k][v].length + "名）"; }).join(" ／ "), ids: vs.reduce(function (a, v) { return a.concat(teams[k][v].map(function (p) { return p.id; })); }, []) }; });
-    var noted = P.filter(function (p) { return /（20\d\d年[^）]*）|記事時点/.test(String(p.teamFromSource || "")); });
+    // 所属の出典の日付は「（2026年2月時点）」の書き方に固定。それ以外の書き方（「時点の記事」「記事時点」など）を拾う
+    var noted = P.filter(function (p) { var t = String(p.teamFromSource || ""); return /（20\d\d年[^）]*）|記事|時点/.test(t) && (!/（20\d\d年\d{1,2}月時点）$/.test(t) || /記事/.test(t)); });
     out.push({ key: "team", label: "所属の表記ゆれ（同じチームを違う書き方で登録）", items: vari });
-    out.push({ key: "teamnote", label: "所属に「（20xx年x月時点の記事）」などの注記が付いたまま", items: noted.map(function (p) { return { text: p.name + "：" + p.teamFromSource, ids: [p.id] }; }) });
+    out.push({ key: "teamnote", label: "所属の日付の注記が「（20xx年x月時点）」の書き方になっていない", items: noted.map(function (p) { return { text: p.name + "：" + p.teamFromSource, ids: [p.id] }; }) });
     out.push({ key: "cat", label: "区分（PRO / HIGH LEVEL / STREAMER）が未設定", items: P.filter(function (p) { return PCATS.indexOf(p.category) < 0; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     out.push({ key: "verif", label: "確認状態が未確認のまま", items: P.filter(function (p) { return playerVerif(p) === "unverified"; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
     out.push({ key: "country", label: "国・地域が未登録", items: P.filter(function (p) { return !p.country; }).map(function (p) { return { text: p.name, ids: [p.id] }; }) });
