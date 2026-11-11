@@ -164,7 +164,7 @@
       }));
       if (gen !== S._ovGen) return;
     }
-    S._ovVer = (S._ovVer || 0) + 1; syncMoveTabs();
+    S._ovVer = (S._ovVer || 0) + 1; syncMoveTabs(); updateCharCounts();
   }
   function setTab(t) {
     S.tab = t;
@@ -227,7 +227,7 @@
     try { S.pageHash = {}; await Promise.all(S.chars.map(async function (c) { S.pageHash[c.id] = await baseHashOf(c.id, c.moves); })); }
     catch (e) { D.chars.textContent = "元データの指紋を計算できませんでした：" + e.message; return; }
     await refreshOverview();
-    renderChars();
+    renderChars(); loadOverlays();
     var keep = S.cur && baseOf(S.cur.id) ? S.cur.id : null;      // 元データを読み直したときは、開いていたキャラを開き直す
     S.cur = null;
     if (keep) openChar(keep); else if (S.chars.length) openChar(S.chars[0].id);
@@ -246,13 +246,25 @@
     (actions || []).forEach(function (a) { b.appendChild(document.createTextNode(" ")); b.appendChild(h("button", { type: "button", class: "btn" + (a.cls ? " " + a.cls : ""), text: a.label, onclick: a.fn })); });
     D.banner.appendChild(b);
   }
+  // キャラ選択に出す技の数：開いているキャラ＝編集中の数／ほかのキャラ＝保存済みの下書き（なければ公開中）の数／上書きなし＝元データの数
+  function moveCount(c) {
+    if (S.cur && S.cur.id === c.id && Array.isArray(S.cur.moves)) return S.cur.moves.length;
+    var mv = S.ovMoves && S.ovMoves[c.id]; return Array.isArray(mv) ? mv.length : c.moves.length;
+  }
+  function updateCharCounts() {
+    if (!S.chars || !D.chars) return;
+    S.chars.forEach(function (c) {
+      var n = moveCount(c), el = D.chars.querySelector('.pt-cc[data-char="' + c.id + '"]'); if (el && el.textContent !== n + "技") el.textContent = n + "技";
+      if (D.charPicker) { var o = D.charPicker.querySelector('option[value="' + c.id + '"]'); if (o) { var t = c.name + "（" + c.en + "） · " + n + "技"; if (o.textContent !== t) o.textContent = t; } }
+    });
+  }
   function renderChars() {
     D.chars.replaceChildren();
     if (D.charPicker) {
       var oldValue = D.charPicker.value;
       D.charPicker.replaceChildren();
       S.chars.forEach(function (c) {
-        var opt = h("option", { value: c.id, text: c.name + "（" + c.en + "） · " + c.moves.length + "技" });
+        var opt = h("option", { value: c.id, text: c.name + "（" + c.en + "） · " + moveCount(c) + "技" });
         D.charPicker.appendChild(opt);
       });
       var selectedId = S.cur ? S.cur.id : oldValue;
@@ -263,7 +275,7 @@
       if (o) badge = h("span", { class: "badge " + (o.has_unpublished_changes ? "draft" : "pub"), text: o.has_unpublished_changes ? "未公開の変更" : "公開中" });
       if (o && o.base_status === "changed") stale = h("span", { class: "badge stale", title: "サイトの元データが、この編集のもとにした版から更新されています。最新の元データで編集し直してください", text: "元データ更新あり" });
       else if (o && o.public_live === false) stale = h("span", { class: "badge stale", text: "公開中の上書きは一時停止" });
-      D.chars.appendChild(h("button", { type: "button", "data-char": c.id, "aria-pressed": String(!!S.cur && S.cur.id === c.id), onclick: function () { guardThen(function () { openChar(c.id); }); } }, c.name + "（" + c.en + "）", " ", String(c.moves.length) + "技", badge, stale));
+      D.chars.appendChild(h("button", { type: "button", "data-char": c.id, "aria-pressed": String(!!S.cur && S.cur.id === c.id), onclick: function () { guardThen(function () { openChar(c.id); }); } }, c.name + "（" + c.en + "）", " ", h("span", { class: "pt-cc", "data-char": c.id, text: moveCount(c) + "技" }), badge, stale));
     });
   }
   function guardThen(fn) { if (S.dirty && !confirm("保存していない変更があります。破棄して移動しますか？")) return; S.dirty = false; fn(); }
@@ -292,7 +304,7 @@
     banner("");
     D.diff.hidden = true;
     S.colCache = {};
-    renderChars(); renderAll(); loadHistory(); schedulePreview(0);
+    renderChars(); renderAll(); loadHistory(); schedulePreview(0); loadOverlays();
     notifyBase(); S._effBase = null; syncMoveTabs();
   }
   function renderAll() { renderTool(); renderEditor(); }
@@ -546,7 +558,7 @@
   }
 
   // ------------------------------------------------------------ 編集画面
-  function touch() { S.dirty = true; renderTool(); schedulePreview(450); }
+  function touch() { S.dirty = true; renderTool(); updateCharCounts(); schedulePreview(450); }
   function nextK() {
     var m = -1; S.cur.moves.forEach(function (x) { m = Math.max(m, x.k); }); baseOf(S.cur.id).moves.forEach(function (x) { m = Math.max(m, x.k); });
     if (S.cur.published) S.cur.published.moves.forEach(function (x) { m = Math.max(m, x.k); });
@@ -615,37 +627,44 @@
   function addMove() { var c = S.cur; c.moves.push({ k: nextK(), name: "新しい技", a: {}, off: [] }); c.sel = c.moves.length - 1; c.filter = ""; touch(); renderEditor(); }
 
   // ------------------------------------------------------------ 並び順の変更（専用画面）
-  // 変わるのは配列の順番だけ。技の固定ID（k）は変えない：チェック・メモ・ブックマーク・アイコン・動画はkに結びついているので、並べ替えで外れない
+  // 並べ替えで変わるのは配列の順番だけ。技の固定ID（k）は変えない：チェック・メモ・ブックマーク・アイコン・動画はkに結びついているので、並べ替えで外れない
+  // 「技番号を振り直す」だけが k を書き換える（影響を調べ、確認してから実行する）
   function openOrder() {
     var c = S.cur; if (!c) return;
-    var undo = [], selK = c.moves[c.sel] ? c.moves[c.sel].k : null, flashK = null, matchAt = -1, drag = null, scrollTimer = 0, lastY = 0;
+    var undo = [], selMove = c.moves[c.sel] || null, flashMove = null, matchAt = -1, drag = null, scrollTimer = 0, lastY = 0, busy = false;
     var back = h("div", { class: "modal-back pt-ord-back" });
     var list = h("div", { class: "pt-ord-list", id: "ptOrdList" });
     var meta = h("span", { class: "muted pt-ord-meta" });
-    var undoBtn = h("button", { type: "button", class: "btn", id: "ptOrdUndo", text: "直前に戻す", disabled: true, onclick: function () { var s = undo.pop(); if (!s) return; setOrder(s, false); } });
+    var undoBtn = h("button", { type: "button", class: "btn", id: "ptOrdUndo", text: "直前に戻す", disabled: true, onclick: function () { var s = undo.pop(); if (!s) return; restore(s); } });
     var search = h("input", { type: "search", id: "ptOrdSearch", placeholder: "技名・コマンド・kで探す（Enterで次へ）", "aria-label": "技を探す",
       oninput: function () { matchAt = -1; findNext(); }, onkeydown: function (ev) { if (ev.key === "Enter") { ev.preventDefault(); findNext(); } } });
-    var keys = function () { return c.moves.map(function (m) { return m.k; }); };
-    // ks の順に c.moves を並べ替える（kで引くので、技の中身は一切変えない）
-    function setOrder(ks, record) {
-      var by = {}; c.moves.forEach(function (m) { by[m.k] = m; });
-      var now = keys().join(",");
-      if (ks.join(",") === now) return;
-      if (record !== false) { undo.push(keys()); if (undo.length > 50) undo.shift(); }
-      c.moves = ks.map(function (k) { return by[k]; });
-      var si = c.moves.findIndex(function (m) { return m.k === selK; }); c.sel = si < 0 ? 0 : si;
-      touch(); draw();
+    var baseBtn = h("button", { type: "button", class: "btn", id: "ptOrdBase", text: "元データの並びに戻す", title: "元データの順番に並べ直します（新しく足した技は最後）", onclick: function () { if (confirm("元データの並び順に戻します（新しく足した技は最後に置きます）。\n「直前に戻す」で取り消せます。")) toBaseOrder(); } });
+    var renumBtn = h("button", { type: "button", class: "btn", id: "ptOrdRenumber", text: "技番号を並び順どおりに振り直す", title: "技番号（#〇〇）を、いまの並び順どおりに 0, 1, 2…と振り直します", onclick: renumber });
+    // 元に戻せる形で記録する：技の中身（オブジェクト）と、そのときのkを組にして持つ
+    function snap() { return c.moves.map(function (m) { return { m: m, k: m.k }; }); }
+    function restore(sn) { sn.forEach(function (e) { e.m.k = e.k; }); c.moves = sn.map(function (e) { return e.m; }); fixSel(); touch(); draw(); }
+    function fixSel() { var si = selMove ? c.moves.indexOf(selMove) : -1; c.sel = si < 0 ? 0 : si; }
+    function setOrder(list2) {                      // list2：並べ替えたあとの技（オブジェクト）の配列
+      if (list2.length === c.moves.length && list2.every(function (m, i) { return m === c.moves[i]; })) return;
+      undo.push(snap()); if (undo.length > 50) undo.shift();
+      c.moves = list2; fixSel(); touch(); draw();
     }
     function moveTo(from, to) {
       var n = c.moves.length; to = Math.max(0, Math.min(n - 1, to)); if (from === to || from < 0 || from >= n) return;
-      var ks = keys(), k = ks.splice(from, 1)[0]; ks.splice(to, 0, k); flashK = k; setOrder(ks);
-      var row = list.querySelector('[data-k="' + k + '"]'); if (row) row.scrollIntoView({ block: "nearest" });
+      var arr = c.moves.slice(), m = arr.splice(from, 1)[0]; arr.splice(to, 0, m); flashMove = m; setOrder(arr);
+      var row = list.children[to]; if (row) row.scrollIntoView({ block: "nearest" });
     }
     function toBaseOrder() {
       var pos = {}; baseOf(c.id).moves.forEach(function (m, i) { pos[m.k] = i; });
       var inBase = c.moves.filter(function (m) { return m.k in pos; }).sort(function (a, b) { return pos[a.k] - pos[b.k]; });
       var extra = c.moves.filter(function (m) { return !(m.k in pos); });
-      setOrder(inBase.concat(extra).map(function (m) { return m.k; }));
+      setOrder(inBase.concat(extra));
+    }
+    // 番号を振り直したあとは、kで元データと突き合わせられないので、「元データの並びに戻す」は使えない
+    function baseUsable() {
+      var by = {}; baseOf(c.id).moves.forEach(function (m) { by[m.k] = m.name; });
+      var hit = 0, same = 0; c.moves.forEach(function (m) { if (m.k in by) { hit++; if (by[m.k] === m.name) same++; } });
+      return !hit || same / hit >= 0.9;
     }
     function findNext() {
       var q = search.value.normalize("NFKC").toLowerCase().trim().replace(/^#/, ""); if (!q) { matchAt = -1; return; }
@@ -653,11 +672,48 @@
       for (var d = 1; d <= n; d++) {
         var i = (matchAt + d + n) % n, m = c.moves[i], cmd = (m.a && m.a.command) || "";
         if ((String(m.k) + " " + m.name + " " + cmd + " " + (m.y || "")).normalize("NFKC").toLowerCase().indexOf(q) >= 0) {
-          matchAt = i; flashK = m.k; draw();
-          var row = list.querySelector('[data-k="' + m.k + '"]'); if (row) row.scrollIntoView({ block: "center" });
+          matchAt = i; flashMove = m; draw();
+          var row = list.children[i]; if (row) row.scrollIntoView({ block: "center" });
           return;
         }
       }
+    }
+    // ---- 技番号の振り直し：並び順どおりに 0, 1, 2… を付ける
+    async function renumber() {
+      if (busy) return; busy = true; renumBtn.disabled = true;
+      try {
+        var plan = c.moves.map(function (m, i) { return { m: m, from: m.k, to: i }; }), changed = plan.filter(function (x) { return x.from !== x.to; });
+        if (!changed.length) { await confirmModal("技番号の振り直し", ["技番号は、すでにいまの並び順どおり（#0〜#" + (c.moves.length - 1) + "）です。振り直す必要はありません。"], "閉じる", false); return; }
+        // ① アイコン設定・動画登録は、技番号に結びついている。番号が変わる技に登録があれば、外れてしまうので止める
+        var touched = {}; changed.forEach(function (x) { touched[x.from] = true; touched[x.to] = true; });
+        var reg = [];
+        try {
+          var ic = await api("/api/v1/admin/move-icons"), md = await api("/api/v1/admin/move-media");
+          var pick = function (r) { var e = r && (r.entries || r.items) || []; return Array.isArray(e) ? e : Object.keys(e).map(function (k) { return e[k]; }); };
+          pick(ic).forEach(function (e) { if (e.character_id === c.id && touched[e.site_k]) reg.push({ kind: "アイコン設定", k: e.site_k, name: e.move_name }); });
+          pick(md).forEach(function (e) { if (e.character_id === c.id && touched[e.site_k]) reg.push({ kind: "技動画", k: e.site_k, name: e.move_name }); });
+        } catch (e) { await confirmModal("技番号の振り直し", ["アイコン設定・技動画の登録状況を確認できませんでした（" + (e && e.message || e) + "）。", "登録が外れる事故を防ぐため、番号は変えていません。少し待ってからやり直してください。"], "閉じる", false); return; }
+        if (reg.length) {
+          reg.sort(function (a, b) { return a.k - b.k; });
+          var ex = reg.slice(0, 6).map(function (r) { return "・" + r.kind + "：#" + r.k + " " + (r.name || ""); });
+          await confirmModal("技番号の振り直しはできません", ["このキャラには、番号が変わる技に結びついたアイコン設定・技動画の登録が " + reg.length + " 件あります。振り直すと別の技に付いてしまうため、番号は変えていません。"].concat(ex, reg.length > 6 ? ["…ほか " + (reg.length - 6) + " 件"] : [], ["先に、該当の登録を消してから（または振り直し後に登録し直す前提で）やり直してください。"]), "閉じる", false);
+          return;
+        }
+        // ② 公開中の技の番号が変わる場合は、訪問者の端末に保存されたチェック等への影響を伝える
+        var pubK = {}; ((c.published && c.published.moves) || []).forEach(function (m) { pubK[m.k] = m.name; });
+        var livePlaced = changed.filter(function (x) { return x.from in pubK; }).length;
+        var sample = changed.slice(0, 4).map(function (x) { return "#" + x.from + " → #" + x.to + "　" + x.m.name; });
+        var lines = ["技番号を、いまの並び順どおりに #0〜#" + (c.moves.length - 1) + " へ振り直します。", "番号が変わる技：" + changed.length + " / " + c.moves.length + " 件（例）"].concat(sample, [changed.length > 4 ? "…ほか " + (changed.length - 4) + " 件" : ""].filter(Boolean));
+        lines.push(livePlaced
+          ? "【注意】公開中の技のうち " + livePlaced + " 件は番号が変わります。公開後、訪問者の端末に保存済みの「チェック・メモ・ブックマーク」は、その番号の別の技に付いたり、外れたりします（取り戻せません）。このキャラのアイコン・動画の登録はありません。"
+          : "この番号は、まだ公開されていません。訪問者のチェック等には影響しません。");
+        lines.push("保存・公開するまでサイトには反映されません。保存前なら「直前に戻す」で取り消せます。");
+        var ok = await confirmModal("技番号の振り直し", lines, "振り直す", !!livePlaced);
+        if (!ok) return;
+        undo.push(snap()); if (undo.length > 50) undo.shift();
+        c.moves.forEach(function (m, i) { m.k = i; });
+        touch(); draw();
+      } finally { busy = false; renumBtn.disabled = false; }
     }
     function btn(label, title, fn, off) { return h("button", { type: "button", class: "btn pt-ord-b", text: label, title: title, "aria-label": title, disabled: off ? true : null, onclick: fn }); }
     function draw() {
@@ -669,7 +725,7 @@
           onchange: function (ev) { var v = parseInt(ev.target.value, 10); if (!isFinite(v)) { ev.target.value = String(i + 1); return; } moveTo(i, v - 1); ev.target.value = String(Math.max(1, Math.min(n, v))); },
           onkeydown: function (ev) { if (ev.key === "Enter") ev.target.blur(); } });
         var handle = h("span", { class: "pt-ord-handle", title: "つかんでドラッグ", "aria-hidden": "true", text: "⋮⋮", onpointerdown: function (ev) { startDrag(ev, i); } });
-        list.appendChild(h("div", { class: "pt-ord-row" + (m.k === flashK ? " flash" : "") + (m.k === selK ? " sel" : ""), "data-i": i, "data-k": m.k },
+        list.appendChild(h("div", { class: "pt-ord-row" + (m === flashMove ? " flash" : "") + (m === selMove ? " sel" : ""), "data-i": i, "data-k": m.k },
           handle, pos,
           h("span", { class: "pt-ord-k", text: "#" + m.k }),
           h("span", { class: "pt-ord-name" }, h("span", { text: m.name }), cmd ? h("span", { class: "muted pt-ord-cmd", text: cmd }) : null),
@@ -679,9 +735,12 @@
             btn("↓", "1つ下へ", function () { moveTo(i, i + 1); }, i === n - 1),
             btn("最後へ", "最後へ移動", function () { moveTo(i, n - 1); }, i === n - 1))));
       });
-      list.scrollTop = top; flashK = null;
+      list.scrollTop = top; flashMove = null;
       undoBtn.disabled = !undo.length;
-      meta.textContent = n + " 技　／　並び順は、元データと" + (keys().join(",") === baseOf(c.id).moves.map(function (m) { return m.k; }).join(",") ? "同じです" : "違います");
+      var inOrder = c.moves.every(function (m, i) { return m.k === i; }), bu = baseUsable();
+      baseBtn.disabled = !bu; baseBtn.title = bu ? "元データの順番に並べ直します（新しく足した技は最後）" : "技番号を振り直したため、元データとは突き合わせられません";
+      renumBtn.disabled = busy;
+      meta.textContent = n + " 技　／　技番号は、" + (inOrder ? "並び順どおり（#0〜#" + (n - 1) + "）です" : "並び順と一致していません（振り直せます）");
     }
     // ドラッグ：つかんだ行を離した位置に差し込む。マウス・指・ペンのどれでも動く（つかむのは左の「⋮⋮」だけなので、一覧のスクロールは邪魔しない）
     function startDrag(ev, from) {
@@ -691,7 +750,7 @@
       var rows = Array.prototype.slice.call(list.children);
       drag = { from: from, ins: from, rows: rows, el: rows[from] }; drag.el.classList.add("dragging"); lastY = ev.clientY;
       var move = function (e) { lastY = e.clientY; place(); };
-      var end = function (e) {
+      var end = function () {
         handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", end); handle.removeEventListener("pointercancel", cancel);
         clearInterval(scrollTimer); scrollTimer = 0;
         var d = drag; drag = null; if (!d) return;
@@ -714,14 +773,16 @@
       drag.rows.forEach(function (r, i) { r.classList.toggle("ins-before", i === ins); r.classList.toggle("ins-after", ins === drag.rows.length && i === drag.rows.length - 1); });
     }
     function close() { document.removeEventListener("keydown", onKey, true); clearInterval(scrollTimer); back.remove(); renderEditor(); }
-    function onKey(ev) { if (ev.key === "Escape" && !drag) { ev.preventDefault(); ev.stopPropagation(); close(); } }
+    function onKey(ev) {
+      var all = document.querySelectorAll(".modal-back"); if (all[all.length - 1] !== back) return;      // 確認画面が前に出ているときは、そちらに任せる
+      if (ev.key === "Escape" && !drag) { ev.preventDefault(); ev.stopPropagation(); close(); }
+    }
     document.addEventListener("keydown", onKey, true);
     var panel = h("div", { class: "modal pt-ord-panel" },
       h("h2", { text: c.name + "：技の並び順を変更" }),
-      h("p", { class: "muted pt-ord-note", text: "左の「⋮⋮」をつかんで動かすか、ボタン・位置の数字で移動できます。変わるのは並び順だけです。技の番号（#k）は変わらないので、チェック・メモ・アイコン・動画はそのままです。「下書きを保存」→「公開する」で反映されます。" }),
-      h("div", { class: "row pt-ord-tools" }, search, undoBtn,
-        h("button", { type: "button", class: "btn", id: "ptOrdBase", text: "元データの並びに戻す", title: "元データの順番に並べ直します（新しく足した技は最後）",
-          onclick: function () { if (confirm("元データの並び順に戻します（新しく足した技は最後に置きます）。\n「直前に戻す」で取り消せます。")) toBaseOrder(); } })),
+      h("p", { class: "muted pt-ord-note", text: "左の「⋮⋮」をつかんで動かすか、ボタン・位置の数字で移動できます。並び順を変えても、技の番号（#〇〇）は変わらないので、チェック・メモ・アイコン・動画はそのままです。「下書きを保存」→「公開する」で反映されます。" }),
+      h("div", { class: "row pt-ord-tools" }, search, undoBtn, baseBtn),
+      h("div", { class: "row pt-ord-tools" }, renumBtn, h("span", { class: "muted pt-ord-note", text: "番号がぐちゃぐちゃになったとき用。公開中の技の番号が変わると、訪問者の端末のチェック等がずれます（実行前に確認が出ます）。" })),
       meta, list,
       h("div", { class: "row mact" }, h("button", { type: "button", class: "btn primary", id: "ptOrdClose", text: "閉じる", onclick: close })));
     back.appendChild(panel); back.addEventListener("mousedown", function (ev) { if (ev.target === back) close(); });
