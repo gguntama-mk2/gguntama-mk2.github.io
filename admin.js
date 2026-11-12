@@ -818,8 +818,8 @@
     catch (_) { S.chEdit = null; }
     S.colCache = {};
   }
-  function choiceOp(op, col, v) {                  // 追加（削除の取り消しも）／削除（プルダウンから外すだけ。技に入っている値は変えない）
-    return api("/api/v1/admin/checksheet-choices/" + op, { method: "POST", body: { column: col, value: v } }).then(function (d) { S.chEdit = normChoiceEdit(d); S.colCache = {}; return d; });
+  function choiceOp(op, col, v) {                  // 追加（削除の取り消しも）／削除（プルダウンから外すだけ。技に入っている値は変えない）。v は 1件（文字列）かまとめて（配列）
+    return api("/api/v1/admin/checksheet-choices/" + op, { method: "POST", body: Array.isArray(v) ? { column: col, values: v } : { column: col, value: v } }).then(function (d) { S.chEdit = normChoiceEdit(d); S.colCache = {}; return d; });
   }
   function choices(colId) {                       // [{ v: 値, n: 使われている数, add: 追加した候補か }] を、数字→英語→日本語の順で
     if (S.colCache[colId]) return S.colCache[colId];
@@ -840,49 +840,86 @@
   function openPicker(anchor, opts, onPick, title, editCol) {
     closePicker();
     var LIMIT = 500, toItem = function (o) { return { v: o.v, n: o.n, add: !!o.add, f: fold(o.v) }; };
-    var items = opts.map(toItem), shown = [], hi = 0, trash = false, pend = null, busy = false, note = "", sheet = false, w0 = window.innerWidth;
+    var items = opts.map(toItem), shown = [], curAll = [], hi = 0, trash = false, pend = null, busy = false, note = "", sheet = false, w0 = window.innerWidth;
+    var multi = false, sel = {}, ask = false;               // multi＝まとめて選ぶ（チェックボックス）モード／sel＝チェックした候補／ask＝まとめて削除の確認中
     var ed = editCol && S.chEdit && S.chEdit[editCol] ? editCol : null;
     var back = h("div", { class: "pt-pk-back" });
     var q = h("input", { type: "search", class: "pt-pk-q", placeholder: "ことばを入力して候補を絞り込み", "aria-label": (title || "候補") + "を絞り込む", autocomplete: "off", spellcheck: "false" });
     var list = h("div", { class: "pt-pk-list", role: "listbox", "aria-label": title || "候補" }), info = h("div", { class: "pt-pk-info muted" });
-    var kids = [q, info, list], newInp = null, addBtn = null, trashBtn = null;
+    var kids = [q, info], newInp = null, addBtn = null, trashBtn = null, multiBtn = null, bar = null;
+    if (ed) {
+      bar = h("div", { class: "pt-pk-bar" }); bar.hidden = true; kids.push(bar);
+    }
+    kids.push(list);
     if (ed) {
       newInp = h("input", { type: "text", class: "pt-pk-new", placeholder: "新しい候補を入力して「追加」", maxlength: "200", "aria-label": (title || "候補") + "に新しい候補を追加", autocomplete: "off", spellcheck: "false" });
       addBtn = h("button", { type: "button", class: "btn pt-pk-add", text: "追加", onclick: function () { submitNew(); } });
-      trashBtn = h("button", { type: "button", class: "btn pt-pk-trash", onclick: function () { trash = !trash; pend = null; note = ""; q.value = ""; hi = 0; draw(); } });
-      kids.push(h("div", { class: "pt-pk-foot" }, h("div", { class: "pt-pk-addrow" }, newInp, addBtn), trashBtn));
+      multiBtn = h("button", { type: "button", class: "btn pt-pk-multi", onclick: function () { multi = !multi; sel = {}; ask = false; pend = null; note = ""; draw(true); } });
+      trashBtn = h("button", { type: "button", class: "btn pt-pk-trash", onclick: function () { trash = !trash; pend = null; ask = false; sel = {}; note = ""; q.value = ""; hi = 0; draw(); } });
+      kids.push(h("div", { class: "pt-pk-foot" }, h("div", { class: "pt-pk-addrow" }, newInp, addBtn), h("div", { class: "pt-pk-links" }, multiBtn, trashBtn)));
     }
     var pop = h("div", { class: "pt-pk", role: "dialog", "aria-label": (title || "候補") + "の選択" }, kids);
     function removedItems() { return S.chEdit[ed].removed.slice().sort(cmpChoice).map(function (v) { return { v: v, n: 0, add: false, f: fold(v) }; }); }
-    function draw() {
-      var w = fold(q.value).trim().split(/\s+/).filter(Boolean), src = trash ? removedItems() : items;
+    function picked() { return Object.keys(sel); }
+    // チェックの付け外しでは一覧を作り直さない（スクロールの位置を保つ）
+    function refreshSel() {
+      Array.prototype.forEach.call(list.children, function (row) { if (row._v === undefined) return; var on = !!sel[row._v]; row.classList.toggle("picked", on); var c = row.querySelector(".pt-pk-chk"); if (c) c.checked = on; });
+      drawBar();
+    }
+    function toggle(v) { if (sel[v]) delete sel[v]; else sel[v] = true; ask = false; refreshSel(); }
+    function drawBar() {
+      if (!bar) return;
+      bar.hidden = !multi; if (!multi) return;
+      var n = picked().length; bar.replaceChildren();
+      if (ask && !trash) {
+        bar.append(h("div", { class: "pt-pk-ctext" }, h("b", { text: "選んだ " + n + " 件" }), "を、この候補の一覧から消しますか？（すでに技に入っている値は、そのまま残ります）"),
+          h("div", { class: "pt-pk-cbtns" },
+            h("button", { type: "button", class: "btn danger pt-pk-bulk-ok", text: "まとめて消す", onclick: function () { removeMany(); } }),
+            h("button", { type: "button", class: "btn pt-pk-bulk-no", text: "やめる", onclick: function () { ask = false; drawBar(); } })));
+        bar.classList.add("asking"); return;
+      }
+      bar.classList.remove("asking");
+      bar.append(h("button", { type: "button", class: "btn pt-pk-selall", text: "表示中をすべて選ぶ", onclick: function () { curAll.forEach(function (it) { sel[it.v] = true; }); ask = false; refreshSel(); } }),
+        h("button", { type: "button", class: "btn pt-pk-selnone", text: "選択を外す", onclick: function () { sel = {}; ask = false; refreshSel(); } }),
+        h("span", { class: "pt-pk-count", text: "選んだ " + n + " 件" }),
+        trash ? h("button", { type: "button", class: "btn primary pt-pk-bulk-restore", text: "選んだ " + n + " 件を戻す", disabled: n ? null : true, onclick: function () { restoreMany(); } })
+              : h("button", { type: "button", class: "btn danger pt-pk-bulk-del", text: "選んだ " + n + " 件を削除", disabled: n ? null : true, onclick: function () { ask = true; drawBar(); } }));
+    }
+    // keep＝一覧のスクロール位置を保つ（削除の確認・削除のあとなど）。検索のことばを変えたときなどは先頭へ戻す
+    function draw(keep) {
+      var top0 = list.scrollTop, w = fold(q.value).trim().split(/\s+/).filter(Boolean), src = trash ? removedItems() : items;
       var all = src.filter(function (it) { return w.every(function (x) { return it.f.indexOf(x) >= 0; }); });
-      shown = all.slice(0, LIMIT); if (hi >= shown.length) hi = Math.max(0, shown.length - 1);
+      curAll = all; shown = all.slice(0, LIMIT); if (hi >= shown.length) hi = Math.max(0, shown.length - 1);
+      var live = {}; src.forEach(function (it) { live[it.v] = 1; }); Object.keys(sel).forEach(function (v) { if (!live[v]) delete sel[v]; });      // 一覧から無くなった候補のチェックは外す
       list.replaceChildren();
       shown.forEach(function (it, i) {
-        var row;
+        var row, chk = ed && multi ? h("input", { type: "checkbox", class: "pt-pk-chk", checked: sel[it.v] ? true : null, "aria-label": "「" + it.v + "」を選ぶ", onclick: function (ev) { ev.stopPropagation(); }, onchange: function () { toggle(it.v); } }) : null;
         if (ed && !trash && pend === it.v) {          // 削除していいか、その場で確かめる
           row = h("div", { class: "pt-pk-item pt-pk-confirm", "data-i": i },
             h("div", { class: "pt-pk-ctext" }, h("b", { text: "「" + it.v + "」" }), "を、この候補の一覧から消しますか？" + (it.n ? "（すでに " + it.n + " 件の技に入っている値は、そのまま残ります）" : "")),
             h("div", { class: "pt-pk-cbtns" },
               h("button", { type: "button", class: "btn danger pt-pk-del-ok", text: "消す", onclick: function (ev) { ev.stopPropagation(); removeValue(it.v); } }),
-              h("button", { type: "button", class: "btn pt-pk-del-no", text: "やめる", onclick: function (ev) { ev.stopPropagation(); pend = null; draw(); } })));
+              h("button", { type: "button", class: "btn pt-pk-del-no", text: "やめる", onclick: function (ev) { ev.stopPropagation(); pend = null; draw(true); } })));
         } else if (trash) {
-          row = h("div", { class: "pt-pk-item", "data-i": i }, h("span", { class: "pt-pk-v", text: it.v }),
-            h("button", { type: "button", class: "btn pt-pk-restore", text: "戻す", "aria-label": "「" + it.v + "」を候補に戻す", onclick: function (ev) { ev.stopPropagation(); addValue(it.v, false); } }));
+          row = h("div", { class: "pt-pk-item" + (multi && sel[it.v] ? " picked" : ""), "data-i": i, onclick: multi ? function () { toggle(it.v); } : null }, chk, h("span", { class: "pt-pk-v", text: it.v }),
+            multi ? null : h("button", { type: "button", class: "btn pt-pk-restore", text: "戻す", "aria-label": "「" + it.v + "」を候補に戻す", onclick: function (ev) { ev.stopPropagation(); addValue(it.v, false); } }));
         } else {
-          row = h("div", { class: "pt-pk-item" + (i === hi ? " on" : ""), role: "option", "aria-selected": String(i === hi), "data-i": i,
-            onclick: function () { pick(it); }, onmousemove: function () { if (hi !== i) { hi = i; mark(); } } },
-            h("span", { class: "pt-pk-v", text: it.v }), it.add ? h("span", { class: "pt-pk-tag", text: "追加" }) : null, h("span", { class: "pt-pk-n muted", text: it.n > 1 ? "×" + it.n : "" }),
-            ed ? h("button", { type: "button", class: "pt-pk-del", text: "削除", title: "この候補を一覧から消す", "aria-label": "「" + it.v + "」を候補から削除", onclick: function (ev) { ev.stopPropagation(); pend = it.v; draw(); } }) : null);
+          row = h("div", { class: "pt-pk-item" + (i === hi ? " on" : "") + (multi && sel[it.v] ? " picked" : ""), role: "option", "aria-selected": String(i === hi), "data-i": i,
+            onclick: function () { if (multi) toggle(it.v); else pick(it); }, onmousemove: function () { if (hi !== i) { hi = i; mark(); } } },
+            chk, h("span", { class: "pt-pk-v", text: it.v }), it.add ? h("span", { class: "pt-pk-tag", text: "追加" }) : null, h("span", { class: "pt-pk-n muted", text: it.n > 1 ? "×" + it.n : "" }),
+            ed ? h("button", { type: "button", class: "pt-pk-del", text: "削除", title: "この候補を一覧から消す", "aria-label": "「" + it.v + "」を候補から削除", onclick: function (ev) { ev.stopPropagation(); pend = it.v; ask = false; draw(true); var cf = list.querySelector(".pt-pk-confirm"); if (cf) cf.scrollIntoView({ block: "nearest" }); } }) : null);
         }
-        list.appendChild(row);
+        row._v = it.v; list.appendChild(row);
       });
       var head = note ? note + "　" : "";
-      info.textContent = head + (trash ? (!src.length ? "削除した候補はありません" : !all.length ? "一致する候補がありません" : "削除した候補 " + all.length + " 件（「戻す」で、候補に戻せます）")
+      info.textContent = head + (trash ? (!src.length ? "削除した候補はありません" : !all.length ? "一致する候補がありません" : "削除した候補 " + all.length + " 件（" + (multi ? "チェックして「戻す」" : "「戻す」") + "で、候補に戻せます）")
         : !items.length ? "候補がありません" : !all.length ? "一致する候補がありません（入力欄には、そのまま自由に書けます）" : (all.length > LIMIT ? all.length + " 件中、先頭の " + LIMIT + " 件を表示（ことばを足すと絞れます）" : all.length + " 件") + "　数字 → 英語 → 日本語の順");
-      if (ed) { var nr = S.chEdit[ed].removed.length; trashBtn.textContent = trash ? "← 候補の一覧に戻る" : "削除した候補を見る（" + nr + " 件）"; trashBtn.hidden = !trash && !nr; }
-      list.scrollTop = 0;
+      if (ed) {
+        var nr = S.chEdit[ed].removed.length; trashBtn.textContent = trash ? "← 候補の一覧に戻る" : "削除した候補を見る（" + nr + " 件）"; trashBtn.hidden = !trash && !nr;
+        multiBtn.textContent = (trash ? "まとめて戻す" : "まとめて削除") + (multi ? "をやめる" : "（チェックで選ぶ）"); multiBtn.hidden = !src.length; multiBtn.setAttribute("aria-pressed", String(multi));
+        drawBar();
+      }
+      list.scrollTop = keep ? top0 : 0;
     }
     function mark() { Array.prototype.forEach.call(list.children, function (e, i) { e.classList.toggle("on", i === hi); e.setAttribute("aria-selected", String(i === hi)); }); var e = list.children[hi]; if (e) e.scrollIntoView({ block: "nearest" }); }
     function pick(it) { var f = onPick; closePicker(); f(it.v); }
@@ -892,28 +929,44 @@
     async function run(fn) { if (busy) return; setBusy(true); try { await fn(); } finally { if (PK && PK.pop === pop) setBusy(false); } }
     function submitNew() {
       var v = newInp.value.trim();
-      if (!v) { note = "追加する候補を入力してください"; draw(); newInp.focus(); return; }
-      if (v.length > 200) { note = "長すぎます（200文字までです）"; draw(); return; }
+      if (!v) { note = "追加する候補を入力してください"; draw(true); newInp.focus(); return; }
+      if (v.length > 200) { note = "長すぎます（200文字までです）"; draw(true); return; }
       var dup = items.filter(function (it) { return it.v === v; })[0];
-      if (dup) { note = "「" + v + "」は、すでに候補にあります"; trash = false; q.value = v; hi = 0; draw(); return; }
+      if (dup) { note = "「" + v + "」は、すでに候補にあります"; trash = false; sel = {}; ask = false; q.value = v; hi = 0; draw(); return; }
       addValue(v, true);
     }
     function addValue(v, fromInput) {
       return run(async function () {
         var back0 = S.chEdit[ed].removed.indexOf(v) >= 0;
-        try { await choiceOp("add", ed, v); } catch (e) { note = "追加できませんでした：" + e.message; draw(); return; }
+        try { await choiceOp("add", ed, v); } catch (e) { note = "追加できませんでした：" + e.message; draw(true); return; }
         if (!PK || PK.pop !== pop) return;
         reload(); pend = null; note = "「" + v + "」を" + (back0 ? "候補に戻しました" : "候補に追加しました");
-        if (fromInput) { newInp.value = ""; trash = false; q.value = v; hi = 0; }        // 追加した候補がすぐ見えるよう、絞り込み欄にも入れる
-        draw();
+        if (fromInput) { newInp.value = ""; trash = false; sel = {}; ask = false; q.value = v; hi = 0; }        // 追加した候補がすぐ見えるよう、絞り込み欄にも入れる
+        draw(!fromInput);
         if (!trash) { var at = shown.map(function (it) { return it.v; }).indexOf(v); if (at >= 0) { hi = at; mark(); } }
       });
     }
     function removeValue(v) {
       return run(async function () {
-        try { await choiceOp("remove", ed, v); } catch (e) { note = "削除できませんでした：" + e.message; pend = null; draw(); return; }
+        try { await choiceOp("remove", ed, v); } catch (e) { note = "削除できませんでした：" + e.message; pend = null; draw(true); return; }
         if (!PK || PK.pop !== pop) return;
-        reload(); pend = null; note = "「" + v + "」を候補から削除しました（下の「削除した候補を見る」で戻せます）"; draw();
+        reload(); pend = null; delete sel[v]; note = "「" + v + "」を候補から削除しました（下の「削除した候補を見る」で戻せます）"; draw(true);
+      });
+    }
+    function removeMany() {                                   // チェックした候補を、まとめて削除（サーバーへは1回で保存）
+      var vs = picked(); if (!vs.length) return;
+      return run(async function () {
+        try { await choiceOp("remove", ed, vs); } catch (e) { note = "削除できませんでした：" + e.message; ask = false; draw(true); return; }
+        if (!PK || PK.pop !== pop) return;
+        reload(); pend = null; sel = {}; ask = false; note = vs.length + " 件を候補から削除しました（下の「削除した候補を見る」で戻せます）"; draw(true);
+      });
+    }
+    function restoreMany() {                                  // 削除した候補のうち、チェックしたものをまとめて戻す
+      var vs = picked(); if (!vs.length) return;
+      return run(async function () {
+        try { await choiceOp("add", ed, vs); } catch (e) { note = "戻せませんでした：" + e.message; draw(true); return; }
+        if (!PK || PK.pop !== pop) return;
+        reload(); sel = {}; note = vs.length + " 件を候補に戻しました"; draw(true);
       });
     }
     function place() {
@@ -921,7 +974,7 @@
       sheet = vw <= 640;
       if (sheet) { pop.style.cssText = "left:8px;right:8px;bottom:8px;max-height:" + Math.round(vh * 0.72) + "px"; back.classList.add("sheet"); return; }
       var w = Math.min(Math.max(r.width, 360), vw - 16), left = Math.max(8, Math.min(r.left, vw - w - 8)), below = vh - r.bottom - 8, above = r.top - 8;
-      var down = below >= 260 || below >= above, room = (down ? below : above) - 4, h2 = Math.max(160, Math.min(380, room)), top = down ? Math.min(r.bottom + 4, vh - h2 - 8) : Math.max(8, r.top - 4 - h2);
+      var down = below >= 260 || below >= above, room = (down ? below : above) - 4, h2 = Math.max(160, Math.min(ed ? 520 : 380, room)), top = down ? Math.min(r.bottom + 4, vh - h2 - 8) : Math.max(8, r.top - 4 - h2);
       pop.style.cssText = "left:" + left + "px;top:" + top + "px;width:" + w + "px;max-height:" + h2 + "px";
     }
     var t0 = Date.now(), typing = function (ev) { return ev.isComposing || ev.keyCode === 229; };       // 日本語入力の変換を確定する Enter は、操作として扱わない
@@ -932,10 +985,10 @@
         if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); closePicker(); }
         else if (ev.key === "ArrowDown") { ev.preventDefault(); if (!trash && hi < shown.length - 1) { hi++; mark(); } }
         else if (ev.key === "ArrowUp") { ev.preventDefault(); if (!trash && hi > 0) { hi--; mark(); } }
-        else if (ev.key === "Enter" && !typing(ev) && document.activeElement === q) { ev.preventDefault(); if (!trash && shown[hi]) pick(shown[hi]); }
+        else if (ev.key === "Enter" && !typing(ev) && document.activeElement === q) { ev.preventDefault(); if (!trash && !multi && shown[hi]) pick(shown[hi]); }
         else if (ev.key === "Enter" && !typing(ev) && newInp && document.activeElement === newInp) { ev.preventDefault(); submitNew(); }
       } };
-    PK = p; q.addEventListener("input", function () { hi = 0; pend = null; note = ""; draw(); });
+    PK = p; q.addEventListener("input", function () { hi = 0; pend = null; ask = false; note = ""; draw(); });
     back.addEventListener("mousedown", function (ev) { if (ev.target === back) { ev.preventDefault(); closePicker(); } });
     back.appendChild(pop); document.body.appendChild(back); place(); draw();
     document.addEventListener("keydown", p.onKey, true); window.addEventListener("scroll", p.onScroll, true); window.addEventListener("resize", p.onResize);
