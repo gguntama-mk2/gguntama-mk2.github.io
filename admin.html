@@ -45,6 +45,14 @@
   .pt-pk-info { font-size:11px; padding:0 12px 6px; } .pt-pk-list { overflow:auto; flex:1 1 auto; border-top:1px solid var(--line); -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
   .pt-pk-item { display:flex; gap:8px; justify-content:space-between; align-items:baseline; padding:7px 12px; cursor:pointer; border-bottom:1px solid var(--line); word-break:break-all; } .pt-pk-item.on { background:var(--panel2); box-shadow:inset 3px 0 0 var(--accent); } .pt-pk-n { font-size:11px; flex:0 0 auto; }
   @media (max-width:640px) { .pt-pk-item { padding:11px 12px; } .pt-pk-q { font-size:16px; } }
+  .pt-pk-item .pt-pk-v { flex:1 1 auto; min-width:0; } .pt-pk-tag { flex:0 0 auto; font-size:10px; line-height:1.6; color:var(--accent); border:1px solid var(--accent); border-radius:999px; padding:0 6px; }
+  .pt-pk-del { flex:0 0 auto; font:inherit; font-size:11px; color:var(--sub); background:transparent; border:1px solid var(--line); border-radius:6px; padding:1px 8px; cursor:pointer; } .pt-pk-del:hover, .pt-pk-del:focus-visible { color:var(--ng); border-color:var(--ng); }
+  .pt-pk-item .pt-pk-restore { flex:0 0 auto; font-size:12px; padding:2px 12px; }
+  .pt-pk-item.pt-pk-confirm { flex-direction:column; align-items:stretch; gap:8px; background:var(--panel2); box-shadow:inset 3px 0 0 var(--ng); } .pt-pk-cbtns { display:flex; gap:8px; } .pt-pk-cbtns .btn { padding:4px 14px; }
+  .pt-pk-foot { flex:0 0 auto; display:flex; flex-direction:column; gap:6px; padding:8px; border-top:1px solid var(--line); background:var(--panel); } .pt-pk-foot [hidden] { display:none; }
+  .pt-pk-addrow { display:flex; gap:6px; } .pt-pk-new { flex:1 1 auto; min-width:0; padding:7px 10px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px; font:inherit; } .pt-pk-add { flex:0 0 auto; font-weight:700; }
+  .pt-pk-trash { align-self:flex-start; font-size:12px; padding:3px 10px; background:transparent; } .pt-pk.busy { opacity:.7; }
+  @media (max-width:640px) { .pt-pk-new { font-size:16px; } .pt-pk-del { padding:6px 12px; } .pt-pk-cbtns .btn, .pt-pk-restore { padding:8px 16px; } .pt-pk-trash { padding:8px 12px; } }
   .editor { display:grid; grid-template-columns:minmax(220px,300px) 1fr; gap:12px; align-items:start; }
   :root { --hh:60px; }
   .editor > .mleft { position:sticky; top:calc(var(--hh) + 8px); display:flex; flex-direction:column; height:calc(100vh - var(--hh) - 20px); min-height:360px; }   /* 左の技一覧は、スクロールしても画面に留まる。一覧は残りの高さいっぱい */
@@ -479,7 +487,7 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261112d" defer></script>
+<script src="admin.js?v=20261112e" defer></script>
 <script src="admin-move-media.js?v=20261111" defer></script>
 <script src="admin-move-icons.js?v=20261111b" defer></script>
 <script src="admin-px-images.js?v=20261111" defer></script>
