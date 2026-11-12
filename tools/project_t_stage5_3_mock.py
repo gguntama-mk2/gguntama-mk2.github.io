@@ -146,6 +146,7 @@ def start(preview):
     api_handler = functools.partial(TestHandler, directory=preview, role="api")
     static_server = None
     api_server = None
+    listeners_started = False
     try:
         static_server = ThreadingHTTPServer((HOST, STATIC_PORT), static_handler)
         api_server = ThreadingHTTPServer((HOST, API_PORT), api_handler)
@@ -155,6 +156,7 @@ def start(preview):
         thread.start()
         api_thread = threading.Thread(target=api_server.serve_forever, daemon=True)
         api_thread.start()
+        listeners_started = True
         # Confirm both listener ports before declaring success.
         for url in (
             "http://127.0.0.1:8766/api/v1/checksheet/overrides",
@@ -176,7 +178,8 @@ def start(preview):
     finally:
         for server in (static_server, api_server):
             if server is not None:
-                server.shutdown()
+                if listeners_started:
+                    server.shutdown()
                 server.server_close()
 
 
