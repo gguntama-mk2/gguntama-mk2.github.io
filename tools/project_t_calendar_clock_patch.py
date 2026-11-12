@@ -24,7 +24,7 @@ CAL_NEW = "const paths=(typeof window.PT_CALENDAR_API_URL==='string' && window.P
 
 
 def git_blob_sha(data: bytes) -> str:
-    header = b"blob " + str(len(data)).encode("ascii") + b"\\0"
+    header = b"blob " + str(len(data)).encode("ascii") + b"\0"
     return hashlib.sha1(header + data).hexdigest()
 
 
@@ -52,7 +52,7 @@ def extract_seed(src: str) -> dict:
     if start < 0:
         raise ValueError("SEED0 not found")
     start += len(token)
-    end = src.find(";\\nconst seedFrom", start)
+    end = src.find(";\nconst seedFrom", start)
     if end < 0:
         raise ValueError("SEED0 terminator not found")
     seed = json.loads(src[start:end])
@@ -82,7 +82,7 @@ def main() -> None:
         seeds.append(extract_seed(original))
     if seeds[0] != seeds[1]:
         raise SystemExit("PC/SP seed differs; REFUSING patch")
-    prepared["calendar-events.json"] = (json.dumps(seeds[0], ensure_ascii=False, indent=2) + "\\n").encode("utf-8")
+    prepared["calendar-events.json"] = (json.dumps(seeds[0], ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     out.mkdir(parents=True)
     for name, content in prepared.items():
         (out / name).write_bytes(content)
@@ -94,7 +94,7 @@ def main() -> None:
         "production_modified": False,
         "note": "Static embedded seed: NOT an automatic live calendar feed.",
     }
-    (out / "PREVIEW_MANIFEST.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8")
+    (out / "PREVIEW_MANIFEST.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     print(f"PASS: preview created in {out}; 21 events; original files unchanged")
 
 

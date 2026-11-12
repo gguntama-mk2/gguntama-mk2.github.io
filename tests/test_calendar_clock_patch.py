@@ -7,7 +7,7 @@ from tools.project_t_calendar_clock_patch import (
 
 class PatchTests(unittest.TestCase):
     def test_rewrites_exact_anchors(self):
-        html = "\\n".join([CLOCK_OLD, FETCH_OLD, PARSE_OLD, CAL_OLD])
+        html = "\n".join([CLOCK_OLD, FETCH_OLD, PARSE_OLD, CAL_OLD])
         patched = patch_html(html)
         self.assertIn(CLOCK_NEW, patched)
         self.assertIn(FETCH_NEW, patched)
@@ -21,7 +21,7 @@ class PatchTests(unittest.TestCase):
             patch_html("<html></html>")
 
     def test_extracts_seed(self):
-        src = 'const SEED0=' + '{"events":[' + ','.join(['{}']*21) + ']}' + ';\\nconst seedFrom'
+        src = 'const SEED0=' + '{"events":[' + ','.join(['{}']*21) + ']}' + ';\nconst seedFrom'
         self.assertEqual(len(extract_seed(src)["events"]), 21)
 
 if __name__ == "__main__":
