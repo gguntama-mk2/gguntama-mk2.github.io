@@ -1019,14 +1019,14 @@
       field(col.label, ctrl, offBox);
     });
     // タグ
-    var tg = h("div", { class: "tags" }), eff = effectiveTags(m), auto = autoTags(m), tokens = (m.t || "").split(/[,，\s]+/).filter(Boolean);
+    var tg = h("div", { class: "tags" }), auto = autoTags(m), tokens = (m.t || "").split(/[,，\s]+/).filter(Boolean);
     var known = {}; S.tags.forEach(function (t) { known[t.id] = 1; }); EXTRA_T.forEach(function (t) { known[t[0]] = 1; });
     var stateOf = function (id) { return tokens.indexOf("-" + id) >= 0 ? "off" : tokens.indexOf(id) >= 0 ? "on" : "auto"; };
     var all = S.tags.map(function (t) { return [t.id, t.label, t.full]; }).concat(EXTRA_T.map(function (t) { return [t[0], t[1], t[1]]; }));
     all.forEach(function (t) {
       if (t[0] === "gn" || t[0] === "gu") return;     // 取得・消費は下の「取得・消費」欄（tg）で入れる
       var sel = h("select", { onchange: function (ev) { setTag(m, t[0], ev.target.value); } },
-        h("option", { value: "auto", text: "自動" + (eff[t[0]] !== undefined ? "（いま" + (eff[t[0]] ? "付く" : "付かない") + "）" : "") }), h("option", { value: "on", text: "付ける" }), h("option", { value: "off", text: "外す" }));
+        h("option", { value: "auto", text: "自動付与" }), h("option", { value: "on", text: "付与" }), h("option", { value: "off", text: "解除" }));
       sel.value = stateOf(t[0]);
       tg.appendChild(h("div", { class: "t", title: t[2] }, sel, h("span", { text: t[1] + (auto[t[0]] ? "（自動判定あり）" : "") })));
     });
@@ -1059,7 +1059,7 @@
     var known = {}; S.tags.forEach(function (t) { known[t.id] = 1; }); EXTRA_T.forEach(function (t) { known[t[0]] = 1; });
     var keep = (m.t || "").split(/[,，\s]+/).filter(Boolean).filter(function (x) { return known[x.replace(/^-/, "")]; });
     var extra = text.split(/[,，\s]+/).filter(Boolean);
-    if (extra.some(function (x) { return !/^-?[A-Za-z0-9]+$/.test(x); })) { banner("warn", "タグ指定は、英数字とカンマ（先頭に - を付けると外す指定）だけで書いてください。"); return; }
+    if (extra.some(function (x) { return !/^-?[A-Za-z0-9]+$/.test(x); })) { banner("warn", "タグ指定は、英数字とカンマ（先頭に - を付けると解除する指定）だけで書いてください。"); return; }
     var all = extra.concat(keep); if (all.length) m.t = all.join(","); else delete m.t;
     touch(); renderEditor();
   }
