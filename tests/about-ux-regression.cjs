@@ -1,28 +1,29 @@
 // PROJECT T staged UX-02 + UX-06 regression (Node built-ins only).
-// Static contract tests: not an end-to-end browser, screen-reader or deploy proof.
+// Static contract checks; NOT a browser, screen-reader or deployment test.
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const html = fs.readFileSync(path.join(__dirname, '..', 'about.html'), 'utf8');
-const count = (re) => (html.match(re) || []).length;
-assert.match(html, /<html lang="ja">/);
-assert.equal(count(/<nav aria-label="サイト内ナビゲーション">/g), 1);
-assert.equal(count(/<a\\b/g), 17, 'preserve the original anchor count');
-assert.equal(count(/<script\\b/g), 1, 'do not change the original script count');
-assert.match(html, /\\.site nav a:focus-visible,\\.brand:focus-visible\\{outline:3px solid #8dd7ff;/);
-assert.match(html, /@media\\(pointer:coarse\\)\\{\\.site nav a\\{min-height:44px\\}\\}/);
+const occurrences = (value) => html.split(value).length - 1;
+assert.ok(html.includes('<html lang="ja">'));
+assert.equal(occurrences('<nav aria-label="サイト内ナビゲーション">'), 1);
+assert.equal(occurrences('<a '), 17, 'preserve original anchors');
+assert.equal(occurrences('<script '), 1, 'preserve original script');
+assert.ok(html.includes('.site nav a:focus-visible,.brand:focus-visible{outline:3px solid #8dd7ff;'));
+assert.ok(html.includes('@media(pointer:coarse){.site nav a{min-height:44px}}'));
 for (const link of ['about.html', 'privacy.html', 'terms.html', './']) {
-  assert.ok(html.includes('href="' + link + '"'), 'nav link missing: ' + link);
+  assert.ok(html.includes('href="' + link + '"'), 'missing nav URL: ' + link);
 }
 for (const en of ['About', 'Privacy Policy', 'Terms', 'Open app']) {
-  assert.ok(html.includes('<span lang="en">' + en + '</span>'), 'English language span missing: ' + en);
+  assert.ok(html.includes('<span lang="en">' + en + '</span>'), 'missing en language: ' + en);
 }
-assert.equal(count(/<h2>チェックシートの保存について/g), 1);
+assert.equal(occurrences('<h2>チェックシートの保存について'), 1);
 assert.ok(html.indexOf('<h2>チェックシートの保存について') < html.indexOf('<h2>お問い合わせ'));
-assert.match(html, /Checklist progress and notes may be stored in your current browser/);
-assert.match(html, /Clearing site data may remove saved content/);
-assert.match(html, /If a storage warning appears/);
-assert.equal(count(/<h2>お問い合わせ/g), 1);
+for (const text of ['Checklist progress and notes may be stored in your current browser',
+  'Clearing site data may remove saved content', 'If a storage warning appears']) {
+  assert.ok(html.includes(text), 'missing storage explanation: ' + text);
+}
+assert.equal(occurrences('<h2>お問い合わせ'), 1);
 assert.ok(!html.includes('<nav aria-label="Site">'));
-console.log('PASS: staged about.html UX-02/UX-06 static regression');
+console.log('PASS: about UX-02/UX-06 static contract');
