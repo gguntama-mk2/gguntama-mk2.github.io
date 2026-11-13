@@ -300,6 +300,7 @@
       currentHash: r.current_base_hash, manifestOk: !!r.manifest_ok, // サーバーが確かめた「いま公開されている元データ」の指紋
       moves: clone(r.exists ? r.moves : base.moves), serverMoves: r.exists ? clone(r.moves) : null,
       published: r.published ? { version: r.published.version, moves: r.published.moves, at: r.published.at, by: r.published.by, live: r.published.public_live, baseStatus: r.published.base_status } : null,
+      remap: normRemap(r.pending_remap),                             // 技番号を振り直した下書きの記録（公開するとき、アイコン設定・技動画を新しい番号へ移す）
       updatedBy: r.updated_by, updatedAt: r.updated_at, sel: 0, filter: "", hist: [], ref: null };
     banner("");
     D.diff.hidden = true;
@@ -361,7 +362,7 @@
     if (baseState() === "stale") { return ensureBaseOk(); }
     var ok = await confirmModal("最新の元データをベースに再編集", ["編集画面を、いまの最新の元データで作り直します。", "これまでの編集内容は消さずに参照用に残します。差分の画面から、必要な技だけを取り込み直してください。", "（保存するまで、サーバーには何も反映されません）"], "再編集を始める", false);
     if (!ok) return;
-    c.ref = clone(c.moves); c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; S.colCache = {};
+    c.ref = clone(c.moves); c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; c.remap = null; S.colCache = {};
     touch(); renderAll();
     banner("warn", ["最新の元データをベースに、編集画面を作り直しました。以前の編集内容は参照用に残してあります。", "必要な編集を取り込み直してから、「下書きを保存」→「公開する」の順に進んでください。元データと同じ内容にしたいときは「上書きを削除」を使ってください。"],
       [{ label: "以前の編集との差分を見る", fn: function () { showDiff(); } }]);
@@ -463,7 +464,9 @@
         title: "上書きを削除し元データに戻します", onclick: removeOverride }));
     var more = h("details", { class: "pt-sheet-more" },
       h("summary", { text: "その他の操作（元データ・復元・削除）" }), extraActions);
+    var pend = remapOut(c), nmove = pend && pend.map ? Object.keys(pend.map).length : 0;
     D.tool.append(heading, mainActions, more,
+      nmove ? h("p", { class: "pt-sheet-tool-note", id: "remapNote", text: "技番号の振り直し（" + nmove + " 件の番号が変わります）は、まだ公開されていません。「公開する」と同時に、アイコン設定・技動画も新しい番号へ移ります。" }) : null,
       h("p", { class: "muted pt-sheet-tool-note",
         text: "下書きを保存してもサイトは変わりません。「公開する」で一般公開に反映されます。" }));
   }
@@ -472,7 +475,7 @@
     if (baseState() === "stale") return ensureBaseOk();
     var ok = await confirmModal("元データを読み込む", ["元データ（サイトに埋め込まれた最新の技の一覧）を、下書きとして読み込みます。", "いまの編集内容は置き換わります（保存するまで反映されません）。"], "読み込む", false);
     if (!ok) return;
-    c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; touch(); renderAll(); banner(""); notifyBase();
+    c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; c.remap = null; touch(); renderAll(); banner(""); notifyBase();
   }
   function diffSummary(from, to) {
     var a = {}, b = {}, add = 0, del = 0, chg = 0;
@@ -498,7 +501,8 @@
     if (!skipCheck && !(await ensureBaseOk())) return false;       // 元データが更新されていたら、案内を出して止める（サーバーも同じ判定で 409 を返す）
     banner("", "保存中…");
     try {
-      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id), { method: "POST", body: { moves: c.moves, expected_version: c.version, base_hash: c.contentBase } });
+      c.remap = remapOut(c);
+      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id), { method: "POST", body: { moves: c.moves, expected_version: c.version, base_hash: c.contentBase, remap: c.remap } });
       c.version = r.version; c.exists = true; c.serverMoves = clone(c.moves); c.savedBase = c.contentBase; c.ref = null; S.dirty = false;
       if (r.base_status === "current") { c.currentHash = c.contentBase; c.manifestOk = true; }
       await refreshOverview(); renderChars(); renderTool(); loadHistory();
@@ -510,14 +514,19 @@
     var c = S.cur;
     if (!(await ensureBaseOk())) return;
     var before = c.published ? c.published.moves : baseOf(c.id).moves;
-    var ok = await confirmModal("公開の確認", [MSG_PUBLISH_CONFIRM, "対象：" + c.name, "公開前との違い：" + diffSummary(before, c.moves), "公開してから一般のサイトに出るまで、最大1分ほどかかります。"], "公開する", false);
+    var pend = remapOut(c), npend = pend && pend.map ? Object.keys(pend.map).length : 0;
+    var ok = await confirmModal("公開の確認", [MSG_PUBLISH_CONFIRM, "対象：" + c.name, "公開前との違い：" + diffSummary(before, c.moves)].concat(
+      npend ? ["技番号の振り直し（" + npend + " 件の番号が変わります）も、このとき反映されます。アイコン設定・技動画も、技に付いたまま新しい番号へ移ります。"] : [],
+      ["公開してから一般のサイトに出るまで、最大1分ほどかかります。"]), "公開する", false);
     if (!ok) return;
     if (S.dirty || !c.exists || c.contentBase !== c.savedBase) { if (!(await saveDraft(true))) return; }   // 公開する内容を、先に下書きとして保存する（確認は済んでいる）
     try {
       var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/publish", { method: "POST", body: { expected_version: c.version } });
       c.published = { version: c.version, moves: clone(c.moves), live: true, baseStatus: "current" };
+      var mv = r && r.remapped; c.remap = null;
+      if (mv) { try { window.PTAdminMoveIcons.reload(); window.PTAdminMoveMedia.reload(); } catch (_) { /* パネルを開いたときに最新が読み込まれる */ } }
       await refreshOverview(); renderChars(); renderTool(); loadHistory();
-      banner("ok", r.changed ? "公開しました。" : "すでに公開済みの内容です。");
+      banner("ok", r.changed ? "公開しました。" + (mv ? "アイコン設定 " + mv.icons + " 件・技動画 " + mv.videos + " 件を、新しい技番号へ移しました。" : "") : "すでに公開済みの内容です。");
     } catch (e) { explain(e); }
   }
   async function revert() {
@@ -552,13 +561,38 @@
     try {
       var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(S.cur.id) + "/history/" + hid);
       if (!r.moves) return banner("warn", "この履歴には内容の保存がありません。");
-      S.cur.moves = clone(r.moves); S.cur.contentBase = r.base_hash || null; S.cur.sel = 0; touch(); renderAll();     // その版が、どの元データをもとにしていたかも一緒に戻す
+      S.cur.moves = clone(r.moves); S.cur.contentBase = r.base_hash || null; S.cur.sel = 0; S.cur.remap = null; touch(); renderAll();     // その版が、どの元データをもとにしていたかも一緒に戻す
       banner(""); notifyBase();
     } catch (e) { banner("err", e.message); }
   }
 
   // ------------------------------------------------------------ 編集画面
   function touch() { S.dirty = true; renderTool(); updateCharCounts(); schedulePreview(450); }
+  // ---- 技番号の振り直しの記録：{ map: { 公開中の番号: 新しい番号 }, fresh: [公開中の技に結びつかない新しい技の番号] }。
+  //      アイコン設定・技動画は番号で技に結びついているので、サーバーが「公開する」と同時に、この記録のとおり新しい番号へ移す
+  function normRemap(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    var map = {}, n = 0; Object.keys(raw.map || {}).forEach(function (a) { map[a] = raw.map[a]; n++; });
+    var fresh = Array.isArray(raw.fresh) ? raw.fresh.slice() : [];
+    return n || fresh.length ? { map: map, fresh: fresh } : null;
+  }
+  function liveKs(c) {                          // 一般のサイトに出ている技の番号（まだ公開していなければ元データの番号）
+    var o = {}; ((c.published ? c.published.moves : baseOf(c.id).moves) || []).forEach(function (m) { o[m.k] = true; }); return o;
+  }
+  function originOf(c) {                        // 下書きの技が、サイトに出ているどの番号の技か（新しい技は null）を返す関数
+    var rm = c.remap || {}, map = rm.map || {}, inv = {}, src = {}, fresh = {}, live = liveKs(c);
+    Object.keys(map).forEach(function (a) { inv[map[a]] = +a; src[a] = true; });
+    (rm.fresh || []).forEach(function (k) { fresh[k] = true; });
+    return function (m) { if (m.k in inv) return inv[m.k]; if (fresh[m.k]) return null; return live[m.k] && !src[m.k] ? m.k : null; };
+  }
+  function remapOut(c) {                        // 保存するとき送る形。いま下書きにある技の番号に合わないもの（削除した技など）は外す
+    var rm = normRemap(c.remap); if (!rm) return null;
+    var ks = {}; c.moves.forEach(function (m) { ks[m.k] = true; });
+    var map = {}, n = 0; Object.keys(rm.map).forEach(function (a) { if (ks[rm.map[a]]) { map[a] = rm.map[a]; n++; } });
+    var fresh = rm.fresh.filter(function (k) { return ks[k]; });
+    var out = {}; if (n) out.map = map; if (fresh.length) out.fresh = fresh;
+    return n || fresh.length ? out : null;
+  }
   function nextK() {
     var m = -1; S.cur.moves.forEach(function (x) { m = Math.max(m, x.k); }); baseOf(S.cur.id).moves.forEach(function (x) { m = Math.max(m, x.k); });
     if (S.cur.published) S.cur.published.moves.forEach(function (x) { m = Math.max(m, x.k); });
@@ -641,8 +675,8 @@
     var baseBtn = h("button", { type: "button", class: "btn", id: "ptOrdBase", text: "元データの並びに戻す", title: "元データの順番に並べ直します（新しく足した技は最後）", onclick: function () { if (confirm("元データの並び順に戻します（新しく足した技は最後に置きます）。\n「直前に戻す」で取り消せます。")) toBaseOrder(); } });
     var renumBtn = h("button", { type: "button", class: "btn", id: "ptOrdRenumber", text: "技番号を並び順どおりに振り直す", title: "技番号（#〇〇）を、いまの並び順どおりに 0, 1, 2…と振り直します", onclick: renumber });
     // 元に戻せる形で記録する：技の中身（オブジェクト）と、そのときのkを組にして持つ
-    function snap() { return c.moves.map(function (m) { return { m: m, k: m.k }; }); }
-    function restore(sn) { sn.forEach(function (e) { e.m.k = e.k; }); c.moves = sn.map(function (e) { return e.m; }); fixSel(); touch(); draw(); }
+    function snap() { var sn = c.moves.map(function (m) { return { m: m, k: m.k }; }); sn.remap = c.remap ? clone(c.remap) : null; return sn; }
+    function restore(sn) { sn.forEach(function (e) { e.m.k = e.k; }); c.moves = sn.map(function (e) { return e.m; }); c.remap = sn.remap ? clone(sn.remap) : null; fixSel(); touch(); draw(); }
     function fixSel() { var si = selMove ? c.moves.indexOf(selMove) : -1; c.sel = si < 0 ? 0 : si; }
     function setOrder(list2) {                      // list2：並べ替えたあとの技（オブジェクト）の配列
       if (list2.length === c.moves.length && list2.every(function (m, i) { return m === c.moves[i]; })) return;
@@ -682,36 +716,43 @@
     async function renumber() {
       if (busy) return; busy = true; renumBtn.disabled = true;
       try {
-        var plan = c.moves.map(function (m, i) { return { m: m, from: m.k, to: i }; }), changed = plan.filter(function (x) { return x.from !== x.to; });
+        var org = originOf(c);          // 各技が、いまサイトに出ているどの番号の技か（新しい技は null）。アイコン設定・動画はその番号に付いている
+        var plan = c.moves.map(function (m, i) { return { m: m, from: m.k, to: i, o: org(m) }; }), changed = plan.filter(function (x) { return x.from !== x.to; });
         if (!changed.length) { await confirmModal("技番号の振り直し", ["技番号は、すでにいまの並び順どおり（#0〜#" + (c.moves.length - 1) + "）です。振り直す必要はありません。"], "閉じる", false); return; }
-        // ① アイコン設定・動画登録は、技番号に結びついている。番号が変わる技に登録があれば、外れてしまうので止める
-        var touched = {}; changed.forEach(function (x) { touched[x.from] = true; touched[x.to] = true; });
-        var reg = [];
+        // 公開中の番号から変わる技（visitor の端末に保存されたチェック等と、アイコン設定・動画の登録に関わる）
+        var moving = plan.filter(function (x) { return x.o !== null && x.o !== x.to; }), movingSrc = {}, landing = {};
+        moving.forEach(function (x) { movingSrc[x.o] = true; landing[x.to] = true; }); plan.forEach(function (x) { if (x.o === null) landing[x.to] = true; });
+        // ① アイコン設定・動画の登録は、公開するときに技へ付いたまま新しい番号へ移る。ここでは件数を知らせるだけ（確認できなくても止めない）
+        var nIcon = 0, nVideo = 0, nStale = 0, known = true;
         try {
           var ic = await api("/api/v1/admin/move-icons"), md = await api("/api/v1/admin/move-media");
           var pick = function (r) { var e = r && (r.entries || r.items) || []; return Array.isArray(e) ? e : Object.keys(e).map(function (k) { return e[k]; }); };
-          pick(ic).forEach(function (e) { if (e.character_id === c.id && touched[e.site_k]) reg.push({ kind: "アイコン設定", k: e.site_k, name: e.move_name }); });
-          pick(md).forEach(function (e) { if (e.character_id === c.id && touched[e.site_k]) reg.push({ kind: "技動画", k: e.site_k, name: e.move_name }); });
-        } catch (e) { await confirmModal("技番号の振り直し", ["アイコン設定・技動画の登録状況を確認できませんでした（" + (e && e.message || e) + "）。", "登録が外れる事故を防ぐため、番号は変えていません。少し待ってからやり直してください。"], "閉じる", false); return; }
-        if (reg.length) {
-          reg.sort(function (a, b) { return a.k - b.k; });
-          var ex = reg.slice(0, 6).map(function (r) { return "・" + r.kind + "：#" + r.k + " " + (r.name || ""); });
-          await confirmModal("技番号の振り直しはできません", ["このキャラには、番号が変わる技に結びついたアイコン設定・技動画の登録が " + reg.length + " 件あります。振り直すと別の技に付いてしまうため、番号は変えていません。"].concat(ex, reg.length > 6 ? ["…ほか " + (reg.length - 6) + " 件"] : [], ["先に、該当の登録を消してから（または振り直し後に登録し直す前提で）やり直してください。"]), "閉じる", false);
-          return;
-        }
+          var tally = function (list, kind) {
+            pick(list).forEach(function (e) {
+              if (e.character_id !== c.id) return;
+              if (movingSrc[e.site_k]) { if (kind === "icon") nIcon++; else nVideo++; }
+              else if (landing[e.site_k]) nStale++;      // 削除した技などに残った登録：新しい番号に別の技が来るので整理される
+            });
+          };
+          tally(ic, "icon"); tally(md, "video");
+        } catch (e) { known = false; }
         // ② 公開中の技の番号が変わる場合は、訪問者の端末に保存されたチェック等への影響を伝える
-        var pubK = {}; ((c.published && c.published.moves) || []).forEach(function (m) { pubK[m.k] = m.name; });
-        var livePlaced = changed.filter(function (x) { return x.from in pubK; }).length;
         var sample = changed.slice(0, 4).map(function (x) { return "#" + x.from + " → #" + x.to + "　" + x.m.name; });
         var lines = ["技番号を、いまの並び順どおりに #0〜#" + (c.moves.length - 1) + " へ振り直します。", "番号が変わる技：" + changed.length + " / " + c.moves.length + " 件（例）"].concat(sample, [changed.length > 4 ? "…ほか " + (changed.length - 4) + " 件" : ""].filter(Boolean));
-        lines.push(livePlaced
-          ? "【注意】公開中の技のうち " + livePlaced + " 件は番号が変わります。公開後、訪問者の端末に保存済みの「チェック・メモ・ブックマーク」は、その番号の別の技に付いたり、外れたりします（取り戻せません）。このキャラのアイコン・動画の登録はありません。"
+        if (nIcon || nVideo) lines.push("アイコン設定 " + nIcon + " 件・技動画 " + nVideo + " 件は、技に付いたまま新しい番号へ移ります。移るのは「公開する」を押した瞬間で、それまでサイトは今の番号・今の登録のままです。");
+        else if (!known) lines.push("アイコン設定・技動画の登録状況は確認できませんでしたが、登録がある技は、公開するときに自動で新しい番号へ移ります。");
+        if (nStale) lines.push("削除した技などに残っていた登録 " + nStale + " 件は、その番号に別の技が来るため、公開するときに整理されます。");
+        lines.push(moving.length
+          ? "【注意】サイトに出ている技のうち " + moving.length + " 件は番号が変わります。公開後、訪問者の端末に保存済みの「チェック・メモ・ブックマーク」は、その番号の別の技に付いたり、外れたりします（取り戻せません）。"
           : "この番号は、まだ公開されていません。訪問者のチェック等には影響しません。");
         lines.push("保存・公開するまでサイトには反映されません。保存前なら「直前に戻す」で取り消せます。");
-        var ok = await confirmModal("技番号の振り直し", lines, "振り直す", !!livePlaced);
+        var ok = await confirmModal("技番号の振り直し", lines, "振り直す", !!moving.length);
         if (!ok) return;
         undo.push(snap()); if (undo.length > 50) undo.shift();
+        var map = {}, fresh = [];
+        plan.forEach(function (x) { if (x.o === null) fresh.push(x.to); else if (x.o !== x.to) map[x.o] = x.to; });
         c.moves.forEach(function (m, i) { m.k = i; });
+        c.remap = Object.keys(map).length || fresh.length ? { map: map, fresh: fresh } : null;
         touch(); draw();
       } finally { busy = false; renumBtn.disabled = false; }
     }

@@ -115,5 +115,6 @@
     setCharacters(context.characters?context.characters():[]);
     refresh().catch(e=>message("一覧を取得できませんでした："+e.message,"error"));
   }
-  window.PTAdminMoveMedia=Object.freeze({mount,updateCharacters:setCharacters});
+  const reload=()=>typeof listing==="undefined"||!listing?Promise.resolve():refresh().catch(e=>message("一覧を取得できませんでした："+e.message,"error"));   // 技番号の振り直しを公開したあとに、登録の一覧を読み直す
+  window.PTAdminMoveMedia=Object.freeze({mount,updateCharacters:setCharacters,reload});
 })();
