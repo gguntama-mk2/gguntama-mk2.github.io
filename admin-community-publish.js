@@ -100,7 +100,7 @@
     var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "公開（プレイヤー・大会・イベント）" }));
     card.appendChild(h("p", { class: "pt-cm-sub", text: "プレイヤー管理・トーナメント管理で編集した下書きを、公開サイト（www.project-t-god.com）に反映します。公開のたびに「版」が1つ増え、履歴から以前の版に戻せます。" }));
     if (S.loading) { card.appendChild(h("p", { text: "公開の状態を読み込んでいます…" })); el.appendChild(card); return; }
-    if (S.err) { card.appendChild(h("p", { class: "pt-pb-err", text: S.err })); card.appendChild(btn("読み直す", load)); el.appendChild(card); return; }
+    if (S.err) { card.appendChild(h("p", { class: "pt-pb-err", role: "alert", text: S.err })); card.appendChild(btn("読み直す", load)); el.appendChild(card); return; }
     var dr = C.getState(); delete dr.savedAt;
     var cur = S.status && S.status.entries.filter(function (e) { return e.version === S.current; })[0];
     var st = h("div", { class: "pt-pb-status" }, [

@@ -10,6 +10,7 @@
 - [x] **UX-02（静的ページ）**: `privacy.html`・`terms.html`のフォーカス、44pxタッチ領域、日英ナビラベルを現行Git blob照合後に追加。`admin.html`は旧ベース不一致のため対象外。
 - [x] **UX-03**: `index.html?choose`のTabフォーカス表示と保存説明の視認性を改善（原本blob一致）。
 - [x] **UX-08**: `move-media.js` サムネイル読込失敗時の案内を未登録と区別（元blob一致）。
+- [x] **UX-10**: `admin-community-publish.js`の状態読込エラーに`role=alert`を追加。既存の公開/復元/ドラフト処理は変更せず、プレイヤー/大会管理担当ラインの実動作レビューHOLD。
 - [x] **UX-09**: `admin-move-icons.js` 保存メッセージに状態別ARIAライブ通知（元blob一致）。
 - [x] 3対象に対応する静的回帰ファイルを作成。
 - [ ] PC/SP実ブラウザ、キーボード、読み上げ・画面比較、実行テスト。
