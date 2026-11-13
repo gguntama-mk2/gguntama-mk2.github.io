@@ -20,7 +20,7 @@
     if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status);
     return body;
   }
-  function say(text, state) { ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
+  function say(text, state) { ui.note.setAttribute("aria-live", state === "error" ? "assertive" : "polite"); ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
   function iconsApi() { var w = ctx.win && ctx.win(); return w && w.PTIcons ? w.PTIcons : null; }
   var ZN = { c: "コマンドの横", g: "地上ヒット・ガード時", a: "空中ヒット時" };
   function isCmd(id) { var c = catalog.find(function (x) { return x.id === id; }); return !!(c && c.cmd); }

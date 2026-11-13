@@ -81,11 +81,11 @@
   }
   function el(tag, cls, text) { var x = document.createElement(tag); if (cls) x.className = cls; if (text !== undefined) x.textContent = text; return x; }
 
-  function noImage() { var s = el("span", "pt-no-image", "NO IMAGE"); s.setAttribute("aria-label", "動画は未登録です"); return s; }
+  function noImage(reason) { var s = el("span", "pt-no-image", "NO IMAGE"); s.setAttribute("aria-label", reason === "thumb-error" ? "サムネイルを読み込めませんでした" : "動画は未登録です"); return s; }
   function thumbButton(char, k, name, m) {
     var b = el("button", "pt-thumb"); b.type = "button"; b.setAttribute("aria-label", name + " の動画を見る");
     var img = document.createElement("img"); img.src = m.thumb; img.alt = ""; img.width = 160; img.height = 90; img.decoding = "async"; img.draggable = false; img.setAttribute("oncontextmenu", "return false");
-    img.addEventListener("error", function () { var p = b.parentNode; if (p) { p.replaceChildren(noImage()); } }, { once: true });
+    img.addEventListener("error", function () { var p = b.parentNode; if (p) { p.replaceChildren(noImage("thumb-error")); } }, { once: true });
     b.append(img, el("span", "pt-play", "▶ 再生"));
     b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openBox(name, m, b); });
     return b;
