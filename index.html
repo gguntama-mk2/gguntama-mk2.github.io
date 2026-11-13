@@ -18,10 +18,11 @@
   p { margin: 0 0 24px; line-height: 1.7; opacity: .85; }
   .btns { display: grid; gap: 12px; }
   a.btn { display: block; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); text-decoration: none; }
-  a.btn:hover, a.btn:focus-visible { border-color: var(--gold); outline: none; }
+  a.btn:hover { border-color: var(--gold); }
+  a.btn:focus-visible { border-color: var(--gold); outline: 3px solid #8dd7ff; outline-offset: 3px; }
   a.btn b { display: block; color: var(--gold); margin-bottom: 4px; }
   a.btn span { font-size: .88rem; opacity: .75; }
-  small { display: block; margin-top: 28px; opacity: .6; line-height: 1.7; }
+  small { display: block; margin-top: 28px; opacity: .85; line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -32,7 +33,7 @@
     <a class="btn" id="goPc" href="pc.html"><b>PC版</b><span>表形式。マウス・キーボード向け（右クリックで答えを表示）</span></a>
     <a class="btn" id="goSp" href="sp.html"><b>スマホ版</b><span>カード形式。タッチ向け（長押しで答えを表示）</span></a>
   </div>
-  <small>読み込みに時間がかかる場合があります（初回のみ、約50MB）。チェックやメモはこの端末のブラウザに保存されます。</small>
+  <small>読み込みに時間がかかる場合があります（初回のみ、約50MB）。チェックやメモは、この端末のブラウザに保存されます。別の端末やブラウザでは同じ保存内容が表示されない場合があります。ブラウザのサイトデータを削除すると、保存した内容が消える場合があります。</small>
 </main>
 <script>
   // スマホは自動でスマホ版へ、パソコンはパソコン版へ。「?choose」を付けると、振り分けずにこの画面を表示する
