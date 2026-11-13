@@ -7,6 +7,7 @@
 
 - [x] **UX-02＋UX-06**: UX-14でGit blob `3f25d4300c5279564be4bc6d5c04602b1578683a` が実原本と一致した `about.html` に、保存説明（日英）、ナビARIA/英語lang、Tabフォーカス、粗いポインター用44pxを3アンカー単一パッチとして反映。
 - [x] 改変前に 3 hunk／元リンク数／script数／対象アンカーを検査し、静的回帰テストを追加。
+- [x] **UX-02（静的ページ）**: `privacy.html`・`terms.html`のフォーカス、44pxタッチ領域、日英ナビラベルを現行Git blob照合後に追加。`admin.html`は旧ベース不一致のため対象外。
 - [x] **UX-03**: `index.html?choose`のTabフォーカス表示と保存説明の視認性を改善（原本blob一致）。
 - [x] **UX-08**: `move-media.js` サムネイル読込失敗時の案内を未登録と区別（元blob一致）。
 - [x] **UX-09**: `admin-move-icons.js` 保存メッセージに状態別ARIAライブ通知（元blob一致）。

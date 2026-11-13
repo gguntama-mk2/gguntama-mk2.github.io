@@ -24,6 +24,9 @@ a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
 .site nav{display:flex;flex-wrap:wrap;gap:8px}
 .site nav a{display:inline-block;padding:7px 16px;border:2px solid var(--pop-edge);border-radius:999px;background:var(--panel);color:var(--text);font-size:.875rem;font-weight:700;text-decoration:none;box-shadow:0 3px 0 var(--pop-shadow)}
 .site nav a:hover{background:var(--head)}
+/* UX-02 staged: visible focus and touch targets */
+.site nav a:focus-visible,.brand:focus-visible{outline:3px solid #8dd7ff;outline-offset:3px}
+@media(pointer:coarse){.site nav a{min-height:44px}}
 .site nav a.go{background:var(--accent);border-color:var(--accent);color:var(--on)}
 main{max-width:1100px;margin:0 auto;padding:6px 16px 40px}
 h1{margin:18px 0 6px;font-size:1.75rem;line-height:1.35}
@@ -51,11 +54,11 @@ body{background:#fff;color:#000;font-size:11pt}
 <body>
 <header class="site">
   <a class="brand" href="about.html"><img src="favicon.svg" width="40" height="40" alt="PROJECT T"><span>PROJECT T</span></a>
-  <nav aria-label="Site">
-    <a href="about.html">About</a>
-    <a href="privacy.html">プライバシーポリシー / Privacy Policy</a>
-    <a href="terms.html">利用規約 / Terms</a>
-    <a class="go" href="./">アプリを開く / Open app</a>
+  <nav aria-label="サイト内ナビゲーション">
+    <a href="about.html"><span lang="en">About</span></a>
+    <a href="privacy.html">プライバシーポリシー / <span lang="en">Privacy Policy</span></a>
+    <a href="terms.html">利用規約 / <span lang="en">Terms</span></a>
+    <a class="go" href="./">アプリを開く / <span lang="en">Open app</span></a>
   </nav>
 </header>
 <main>
