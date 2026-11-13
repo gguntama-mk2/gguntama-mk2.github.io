@@ -252,5 +252,10 @@
     loadOverrides().then(function () { setCharacters(ctx.characters()); }).catch(function (e) { say("設定の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
   }
   function updateCharacters(list) { var w = ctx && ctx.win && ctx.win(); if (w && w.PTIcons) catalog = w.PTIcons.catalog; setCharacters(list); }
-  window.PTAdminMoveIcons = Object.freeze({ mount: mount, updateCharacters: updateCharacters });
+  // 技番号の振り直しを公開したとき（登録が新しい番号へ移ったあと）に、最新の登録を読み直す
+  function reload() {
+    if (!host) return Promise.resolve();
+    return loadOverrides().then(function () { closeEditor(); renderList(); }).catch(function (e) { say("設定の一覧を取得できませんでした：" + e.message, "error"); });
+  }
+  window.PTAdminMoveIcons = Object.freeze({ mount: mount, updateCharacters: updateCharacters, reload: reload });
 })();
