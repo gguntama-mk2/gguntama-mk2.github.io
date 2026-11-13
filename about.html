@@ -24,6 +24,10 @@ a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
 .site nav{display:flex;flex-wrap:wrap;gap:8px}
 .site nav a{display:inline-block;padding:7px 16px;border:2px solid var(--pop-edge);border-radius:999px;background:var(--panel);color:var(--text);font-size:.875rem;font-weight:700;text-decoration:none;box-shadow:0 3px 0 var(--pop-shadow)}
 .site nav a:hover{background:var(--head)}
+/* UX-02: リンクのキーボードフォーカスを可視化 */
+.site nav a:focus-visible,.brand:focus-visible{outline:3px solid #8dd7ff;outline-offset:3px}
+/* UX-02: タッチ端末のナビゲーション操作領域 */
+@media(pointer:coarse){.site nav a{min-height:44px}}
 .site nav a.go{background:var(--accent);border-color:var(--accent);color:var(--on)}
 main{max-width:1100px;margin:0 auto;padding:6px 16px 40px}
 h1{margin:18px 0 6px;font-size:1.75rem;line-height:1.35}
@@ -60,11 +64,11 @@ th{background:var(--head);white-space:nowrap}
 <body>
 <header class="site">
   <a class="brand" href="about.html"><img src="favicon.svg" width="40" height="40" alt="PROJECT T"><span>PROJECT T</span></a>
-  <nav aria-label="Site">
-    <a href="about.html">About</a>
-    <a href="privacy.html">プライバシーポリシー / Privacy Policy</a>
-    <a href="terms.html">利用規約 / Terms</a>
-    <a class="go" href="./">アプリを開く / Open app</a>
+  <nav aria-label="サイト内ナビゲーション">
+    <a href="about.html"><span lang="en">About</span></a>
+    <a href="privacy.html">プライバシーポリシー / <span lang="en">Privacy Policy</span></a>
+    <a href="terms.html">利用規約 / <span lang="en">Terms</span></a>
+    <a class="go" href="./">アプリを開く / <span lang="en">Open app</span></a>
   </nav>
 </header>
 <main>
@@ -113,6 +117,14 @@ th{background:var(--head);white-space:nowrap}
 <h2>データの管理と削除 <small>Your data and control</small></h2>
 <p>ログインページの「アカウントとデータを削除」から、PROJECT T のアカウントと保存されているデータをすべて削除できます（YouTube 上に公開済みの動画は削除されません）。詳しくは<a href="privacy.html">プライバシーポリシー</a>をご覧ください。</p>
 <p lang="en">You can delete your PROJECT T account and all data stored by PROJECT T with the "アカウントとデータを削除" (Delete account and data) button on the login page. Videos already published on YouTube are not deleted. See the <a href="privacy.html">Privacy Policy</a> for details.</p>
+
+<h2>チェックシートの保存について <small>Saving checklist data</small></h2>
+<p>技チェックシートのチェック状態やメモは、使用中のブラウザに保存される場合があります。別の端末やブラウザには、自動で引き継がれない場合があります。</p>
+<p class="en" lang="en">Checklist progress and notes may be stored in your current browser. They may not automatically appear on another device or browser.</p>
+<p>サイトデータを削除すると、保存した内容が失われる場合があります。利用中の画面に書き出し機能がある場合は、重要な記録を事前に控えてください。</p>
+<p class="en" lang="en">Clearing site data may remove saved content. If your current screen offers an export option, keep a copy of important records before clearing data.</p>
+<p>保存の警告が表示された場合、画面上の内容が次回も残るとは限りません。ページを閉じる前に入力内容を確認してください。</p>
+<p class="en" lang="en">If a storage warning appears, changes shown on screen may not be available next time. Check your entries before leaving the page.</p>
 
 <h2>お問い合わせ <small>Contact</small></h2>
 <p><a href="mailto:Project.T.inquiry@gmail.com">Project.T.inquiry@gmail.com</a></p>
