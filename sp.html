@@ -185,7 +185,7 @@ select.themesel option{background:var(--panel);color:var(--text)}
   html[data-info~="atk"] .head .nm .minfo [data-k="atk"], html[data-info~="pc"] .head .nm .minfo [data-k="pc"], html[data-info~="hs"] .head .nm .minfo [data-k="hs"],
   html[data-info~="he"] .head .nm .minfo [data-k="he"], html[data-info~="hb"] .head .nm .minfo [data-k="hb"], html[data-info~="ho"] .head .nm .minfo [data-k="ho"],
   html[data-info~="ra"] .head .nm .minfo [data-k="ra"], html[data-info~="ss"] .head .nm .minfo [data-k="ss"], html[data-info~="tn"] .head .nm .minfo [data-k="tn"],
-  html[data-info~="kr"] .head .nm .minfo [data-k="kr"], html[data-info~="wk"] .head .nm .minfo [data-k="wk"], html[data-info~="hd"] .head .nm .minfo [data-k="hd"], html[data-info~="fu"] .head .nm .minfo [data-k="fu"], html[data-info~="gn"] .head .nm .minfo [data-k="gn"], html[data-info~="gu"] .head .nm .minfo [data-k="gu"], html[data-info~="gw"] .head .nm .minfo [data-k="gw"], html[data-info~="gf"] .head .nm .minfo [data-k="gf"], html[data-info~="hc"] .head .nm .minfo [data-k="hc"], html[data-info~="cc"] .head .nm .minfo [data-k="cc"], html[data-info~="hf"] .head .nm .minfo [data-k="hf"], html[data-info~="cf"] .head .nm .minfo [data-k="cf"], html[data-info~="ws"] .head .nm .minfo [data-k="ws"], html[data-info~="wm"] .head .nm .minfo [data-k="wm"], html[data-info~="hm"] .head .nm .minfo [data-k="hm"], html[data-info~="dl"] .head .nm .minfo [data-k="dl"], html[data-info~="wy"] .head .nm .minfo [data-k="wy"], html[data-info~="au"] .head .nm .minfo [data-k="au"], html[data-info~="tkl"] .head .nm .minfo [data-k="tkl"], html[data-info~="tkr"] .head .nm .minfo [data-k="tkr"], html[data-info~="hn"] .head .nm .minfo [data-k="hn"] { display: inline-block; }
+  html[data-info~="kr"] .head .nm .minfo [data-k="kr"], html[data-info~="wk"] .head .nm .minfo [data-k="wk"], html[data-info~="hd"] .head .nm .minfo [data-k="hd"], html[data-info~="fu"] .head .nm .minfo [data-k="fu"], html[data-info~="gn"] .head .nm .minfo [data-k="gn"], html[data-info~="gu"] .head .nm .minfo [data-k="gu"], html[data-info~="gw"] .head .nm .minfo [data-k="gw"], html[data-info~="gf"] .head .nm .minfo [data-k="gf"], html[data-info~="hc"] .head .nm .minfo [data-k="hc"], html[data-info~="cc"] .head .nm .minfo [data-k="cc"], html[data-info~="hf"] .head .nm .minfo [data-k="hf"], html[data-info~="cf"] .head .nm .minfo [data-k="cf"], html[data-info~="ws"] .head .nm .minfo [data-k="ws"], html[data-info~="wm"] .head .nm .minfo [data-k="wm"], html[data-info~="hm"] .head .nm .minfo [data-k="hm"], html[data-info~="dl"] .head .nm .minfo [data-k="dl"], html[data-info~="wy"] .head .nm .minfo [data-k="wy"], html[data-info~="au"] .head .nm .minfo [data-k="au"], html[data-info~="tkl"] .head .nm .minfo [data-k="tkl"], html[data-info~="tkr"] .head .nm .minfo [data-k="tkr"], html[data-info~="hn"] .head .nm .minfo [data-k="hn"], html[data-info~="rd"] .head .nm .minfo [data-k="rd"] { display: inline-block; }
   .head .nm .minfo[data-many="2"] { gap: 2px; }   /* タグが6つ以上の技：すき間と左右の余白を詰めて、1行に収まるようにする（文字の縮小の下限は0.5倍のまま） */
   .head .nm .minfo[data-many="2"] .tg { padding: 0 .3em; }
   .head .nm .minfo .atk { font-weight: 700; color: var(--text); letter-spacing: .02em; }
@@ -242,6 +242,8 @@ select.themesel option{background:var(--panel);color:var(--text)}
   .head .nm .minfo .tg-wk { --kd: var(--kd-wk); }
   :root { --kd-hm: #f8b0a8; --kd-dl: #c078a8; --kd-wy: #a8b878; --kd-au: #c88068; --kd-tkl: #98d8c0; --kd-tkr: #a8c8f8; --kd-hn: #b8e068; }   /* ホーミング・ディレイ可・壁よろけ・空ヒ時うつ伏せ・左追尾効果・右追尾効果・ヒット時投げ抜け不可 */
   html[data-theme="dojo"] { --kd-hm: #900018; --kd-dl: #1070d0; --kd-wy: #005060; --kd-au: #904858; --kd-tkl: #503860; --kd-tkr: #386000; --kd-hn: #3850b0; }
+  :root { --kd-rd: #f0d494; }   /* リカバリアブルダメージ削除（淡い金色）。既存のタグ・各テーマの色から離れた色を、色の距離（OKLab）で選んだ */
+  html[data-theme="dojo"] { --kd-rd: #bc588c; }
   .head .nm .minfo .tg-fu { --kd: var(--kd-fu); }
   .head .nm .minfo .tg-gn { --kd: var(--kd-gn); }
   .head .nm .minfo .tg-gu { --kd: var(--kd-gu); }
@@ -260,9 +262,10 @@ select.themesel option{background:var(--panel);color:var(--text)}
   .head .nm .minfo .tg-tkl { --kd: var(--kd-tkl); }
   .head .nm .minfo .tg-tkr { --kd: var(--kd-tkr); }
   .head .nm .minfo .tg-hn { --kd: var(--kd-hn); }
+  .head .nm .minfo .tg-rd { --kd: var(--kd-rd); }
   html[data-info~="ho"] .card.kd-ho, html[data-info~="hs"] .card.kd-hs, html[data-info~="ra"] .card.kd-ra { box-shadow: inset 6px 0 0 var(--kd); }
   html[data-info~="ho"] .card.kd-ho:not(.done), html[data-info~="hs"] .card.kd-hs:not(.done), html[data-info~="ra"] .card.kd-ra:not(.done) { background: color-mix(in srgb, var(--kd) 15%, var(--panel)); }
-  .head .nm .minfo .tg-ho, .head .nm .minfo .tg-hs, .head .nm .minfo .tg-ra, .head .nm .minfo .tg-ss, .head .nm .minfo .tg-hd, .head .nm .minfo .tg-tn, .head .nm .minfo .tg-kr, .head .nm .minfo .tg-wk, .head .nm .minfo .tg-fu, .head .nm .minfo .tg-gn, .head .nm .minfo .tg-gu, .head .nm .minfo .tg-gw, .head .nm .minfo .tg-gf, .head .nm .minfo .tg-hc, .head .nm .minfo .tg-cc, .head .nm .minfo .tg-hf, .head .nm .minfo .tg-cf, .head .nm .minfo .tg-ws, .head .nm .minfo .tg-wm, .head .nm .minfo .tg-hm, .head .nm .minfo .tg-dl, .head .nm .minfo .tg-wy, .head .nm .minfo .tg-au, .head .nm .minfo .tg-tkl, .head .nm .minfo .tg-tkr, .head .nm .minfo .tg-hn { background: color-mix(in srgb, var(--kd) 28%, transparent); border-color: var(--kd); }
+  .head .nm .minfo .tg-ho, .head .nm .minfo .tg-hs, .head .nm .minfo .tg-ra, .head .nm .minfo .tg-ss, .head .nm .minfo .tg-hd, .head .nm .minfo .tg-tn, .head .nm .minfo .tg-kr, .head .nm .minfo .tg-wk, .head .nm .minfo .tg-fu, .head .nm .minfo .tg-gn, .head .nm .minfo .tg-gu, .head .nm .minfo .tg-gw, .head .nm .minfo .tg-gf, .head .nm .minfo .tg-hc, .head .nm .minfo .tg-cc, .head .nm .minfo .tg-hf, .head .nm .minfo .tg-cf, .head .nm .minfo .tg-ws, .head .nm .minfo .tg-wm, .head .nm .minfo .tg-hm, .head .nm .minfo .tg-dl, .head .nm .minfo .tg-wy, .head .nm .minfo .tg-au, .head .nm .minfo .tg-tkl, .head .nm .minfo .tg-tkr, .head .nm .minfo .tg-hn, .head .nm .minfo .tg-rd { background: color-mix(in srgb, var(--kd) 28%, transparent); border-color: var(--kd); }
   .head .nm .cmdtxt { flex: none; margin: auto 0 0; height: var(--cmd-h); overflow: hidden; white-space: nowrap; overflow-wrap: normal; font-size: calc(.71875rem * var(--cs, 1)); line-height: calc(var(--cmd-h) * var(--cs, 1)); }
   .head .nm .cmdtxt .ci { vertical-align: middle; }
   .head .nm .cmdtxt.w2 { white-space: normal; overflow-wrap: anywhere; --cs: .5; }
@@ -11700,6 +11703,7 @@ function renderSheetCmd(el, str, name, a) {
    壁やられ(強)・壁やられ(中)＝ヒット時またはカウンターヒット時に、壁やられ(強)／(中)を誘発する技。データの a.wall（壁やられ欄の答え）から自動で付く（「強」とあれば(強)、「中」とあれば(中)。「強・中」なら2つ付く。「ガード：…」だけの答えは対象外）。
    ヒット・カウンターの列の薄字（moveHints）＝その技のヒット側・カウンター側に出す「追撃可能」「コンボ始動」「追撃可能(壁際のみ)」「コンボ始動(壁際のみ)」。ヒット側は t の hf・hc・whf・whc、カウンター側は cf・cc・wcf・wcc（hf・hc・cf・cc は上のタグと同じ判定）。壁際のみの4つは、技のデータの t に書く（例：t: "whc,wcc"）。「コンボ始動」の薄字は、その欄の答えに「コンボ始動」が書いてある技には出さない（答えと二重にしない）。
    ホーミング＝ホーミング性能の欄（a.homing）が「あり」の技（自動）。ディレイ可・壁よろけ・空ヒ時うつ伏せ（空中ヒット時うつ伏せダウン）・左追尾効果・右追尾効果（相手の左／右の横移動に強く追尾する性能あり）・ヒット時投げ抜け不可は、その技のデータに t: "dl"／"wy"／"au"／"tkl"／"tkr"／"hn" を書いて付ける。
+   リカバリアブルダメージ削除＝リカバリアブルダメージを削除する技。ヒット・カウンター・ギミックの欄の答えに「リカバリアブルダメージ」と「削除」がある技に自動で付く。ほかの欄に書いた技は、データに t: "rd" を書いて付ける（外すときは t: "-rd"）。
    表示のON/OFFは項目ごと（攻撃判定／パワークラッシュ／ヒート専用技／ヒートスマッシュ／レイジアーツ／ヒート発動技／ヒートバースト／ヒートダッシュ／強化状態／トルネード／強きりもみ／衰弱／追撃可能やられ／取得／消費／壁ギミック発動／床ギミック発動／ヒット時コンボ始動／カウンター時コンボ始動／ヒット時追撃可能／カウンター時追撃可能／壁やられ(強)／壁やられ(中)）。設定はブラウザに保存されます。
    ヒート専用技・ヒートスマッシュ・レイジアーツ・強化状態・ヒートダッシュ・トルネード・強きりもみ・衰弱・取得・消費・壁ギミック発動・床ギミック発動・ヒット時コンボ始動・カウンター時コンボ始動・ヒット時追撃可能・カウンター時追撃可能は、はじめから表示ONです（ヒート専用技・ヒートスマッシュ・レイジアーツの色分けも同じ項目のON/OFFに連動）。 */
 /* 強化状態の名前（キャラごとに違う）。コマンドにこの文字が入っている技に、右の名前のタグを付ける。吉光は強化アイコンがなく、無刀ノ極（納刀した状態）の技なので「無刀ノ極中」と表記する */
@@ -11749,7 +11753,8 @@ const INFO_TAGS = [
   { id: "au", label: "空ヒ時うつ伏せ", full: "空中ヒット時うつ伏せダウン（空中ヒット時にうつ伏せダウンを誘発する技）", kw: "空ヒ時うつ伏せ 空中ヒット時うつ伏せダウン うつ伏せ 空中ヒット", test: () => false },
   { id: "tkl", label: "左追尾効果", full: "左追尾効果（相手の左横移動に強く追尾する性能あり）", kw: "左追尾効果 左追尾 追尾 左横移動", test: () => false },
   { id: "tkr", label: "右追尾効果", full: "右追尾効果（相手の右横移動に強く追尾する性能あり）", kw: "右追尾効果 右追尾 追尾 右横移動", test: () => false },
-  { id: "hn", label: "ヒット時投げ抜け不可", full: "ヒット時投げ抜け不可（ヒットしたとき、相手が投げ抜けできない技）", kw: "ヒット時投げ抜け不可 投げ抜け不可 投げ抜け", test: () => false }
+  { id: "hn", label: "ヒット時投げ抜け不可", full: "ヒット時投げ抜け不可（ヒットしたとき、相手が投げ抜けできない技）", kw: "ヒット時投げ抜け不可 投げ抜け不可 投げ抜け", test: () => false },
+  { id: "rd", label: "リカバリアブルダメージ削除", full: "リカバリアブルダメージ削除（リカバリアブルダメージを削除する技。ヒット・カウンター・ギミックの欄の答えに「リカバリアブルダメージ」と「削除」がある技）", kw: "リカバリアブルダメージ削除 リカバリアブルダメージ リカバリアブル 削除 回復可能体力 白ゲージ", test: (n, a, o) => recoverableMarks(a, o) }
 ];
 /* 壁やられ欄の答え（a.wall）から、壁やられ(強)・(中)の印を読む。答えは「壁やられ(強)」「壁やられ(中)」「壁やられ(強・中)」、またはヒットとカウンターで違うときは「ヒット：…⏎カウンター：…」（なし を含む）。
    「ガード：…」だけの答え、壁やられ欄が対象外（off に wall）の技は、印なし */
@@ -11757,6 +11762,12 @@ function wallMarks(a, o) {
   const w = String((a && a.wall) || "");
   if (!w || /^ガード：/.test(w) || (o && Array.isArray(o.off) && o.off.indexOf("wall") >= 0)) return { s: false, m: false };
   return { s: /強/.test(w), m: /中/.test(w) };
+}
+/* リカバリアブルダメージ削除の自動判定：ヒット・カウンター・ギミックの欄の答えに「リカバリアブルダメージ」と「削除」の両方が書いてある技（その欄が対象外（off）の技は見ない）。
+   ほかの欄に書いた技は、データに t: "rd" を書いて付ける（外すときは t: "-rd"） */
+function recoverableMarks(a, o) {
+  const off = (o && Array.isArray(o.off)) ? o.off : [];
+  return ["hit", "counter", "gimmick"].some(c => off.indexOf(c) < 0 && /リカバリアブルダメージ[^\n]{0,8}削除/.test(String((a && a[c]) || "")));
 }
 /* ヒット・カウンターの列に薄字で出す印。ヒット側＝追撃可能(hf)・コンボ始動(hc)・追撃可能(壁際のみ)(whf)・コンボ始動(壁際のみ)(whc)／カウンター側＝cf・cc・wcf・wcc。
    hf・hc・cf・cc は技名の右のタグと同じ判定（自動＋ t）。壁際のみの4つは t に書く。コンボ始動の薄字は、その欄の答えに「コンボ始動」がある技には出さない（hintItemsOf）。 */
@@ -11847,6 +11858,7 @@ const INFO_MIG7 = "tekken-checksheet-showinfo-mig7";     // 壁ギミック発�
 const INFO_MIG8 = "tekken-checksheet-showinfo-mig8";     // ヒット時コンボ始動・カウンター時コンボ始動・ヒット時追撃可能・カウンター時追撃可能のカプセルを既定でONにした印
 const INFO_MIG9 = "tekken-checksheet-showinfo-mig9";     // 壁やられ(強)・壁やられ(中)のカプセルを既定でONにした印
 const INFO_MIG10 = "tekken-checksheet-showinfo-mig10";   // ホーミング・ディレイ可・壁よろけ・空ヒ時うつ伏せ・左追尾効果・右追尾効果・ヒット時投げ抜け不可のカプセルを既定でONにした印
+const INFO_MIG11 = "tekken-checksheet-showinfo-mig11";   // リカバリアブルダメージ削除のカプセルを既定でONにした印
 const INFO_DEFAULT_ON = ["ho", "hs", "ra"];
 const infoOn = new Set();
 (function () {
@@ -11932,6 +11944,14 @@ const infoOn = new Set();
   if (mig !== "tag10") {
     ["hm", "dl", "wy", "au", "tkl", "tkr", "hn"].forEach(k => infoOn.add(k));
     try { localStorage.setItem(INFO_KEY2, JSON.stringify(INFO_ITEMS.map(i => i.k).filter(k => infoOn.has(k)))); localStorage.setItem(INFO_MIG10, "tag10"); } catch (_) {}
+  }
+})();
+/* リカバリアブルダメージ削除のカプセルも、あとから増えた項目。一度だけ「表示ON」にする（そのあとOFFにしたらその設定を覚える） */
+(function () {
+  let mig = null; try { mig = localStorage.getItem(INFO_MIG11); } catch (_) {}
+  if (mig !== "tag11") {
+    infoOn.add("rd");
+    try { localStorage.setItem(INFO_KEY2, JSON.stringify(INFO_ITEMS.map(i => i.k).filter(k => infoOn.has(k)))); localStorage.setItem(INFO_MIG11, "tag11"); } catch (_) {}
   }
 })();
 function infoApply() { document.documentElement.setAttribute("data-info", INFO_ITEMS.map(i => i.k).filter(k => infoOn.has(k)).join(" ")); }
