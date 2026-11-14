@@ -12,7 +12,7 @@
   var ACTION_JA = { admin_grant: "管理者を付与", admin_grant_noop: "管理者の付与（すでに管理者）", admin_revoke: "管理者を解除", admin_revoke_noop: "管理者の解除（管理者ではなかった）",
     admin_revoke_denied_self: "自分の解除を拒否", admin_revoke_denied_last: "最後の管理者の解除を拒否", admin_bootstrap: "初期設定で管理者に", admin_account_deleted: "管理者が退会",
     admin_delete_account_denied_last: "最後の管理者の退会を拒否", checksheet_save_draft: "下書きを保存", checksheet_publish: "公開", checksheet_revert: "公開済みに戻す", checksheet_remove_override: "上書きを削除（元データへ）",
-    checksheet_rebase: "最新の元データに合わせて保存", checksheet_save_denied_base_changed: "下書き保存を拒否（元データが更新済み）", checksheet_publish_denied_base_changed: "公開を拒否（元データが更新済み）", cloud_review_update: "クラウド解析の調査状況を更新" };
+    checksheet_rebase: "最新の元データに合わせて保存", checksheet_save_denied_base_changed: "下書き保存を拒否（元データが更新済み）", checksheet_publish_denied_base_changed: "公開を拒否（元データが更新済み）", cloud_review_update: "クラウド解析の調査状況を更新", "combo_videos.set": "コンボ動画を登録", "combo_videos.reset": "コンボ動画の登録を解除" };
   var HIST_JA = { save_draft: "下書きを保存", publish: "公開", revert_to_published: "公開済みに戻す", remove_override: "上書きを削除", rebase: "最新の元データに合わせて保存" };
   var FIELD_JA = { name: "技名", y: "読み", t: "タグ", tg: "取得・消費", ss: "強化状態", off: "対象外" };
   // 元データが更新されたときの案内（固定の文言）
@@ -99,7 +99,7 @@
 
   // ------------------------------------------------------------ 起動
   var app = $("#app");
-  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), px: h("section", { id: "secPx", hidden: true }), players: h("section", { id: "secPlayers", hidden: true }), tournaments: h("section", { id: "secTournaments", hidden: true }), publish: h("section", { id: "secPublish", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
+  var sec = { sheet: h("section", { id: "secSheet" }), users: h("section", { id: "secUsers", hidden: true }), audit: h("section", { id: "secAudit", hidden: true }), media: h("section", { id: "secMedia", hidden: true }), icons: h("section", { id: "secIcons", hidden: true }), combo: h("section", { id: "secCombo", hidden: true }), px: h("section", { id: "secPx", hidden: true }), players: h("section", { id: "secPlayers", hidden: true }), tournaments: h("section", { id: "secTournaments", hidden: true }), publish: h("section", { id: "secPublish", hidden: true }), cloud: h("section", { id: "secCloud", hidden: true }) };
   async function boot() {
     // 他のページの中に埋め込まれて（クリックジャッキング）、管理者に気づかれず「公開」などを押させられないよう、枠の中では動かさない
     if (window.top !== window.self) { app.replaceChildren(h("div", { class: "center card" }, h("h2", { text: "このページは、他のページの中では使えません" }), h("p", null, h("a", { href: location.href, target: "_top", rel: "noopener", text: "新しいページとして開く" })))); return; }
@@ -115,9 +115,10 @@
       copyUserIdButton(S.me.project_t_id, "PROJECT T IDをコピー"));
     $("#tabs").hidden = false; loadChoiceEdit();
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
-    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.px, sec.players, sec.tournaments, sec.publish, sec.cloud);
+    app.replaceChildren(sec.sheet, sec.users, sec.audit, sec.media, sec.icons, sec.combo, sec.px, sec.players, sec.tournaments, sec.publish, sec.cloud);
     window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); } });
     window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, win: function () { return S.win; } });
+    window.PTAdminComboVideos.mount(sec.combo, { csrf: function () { return S.csrf; } });      // コンボ動画登録（コンボ集のコンボに YouTube の動画を登録）
     var comCtx = { characters: function () { return S.chars || []; } };
     window.PTAdminCommunity.mountPlayers(sec.players, comCtx); window.PTAdminCommunity.mountTournaments(sec.tournaments, comCtx);
     window.PTAdminModal = confirmModal; window.PTAdminCommunityPublish.mount(sec.publish, { api: api, csrf: function () { return S.csrf; } });
@@ -221,6 +222,8 @@
       S.chars = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,moves:c.moves}})");
       window.PTAdminMoveMedia.updateCharacters(S.chars);
       S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars); window.PTAdminPxImages.updateCharacters(S.chars);
+      try { window.PTAdminComboVideos.updateData({ characters: S.chars.map(function (c) { return { id: c.id, name: c.name }; }), combos: J("COMBOS"), rev: J("typeof COMBOS_REV === 'number' ? COMBOS_REV : 0") }); }
+      catch (e2) { console.error("[admin] コンボの収録データを読み込めませんでした", e2); window.PTAdminComboVideos.updateData({ characters: S.chars, combos: {}, rev: 0 }); }
       S.win = W;
     } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
     if (!(window.crypto && crypto.subtle)) { D.chars.textContent = "この環境では元データの指紋（SHA-256）を計算できないため、編集できません。https で開いたページから使ってください。"; return; }
