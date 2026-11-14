@@ -15259,6 +15259,38 @@ input[type="checkbox"] { border-radius: 8px; }
     return { id, start: ytStart(u.searchParams.get("t") || u.searchParams.get("start") || (hs ? hs[1] : "")) };
   }
   function ytCanon(s) { const p = ytParse(s); return p ? "https://youtu.be/" + p.id + (p.start ? "?t=" + p.start : "") : ""; }
+  /* ---------- 管理者ページで登録した動画（API：/api/v1/combo-videos） ----------
+     管理者ページの「コンボ動画登録」で、収録コンボ（キャラid＋k）に YouTube の動画を登録できる。登録があるコンボは、コンボのデータの yt より、登録した動画を優先して出す。
+     ・形式：{ schema: 1, characters: { キャラid: { "k": "https://youtu.be/動画ID(?t=秒)" } } }。YouTube のURLとして読めないものは使わない（ytCanon で整える）
+     ・コンボのデータ（付属・公開データ・この端末の書き換え）には書き込まない（表示のときに重ねるだけ。編集・書き出し・サイトに公開の内容は変わらない）。自作コンボには付かない
+     ・取れた内容は AV_KEY に残し、次に開いたときは取りに行く前からそれを使う。取れないときは、コンボのデータの yt だけで表示する */
+  const AV_KEY = "pt-combo-admin-videos-v1";
+  let adminYt = {}, avSig = "", avBusy = false, avAt = 0;
+  function avClean(o) {
+    const out = {};
+    if (!o || typeof o !== "object" || o.schema !== 1 || !o.characters || typeof o.characters !== "object") return null;
+    Object.keys(o.characters).forEach(cid => {
+      const m = o.characters[cid]; if (!/^[a-z0-9][a-z0-9-]{0,47}$/.test(cid) || !m || typeof m !== "object") return;
+      Object.keys(m).forEach(k => { const y = /^[1-9]\d{0,6}$/.test(k) && typeof m[k] === "string" ? ytCanon(m[k]) : ""; if (y) (out[cid] = out[cid] || {})[k] = y; });
+    });
+    return out;
+  }
+  function avUse(map) { const sig = JSON.stringify(map); if (sig === avSig) return false; adminYt = map; avSig = sig; return true; }
+  function avInit() { try { const m = avClean(JSON.parse(localStorage.getItem(AV_KEY) || "null")); if (m) avUse(m); } catch (_) {} }
+  const avOf = (cid, c) => (!c.user && adminYt[cid] && adminYt[cid][c.id]) || "";      // 管理者ページで登録した動画（収録コンボだけ）
+  const ytOf = (cid, c) => avOf(cid, c) || c.yt || "";                                 // そのコンボに出す YouTube の動画（登録した動画 → コンボのデータの yt）
+  async function avFetch() {
+    if (avBusy || !/^https?:$/.test(location.protocol) || typeof fetch !== "function") return;
+    avBusy = true;
+    try {
+      const ac = typeof AbortController === "function" ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), 10000) : 0;
+      let r; try { r = await fetch((window.PROJECT_T_AUTH_API_BASE || "") + "/api/v1/combo-videos", { credentials: "omit", signal: ac ? ac.signal : undefined, headers: { Accept: "application/json" } }); } finally { clearTimeout(tm); }
+      if (!r.ok) return;
+      const text = await r.text(); if (text.length > 2000000) return;
+      const m = avClean(JSON.parse(text)); if (!m) return;
+      if (avUse(m)) { put(AV_KEY, { schema: 1, characters: m }); liveRefresh(); }
+    } catch (_) {} finally { avBusy = false; avAt = Date.now(); }
+  }
   function liveRow(x) {
     if (!x || typeof x !== "object" || !Number.isInteger(x.k) || x.k < 1) return null;
     const n = liveStr(x.n, 200), c = liveStr(x.c, 2000); if (!n && !c) return null;
@@ -15329,7 +15361,7 @@ input[type="checkbox"] { border-radius: 8px; }
       if (liveAdopt(p, text)) liveRefresh();
     } catch (_) {} finally { liveBusy = false; liveFetchAt = Date.now(); }
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - liveFetchAt > 300000) liveFetch(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - liveFetchAt > 300000) liveFetch(); if (document.visibilityState === "visible" && Date.now() - avAt > 300000) avFetch(); });
 
   /* ---------- アーカイブ（過去のコンボ） ----------
      アップデートで出せなくなったコンボは、av ＝「出せた最後のバージョン」（例 "2.05.00"）を付けて「過去のコンボ」にする。av が無いコンボが「現在のコンボ」。
@@ -16200,7 +16232,7 @@ input[type="checkbox"] { border-radius: 8px; }
     }
     return null;
   }
-  const hasVid = (cid, c) => !!((c.yt && ytParse(c.yt)) || videoOf(cid, c));      // 動画つきのコンボ（YouTube の動画か、付属の mp4）
+  const hasVid = (cid, c) => !!(ytParse(ytOf(cid, c)) || videoOf(cid, c));      // 動画つきのコンボ（YouTube の動画か、付属の mp4）
   const vidUrls = new Map();      // 動画のデータ → 再生に使うURL（開くときに1回だけ作る）
   function vidSrc(v) {
     if (vidUrls.has(v)) return vidUrls.get(v);
@@ -16445,7 +16477,7 @@ input[type="checkbox"] { border-radius: 8px; }
     tb.onclick = () => deleteCombos([c.id]);
     act.appendChild(tb); ft.appendChild(act);
     card.appendChild(ft);
-    const vd = videoOf(cid, c), yp = c.yt ? ytParse(c.yt) : null;      // 動画つきのコンボ：メモの上に「動画を再生」ボタン。枠は確反表のジャンプリンクと同じ色（YouTube の動画があれば、付属の mp4 より優先）
+    const vd = videoOf(cid, c), yp = ytParse(ytOf(cid, c));      // 動画つきのコンボ：メモの上に「動画を再生」ボタン。枠は確反表のジャンプリンクと同じ色（YouTube の動画があれば、付属の mp4 より優先）
     card.classList.toggle("hasvid", !!(vd || yp));
     if (yp) card.appendChild(ytRow(c, yp)); else if (vd) card.appendChild(videoRow(c, vd));
     const ta = document.createElement("textarea"); ta.className = "memo"; ta.rows = 1; ta.maxLength = 1000; ta.placeholder = "メモ（入れ方のコツなど）";
@@ -17822,11 +17854,13 @@ input[type="checkbox"] { border-radius: 8px; }
   /* ---------- 外（技チェックシート側）とのやりとり ---------- */
   const gs = document.createElement("style"); gs.textContent = "html[data-cbdrag] { overflow-anchor: none; }"; document.head.appendChild(gs);
   liveInit();                                // 前に取れた公開データがあれば、先にそれを土台にする
+  avInit();                                  // 管理者ページで登録した動画（前に取れた控え）
   load();
   buildPalette();
   applyIconBtns();
   try { if (typeof indexedDB !== "undefined" && indexedDB.deleteDatabase) indexedDB.deleteDatabase("tekken-combo-autosave"); } catch (_) {}      // （以前の版の自動保存の保存先の記録。もう使わない）
   liveFetch();                               // サイトの最新の公開データを取りに行く（取れたら入れ替えて描き直す）
+  avFetch();                                 // 管理者ページで登録した動画を取りに行く（変わっていたら描き直す）
   // バージョンの一覧（アップデートのデータ UPDATES）は、この部品より後ろで宣言されるため、ページの読み込みが終わってから一覧を作り直す
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { verCache = null; verSig = ""; if (shown) renderAll(); else dirty = true; });
   window.CB = {

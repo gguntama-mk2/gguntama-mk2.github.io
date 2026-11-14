@@ -470,6 +470,47 @@
     .pt-cloud-dialog { max-height:calc(100dvh - 20px); padding:14px 12px; }
     .pt-cloud-dialog-head h3 { font-size:16px; }
   }
+  /* ---- コンボ動画登録 ---- */
+  #secCombo .pt-cv-bar { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; } #secCombo .pt-cv-bar input { flex:1 1 220px; min-width:0; width:auto; } #secCombo .pt-cv-bar select { flex:0 1 auto; width:auto; max-width:100%; }
+  #secCombo .pt-cv-hint { color:var(--sub); margin:0 0 6px; font-size:.8125rem; line-height:1.6; } #secCombo .pt-cv-count { margin:4px 0 8px; font-size:.8125rem; color:var(--sub); }
+  #secCombo .pt-cv-wrap { display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:16px; align-items:start; }
+  #secCombo .pt-cv-editor { position:sticky; top:calc(var(--hh) + 8px); max-height:calc(100vh - var(--hh) - 20px); overflow:auto; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel); min-width:0; }
+  #secCombo .pt-cv-editor h3 { margin:0 0 6px; font-size:1rem; overflow-wrap:anywhere; } #secCombo .pt-cv-cmd { margin:0 0 10px; padding:6px 8px; border-radius:6px; background:#11131f; font-size:.78rem; overflow-wrap:anywhere; }
+  #secCombo .pt-cv-lab { display:block; font-size:.8125rem; color:var(--sub); margin:0 0 4px; }
+  #secCombo .pt-cv-editor input[type=text] { width:100%; box-sizing:border-box; min-height:38px; font-size:16px; }
+  #secCombo .pt-cv-actions { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 6px; } #secCombo .pt-cv-msg { margin:0 0 6px; min-height:1.2em; font-size:.8125rem; }
+  #secCombo .pt-cv-preview { margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+  #secCombo .pt-cv-frame { display:block; width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#000; }
+  #secCombo .pt-cv-open { display:inline-block; margin-top:6px; font-size:.8125rem; color:var(--accent); }
+  #secCombo .pt-cv-close { display:none; float:right; } #secCombo .pt-cv-backdrop { display:none; }
+  #secCombo table.pt-cv-list { table-layout:fixed; width:100%; } #secCombo table.pt-cv-list td { overflow-wrap:anywhere; vertical-align:middle; }
+  #secCombo table.pt-cv-list th:nth-child(1) { width:48px; } #secCombo table.pt-cv-list th:nth-child(2) { width:13%; } #secCombo table.pt-cv-list th:nth-child(3) { width:20%; } #secCombo table.pt-cv-list th:nth-child(5) { width:76px; } #secCombo table.pt-cv-list th:nth-child(6) { width:150px; } #secCombo table.pt-cv-list th:nth-child(7) { width:70px; }
+  #secCombo tr[data-sel] td { background:rgba(240,192,64,.14); }
+  #secCombo .pt-cv-st { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid var(--line); font-size:.72rem; white-space:nowrap; color:var(--sub); }
+  #secCombo .pt-cv-st[data-kind="admin"] { color:#1a1330; background:var(--accent); border-color:var(--accent); font-weight:700; } #secCombo .pt-cv-st[data-kind="own"] { color:var(--ok); border-color:var(--ok); }
+  #secCombo [data-state="error"] { color:var(--ng); } #secCombo [data-state="ok"] { color:var(--ok); }
+  #secCombo .pt-cv-more { display:block; margin:12px auto 6px; }
+  @media (max-width:999px) { #secCombo .pt-cv-wrap { display:block; }
+    #secCombo .pt-cv-editor { display:none; position:fixed; top:0; right:0; bottom:0; max-height:none; width:min(420px,94vw); z-index:50; border-radius:12px 0 0 12px; box-shadow:-8px 0 30px rgba(0,0,0,.5); }
+    #secCombo .pt-cv-editor[data-open] { display:block; } #secCombo .pt-cv-close { display:block; float:none; margin:0 0 10px auto; }
+    #secCombo .pt-cv-backdrop:not([hidden]) { display:block; position:fixed; inset:0; z-index:48; background:rgba(5,6,14,.73); } }
+  @media (max-width:800px) {
+    #secCombo .pt-cv-bar { display:grid; grid-template-columns:minmax(0,1fr); gap:9px; } #secCombo .pt-cv-bar select, #secCombo .pt-cv-bar input, #secCombo .pt-cv-bar .btn { width:100%; min-width:0; min-height:46px; font-size:16px; }
+    #secCombo .pt-cv-wrap > .tw { overflow:visible; }
+    #secCombo table.pt-cv-list, #secCombo .pt-cv-list tbody { display:block; width:100%; } #secCombo .pt-cv-list thead { display:none; }
+    #secCombo .pt-cv-list tbody tr { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 10px; padding:12px; margin-bottom:10px; border:1px solid var(--line); border-radius:11px; background:var(--panel2); align-items:center; }
+    #secCombo .pt-cv-list tbody tr[data-sel] { border-color:var(--accent); outline:1px solid var(--accent); }
+    #secCombo .pt-cv-list tbody td { display:block; border:0; padding:0; width:auto !important; min-width:0; font-size:13px; background:transparent !important; }
+    #secCombo .pt-cv-list tbody td:empty { display:none; }
+    #secCombo .pt-cv-list tbody td:nth-child(1) { grid-column:1; grid-row:1; color:var(--sub); font-size:12px; } #secCombo .pt-cv-list tbody td:nth-child(1)::before { content:"#"; }
+    #secCombo .pt-cv-list tbody td:nth-child(2) { grid-column:2; grid-row:1; justify-self:end; color:var(--sub); font-size:12px; }
+    #secCombo .pt-cv-list tbody td:nth-child(3) { grid-column:1/-1; font-weight:700; font-size:16px; line-height:1.5; }
+    #secCombo .pt-cv-list tbody td:nth-child(4) { grid-column:1/-1; background:#11131f !important; border-radius:6px; padding:7px 9px; }
+    #secCombo .pt-cv-list tbody td:nth-child(5) { grid-column:1/-1; color:var(--sub); font-size:12px; } #secCombo .pt-cv-list tbody td:nth-child(5)::before { content:"ダメージ  "; }
+    #secCombo .pt-cv-list tbody td:nth-child(6) { grid-column:1; } #secCombo .pt-cv-list tbody td:nth-child(7) { grid-column:2; }
+    #secCombo .pt-cv-list tbody td:nth-child(7) .btn { min-height:44px; min-width:90px; }
+    #secCombo .pt-cv-actions .btn { min-height:44px; } #secCombo .pt-cv-more { width:100%; min-height:46px; }
+  }
 </style>
 </head>
 <body>
@@ -480,6 +521,7 @@
     <button type="button" data-tab="users" aria-pressed="false">管理者</button>
     <button type="button" data-tab="media" aria-pressed="false">技動画登録</button>
     <button type="button" data-tab="icons" aria-pressed="false">技アイコン設定</button>
+    <button type="button" data-tab="combo" aria-pressed="false">コンボ動画登録</button>
     <button type="button" data-tab="px" aria-pressed="false">背景・ギャラリー</button>
     <button type="button" data-tab="players" aria-pressed="false">プレイヤー管理</button>
     <button type="button" data-tab="tournaments" aria-pressed="false">トーナメント管理</button>
@@ -490,9 +532,10 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261113a" defer></script>
+<script src="admin.js?v=20261114a" defer></script>
 <script src="admin-move-media.js?v=20261113a" defer></script>
 <script src="admin-move-icons.js?v=20261113a" defer></script>
+<script src="admin-combo-videos.js?v=20261114a" defer></script>
 <script src="admin-px-images.js?v=20261111" defer></script>
 <script src="community-seed.js?v=20261111" defer></script>
 <script src="admin-community.js?v=20261111b" defer></script>
