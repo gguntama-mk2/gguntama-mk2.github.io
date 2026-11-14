@@ -1,11 +1,11 @@
 {
   "format": "tekken-combo-live",
   "v": 1,
-  "rev": 2,
-  "at": "2026-11-04T03:47:41.208Z",
+  "rev": 3,
+  "at": "2026-11-13T08:36:32.229Z",
   "build": "0b58cb",
-  "next": {"bryan":119,"armorking":221,"nina":92,"leo":66,"heihachi":91,"bob":20,"alisa":33,"reina":4},
-  "baked": {"alisa":{"umvrqz7v8m3s8":1,"umvrr1jjtdox6":2,"umvrr58uce012":3,"umvrr6ij4wz7p":4,"umvrr7jw35tmb":5,"umvrray3kn0gr":6,"umvrrd8ltsofu":7,"umvrrg6vxj4o8":8,"umvrrhh7wk9wf":9,"umvrrtrdsfuml":10,"umvrrunekpj1s":11,"umvrrvnml55og":12,"umvrrw2jj61rf":13,"umvrs8dx05keu":14,"umvrryee746vs":15,"umvrs2kcd646t":16,"umvrs4iqakzaf":17,"umvrs4xg7jqgf":18,"umvrsonnvpily":19,"umvrss0c8lkjh":20,"umvrtb03w6xne":21,"umvrtda8mcf50":22,"umvrtixnb3g5p":23,"umvrtkkm9jy3a":24,"umvrtefbqedmb":25,"umvrtlidta71c":26,"umvrwilvuouhh":27,"umvrwk1s9gagn":28,"umvrwom45kxc4":29,"umvrwrumm7k8w":30,"umvrx4pb5zgdn":31,"umvrxwobt7bha":32},"reina":{"umvv6cazammif":1,"umvv6kex9l5qz":2,"umvv6nf733jow":3}},
+  "next": {"bryan":119,"armorking":221,"nina":92,"leo":66,"heihachi":91,"bob":20,"alisa":33,"reina":4,"roger-jr":17},
+  "baked": {"alisa":{"umvrqz7v8m3s8":1,"umvrr1jjtdox6":2,"umvrr58uce012":3,"umvrr6ij4wz7p":4,"umvrr7jw35tmb":5,"umvrray3kn0gr":6,"umvrrd8ltsofu":7,"umvrrg6vxj4o8":8,"umvrrhh7wk9wf":9,"umvrrtrdsfuml":10,"umvrrunekpj1s":11,"umvrrvnml55og":12,"umvrrw2jj61rf":13,"umvrs8dx05keu":14,"umvrryee746vs":15,"umvrs2kcd646t":16,"umvrs4iqakzaf":17,"umvrs4xg7jqgf":18,"umvrsonnvpily":19,"umvrss0c8lkjh":20,"umvrtb03w6xne":21,"umvrtda8mcf50":22,"umvrtixnb3g5p":23,"umvrtkkm9jy3a":24,"umvrtefbqedmb":25,"umvrtlidta71c":26,"umvrwilvuouhh":27,"umvrwk1s9gagn":28,"umvrwom45kxc4":29,"umvrwrumm7k8w":30,"umvrx4pb5zgdn":31,"umvrxwobt7bha":32},"reina":{"umvv6cazammif":1,"umvv6kex9l5qz":2,"umvv6nf733jow":3},"roger-jr":{"umwefcl1ammb6":1,"umwefdewfgf6x":2,"umwehmgt6o6od":3,"umweisvix7js0":4,"umwejbsyosz16":5,"umwejmhfb8fv4":6,"umwejnw3r44b8":7,"umweq27tsotya":8,"umwejsj4va2v1":9,"umwektx2t0qxm":10,"umwelmiyzs4n8":11,"umwem0bkedp6g":12,"umwepv3rs1j05":13,"umwepyaz859rg":14,"umwepyyodk8ih":15,"umweq12rauyrf":16}},
   "combos": {
     "bryan": [
       {"k":1,"g":"通常コンボ","n":"LPRPLP(3段目ch)","c":"214RK","d":39,"lv":1,"t":["カウンター"]},
@@ -590,6 +590,24 @@
       {"k":1,"g":"通常コンボ","n":"【RPLP】最速入力","c":"微歩き相手ダウン中2RKLPジャスト","d":"53","lv":4,"t":["通常ヒット"]},
       {"k":2,"g":"通常コンボ","n":"LKRPch","c":"666RK強k＞前ダッシュ6n23RPジャスト＞前ダッシュ3LP＞6RPLK6＞3LP6＞旋体LP236RPディレイ","d":"67","lv":5,"t":["カウンター"]},
       {"k":3,"g":"通常コンボ","n":"LKRPch","c":"66WK＞3RP＞3LP＞6RPLK6＞3LP6＞旋体LP236RPディレイ","d":"63","lv":3,"t":["カウンター"]}
+    ],
+    "roger-jr": [
+      {"k":1,"g":"通常コンボ","n":"LPRPLP(3段目ch)","c":"6n23LP","d":"53","lv":2,"t":["カウンター"]},
+      {"k":2,"g":"通常コンボ","n":"LPRPLP(3段目ch)","c":"3LP+RK","d":"45","lv":1,"t":["カウンター"]},
+      {"k":3,"g":"通常コンボ","n":"LKRK(2段目ch)","c":"3LP+RK","d":"48","lv":1,"t":["カウンター"]},
+      {"k":4,"g":"通常コンボ","n":"WKLK(2段目nh)","c":"3RKLK＞RP＞9LPLK＞RSWPWP(T)＞前ダッシュ9LK強k＞前ダッシュ3LPRP","d":"83","lv":4,"t":["通常ヒット"]},
+      {"k":5,"g":"通常コンボ","n":"WKLK(2段目nh)","c":"WK＞RK＞3RKLK＞3RP＞RSWPWP(T)＞前ダッシュ9LK強k＞前ダッシュ3LPRP","d":"84","lv":4,"t":["通常ヒット"]},
+      {"k":6,"g":"通常コンボ","n":"6LKch","c":"4RPRK","d":"43","lv":1,"t":["カウンター"]},
+      {"k":7,"g":"通常コンボ","n":"6LKch","c":"3LPRP","d":"39","lv":1,"t":["カウンター"]},
+      {"k":8,"g":"通常コンボ","n":"ヒート中6LKch","c":"ヒート中6RPLPRP","d":"54","lv":1,"t":["カウンター"]},
+      {"k":9,"g":"通常コンボ","n":"WKLK(2段目nh)","c":"WK＞RK＞3RKLK＞3RP＞RSWPWP(T)＞前ダッシュ9LK強k＞前ダッシュ3LPRP","d":"84","lv":4,"t":["通常ヒット"]},
+      {"k":10,"g":"通常コンボ","n":"6RKLK","c":"RP＞3RKLK＞3RP＞RSWPWP(T)＞前ダッシュ9LK強k＞前ダッシュ3LPRP","d":"80","lv":4,"t":["通常ヒット"]},
+      {"k":11,"g":"通常コンボ","n":"6RKLKLK","c":"9LK(2段目のみ)強k＞前ダッシュRP＞9LPLK＞RSWP","d":"70","lv":4,"t":["通常ヒット"]},
+      {"k":12,"g":"通常コンボ","n":"3RPch","c":"RSWPWP(T)＞9LK強k＞前ダッシュ3RP＞RSWP","d":"58","lv":3,"t":["通常ヒット"]},
+      {"k":13,"g":"通常コンボ","n":"4RKch","c":"しゃがみLK＞3RP＞RSWPWP(T)＞前ダッシュ9LK強k＞前ダッシュ3LPRP","d":"76","lv":4,"t":["カウンター"]},
+      {"k":14,"g":"通常コンボ","n":"4WPch","c":"4RPRK","d":"47","lv":1,"t":["カウンター"]},
+      {"k":15,"g":"通常コンボ","n":"4WPch","c":"3LPRP","d":"43","lv":1,"t":["カウンター"]},
+      {"k":16,"g":"通常コンボ","n":"ヒート中4WPch","c":"ヒート中6RPLPRP","d":"58","lv":1,"t":["カウンター","ヒート"]}
     ]
   }
 }
