@@ -60,24 +60,33 @@
   // ------------------------------------------------------------ API
   async function api(path, opt) {
     opt = opt || {};
-    var method = opt.method || "GET", init = { method: method, credentials: "include", headers: {} };
-    if (method !== "GET") { init.headers["Content-Type"] = "application/json"; init.headers["X-CSRF-Token"] = S.csrf; init.body = JSON.stringify(opt.body || {}); }
-    // 通信の時間切れ：読み取りは45秒、書き込みは120秒で打ち切る（止まったままにしない）。通信エラー・時間切れは、一時的な失敗として印を付ける
-    var ac = typeof AbortController === "function" ? new AbortController() : null, to = ac ? setTimeout(function () { ac.abort(); }, method === "GET" ? 45000 : 120000) : 0;
-    if (ac) init.signal = ac.signal;
-    var r, data = null;
-    try { r = await fetch(API + path, init); }
-    catch (fe) { var ne = new Error(ac && ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした"); ne.transient = true; throw ne; }
-    finally { if (to) clearTimeout(to); }
-    try { data = await r.json(); } catch (_) {}
-    if (r.status === 403 && method !== "GET" && !opt.retried && data && /CSRF/.test(String(data.detail))) { await loadMe(); return api(path, Object.assign({}, opt, { retried: true })); }
+    var method = opt.method || "GET", read = method === "GET", init = { method: method, credentials: "include", headers: {} };
+    if (!read) { init.headers["Content-Type"] = "application/json"; init.headers["X-CSRF-Token"] = S.csrf; init.body = JSON.stringify(opt.body || {}); }
+    if (typeof AbortController !== "function") throw new Error("この環境では通信の時間制限が使えません");
+    var ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, read ? 45000 : 120000);
+    init.signal = ac.signal;
+    var r, raw, data = null, bad = false;
+    try { r = await fetch(API + path, init); raw = await r.text(); if (ac.signal.aborted) throw new Error("aborted"); }
+    catch (fe) {
+      var status = r && r.status, denied = status === 401 || status === 403;
+      var ne = new Error(denied ? "HTTP " + status : !read ? "書き込み結果が不明です。再送せず、最新の状態を確認してください。" : ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした");
+      ne.status = status; ne.transient = read && !denied && (!status || r.ok || status === 502 || status === 503 || status === 504); ne.unknownWrite = !read && !denied; throw ne;
+    } finally { clearTimeout(to); }
+    try { data = JSON.parse(raw); } catch (_) { bad = true; }
+    if (r.ok && (bad || data === null || typeof data !== "object")) {
+      var je = new Error(read ? "サーバーの返答を読めませんでした" : "書き込み結果が不明です。再送せず、最新の状態を確認してください。"); je.unknownWrite = !read; throw je;
+    }
+    // 明示的なCSRF拒否のみ従来どおり再認証。通信断・本文失敗・結果不明は再送しない。
+    if (r.status === 403 && !read && !opt.retried && data && /CSRF/.test(String(data.detail))) { await loadMe(); return api(path, Object.assign({}, opt, { retried: true })); }
     if (!r.ok) {
       var d = data && data.detail, e = new Error(typeof d === "string" ? d : (d && d.message) || ("HTTP " + r.status));
-      e.status = r.status; e.detail = d; throw e;
+      e.status = r.status; e.detail = d;
+      if (!read && r.status >= 500) { e.unknownWrite = true; e.message += "。書き込み結果が不明です。再送せず、最新の状態を確認してください。"; }
+      throw e;
     }
     return data;
   }
-  async function loadMe() { var me = await api("/api/v1/me"); S.me = me; S.csrf = me.csrf_token || ""; return me; }
+  async function loadMe() { var me = await api("/api/v1/me"); if (!me || typeof me !== "object" || typeof me.csrf_token !== "string") throw new Error("ログイン情報の応答が不正です"); S.me = me; S.csrf = me.csrf_token || ""; return me; }
   // 開いた直後だけ、サーバーが眠っていて（無料プラン）つながらないことがある。通信エラー・502/503/504 のときは、案内を出して自動でやり直す（401・403 などはやり直さない）
   async function loadMeRetry() {
     for (var n = 0; ; n++) {
@@ -170,19 +179,24 @@
       var e = effChars(); window.PTAdminMoveIcons.updateCharacters(e); window.PTAdminMoveMedia.updateCharacters(e);
     } catch (x) { console.error("[admin] アイコン・動画の一覧への反映に失敗しました", x); }
   }
-  async function loadOverlays() {            // 上書き（下書き・公開）のあるキャラの技一覧を、まだ取っていないものだけ取得
+  async function loadOverlays() {
+    var gen = (S._ovGen = (S._ovGen || 0) + 1);
     if (!S.ovr || !S.chars) return;
     S.ovMoves = S.ovMoves || {};
-    var ids = Object.keys(S.ovr).filter(function (id) { return !(id in S.ovMoves) && !(S.cur && S.cur.id === id); });
+    var mv = S.ovMoves, my = baseSeq, ov = S.ovr, chars = S.chars, cc = S.cur, edit = S._editSeq, write = S._writeSeq, opening = S._openSeq;
+    function valid() { return gen === S._ovGen && my === baseSeq && mv === S.ovMoves && ov === S.ovr && chars === S.chars && cc === S.cur && edit === S._editSeq && write === S._writeSeq && opening === S._openSeq; }
+    var ids = Object.keys(ov).filter(function (id) { return !(id in mv) && !(cc && cc.id === id); });
     if (!ids.length) return;
-    var gen = (S._ovGen = (S._ovGen || 0) + 1);
+    var pending = Object.create(null);
     for (var i = 0; i < ids.length; i += 6) {
       await Promise.all(ids.slice(i, i + 6).map(async function (id) {
-        try { var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); S.ovMoves[id] = r.exists ? r.moves : (r.published ? r.published.moves : null); }
+        try { var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); if (!valid()) return; pending[id] = r.exists ? r.moves : (r.published ? r.published.moves : null); }
         catch (e) { /* 取れなかったキャラは元データのまま表示する */ }
       }));
-      if (gen !== S._ovGen) return;
+      if (!valid()) return;
     }
+    if (!valid()) return;
+    Object.keys(pending).forEach(function (id) { if (!(id in mv) && !(S.cur && S.cur.id === id)) mv[id] = pending[id]; });
     S._ovVer = (S._ovVer || 0) + 1; syncMoveTabs(); updateCharCounts();
   }
   function setTab(t) {
@@ -348,9 +362,10 @@
     var base = baseOf(id); if (!base) return;
     if (S.cur && S.cur.id !== id && S.ovMoves) { delete S.ovMoves[S.cur.id]; S._ovVer = (S._ovVer || 0) + 1; }   // 離れるキャラは、次にアイコン・動画の一覧を開くとき最新を取り直す
     banner("", "読み込み中…");
-    var r;
+    var r, seq = (S._openSeq = (S._openSeq || 0) + 1), gen = baseSeq, edit = S._editSeq, write = S._writeSeq;      // 続けて別のキャラを開いたとき・元データを読み直したときは、古い応答を捨てる
     try { r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); }
-    catch (e) { return banner("err", "読み込めませんでした：" + e.message); }
+    catch (e) { if (seq === S._openSeq && gen === baseSeq && edit === S._editSeq && write === S._writeSeq) banner("err", "読み込めませんでした：" + e.message); return; }
+    if (seq !== S._openSeq || gen !== baseSeq || edit !== S._editSeq || write !== S._writeSeq || !S.pageHash || !(id in S.pageHash) || !baseOf(id)) return;
     S.dirty = false;
     var pageHash = S.pageHash[id];
     S.cur = { id: id, name: base.name, version: r.exists ? r.version : 0, exists: r.exists,
@@ -545,6 +560,7 @@
     return "追加 " + add + "／変更 " + chg + "／削除 " + del;
   }
   function explain(e) {
+    if (e.unknownWrite) { banner("err", e.message); return; }
     var d = e.detail && typeof e.detail === "object" ? e.detail : null, code = d && (d.code || d.error);
     if (e.status === 409 && code === "version_conflict") { conflict(d.current_version); return; }
     if (e.status === 409 && code === "base_changed") { baseChangedByServer(d); return; }
@@ -557,6 +573,7 @@
       { label: "自分の編集で上書きする", cls: "danger", fn: function () { if (confirm("ほかの管理者の変更を、いまの編集内容で上書きします。よろしいですか？")) { S.cur.version = cv; saveDraft(); } } }]);
   }
   async function saveDraft(skipCheck) {
+    S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!skipCheck && !(await ensureBaseOk())) return false;       // 元データが更新されていたら、案内を出して止める（サーバーも同じ判定で 409 を返す）
     banner("", "保存中…");
@@ -571,6 +588,7 @@
     } catch (e) { explain(e); return false; }
   }
   async function publish() {
+    S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!(await ensureBaseOk())) return;
     var before = c.published ? c.published.moves : baseOf(c.id).moves;
@@ -590,12 +608,14 @@
     } catch (e) { explain(e); }
   }
   async function revert() {
+    S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!(await confirmModal("公開済みに戻す", ["下書きを、公開中の内容に戻します。", "いまの下書きの変更は（履歴の保存分を除き）失われます。"], "公開中の内容に戻す", true))) return;
     try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/revert", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("公開中の内容に戻しました。"); }
     catch (e) { explain(e); }
   }
   async function removeOverride() {
+    S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!(await confirmModal("上書きの削除", ["「" + c.name + "」の上書きを削除します。", "サイトは、埋め込まれた元データの表示に戻ります（公開中の内容も消えます。履歴は残ります）。"], "上書きを削除する", true))) return;
     try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/delete", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("上書きを削除しました（元データに戻りました）。"); }
@@ -604,30 +624,36 @@
 
   // ------------------------------------------------------------ 履歴
   async function loadHistory() {
-    var c = S.cur; D.hist.replaceChildren(h("b", { text: "変更履歴" }), " ", h("span", { class: "muted", text: "新しい順（最大40件）。「読み込む」で、その版の下書きを編集画面に出します（保存するまで反映されません）" }));
+    var c = S.cur, hseq = (S._histSeq = (S._histSeq || 0) + 1), gen = baseSeq; D.hist.replaceChildren(h("b", { text: "変更履歴" }), " ", h("span", { class: "muted", text: "新しい順（最大40件）。「読み込む」で、その版の下書きを編集画面に出します（保存するまで反映されません）" }));
     try {
       var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/history");
+      if (hseq !== S._histSeq || S.cur !== c || gen !== baseSeq) return;
+      if (!r || !Array.isArray(r.history)) throw new Error("履歴の応答が不正です");
       var ul = h("ul", { class: "hist" });
       if (!r.history.length) ul.appendChild(h("li", { class: "muted", text: "まだ履歴はありません" }));
       r.history.forEach(function (x) {
         ul.appendChild(h("li", null, "版" + x.version + "　" + (HIST_JA[x.action] || x.action) + "　" + fmtAt(x.at) + "　", h("code", { text: shortId(x.actor) }), " ", h("span", { class: "muted", title: "この版のもとにした元データの指紋（先頭8文字）", text: "元データ " + short8(x.base_hash) }), " ",
-          x.has_snapshot ? h("button", { type: "button", class: "btn", text: "読み込む", onclick: function () { loadSnapshot(x.id); } }) : null));
+          x.has_snapshot ? h("button", { type: "button", class: "btn", text: "読み込む", onclick: function () { if (hseq === S._histSeq && S.cur === c && gen === baseSeq) loadSnapshot(x.id); } }) : null));
       });
       D.hist.appendChild(ul);
-    } catch (e) { D.hist.appendChild(h("p", { class: "muted", text: "履歴を取得できませんでした：" + e.message })); }
+    } catch (e) { if (hseq === S._histSeq && S.cur === c && gen === baseSeq) D.hist.appendChild(h("p", { class: "muted", text: "履歴を取得できませんでした：" + e.message })); }
   }
   async function loadSnapshot(hid) {
-    if (!(await confirmModal("履歴を読み込む", ["この版の内容を編集画面に読み込みます。", "いまの編集内容は置き換わります（保存するまで反映されません）。"], "読み込む", false))) return;
+    var cc = S.cur; if (!cc) return;
+    var seq = (S._snapshotSeq = (S._snapshotSeq || 0) + 1), gen = baseSeq, opening = S._openSeq, history = S._histSeq, edit = S._editSeq, write = S._writeSeq, version = cc.version, dirty = S.dirty;
+    function valid() { return seq === S._snapshotSeq && cc === S.cur && gen === baseSeq && opening === S._openSeq && history === S._histSeq && edit === S._editSeq && write === S._writeSeq && version === cc.version && dirty === S.dirty; }
+    if (!(await confirmModal("履歴を読み込む", ["この版の内容を編集画面に読み込みます。", "いまの編集内容は置き換わります（保存するまで反映されません）。"], "読み込む", false)) || !valid()) return;
     try {
-      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(S.cur.id) + "/history/" + hid);
-      if (!r.moves) return banner("warn", "この履歴には内容の保存がありません。");
-      S.cur.moves = clone(r.moves); S.cur.contentBase = r.base_hash || null; S.cur.sel = 0; S.cur.remap = null; touch(); renderAll();     // その版が、どの元データをもとにしていたかも一緒に戻す
+      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(cc.id) + "/history/" + encodeURIComponent(hid));
+      if (!valid()) return;
+      if (!r || !Array.isArray(r.moves)) return banner("warn", "この履歴には内容の保存がありません。");
+      cc.moves = clone(r.moves); cc.contentBase = r.base_hash || null; cc.sel = 0; cc.remap = null; touch(); renderAll();
       banner(""); notifyBase();
-    } catch (e) { banner("err", e.message); }
+    } catch (e) { if (valid()) banner("err", e.message); }
   }
 
   // ------------------------------------------------------------ 編集画面
-  function touch() { S.dirty = true; renderTool(); updateCharCounts(); schedulePreview(450); }
+  function touch() { S._editSeq = (S._editSeq || 0) + 1; S.dirty = true; renderTool(); updateCharCounts(); schedulePreview(450); }
   // ---- 技番号の振り直しの記録：{ map: { 公開中の番号: 新しい番号 }, fresh: [公開中の技に結びつかない新しい技の番号] }。
   //      アイコン設定・技動画は番号で技に結びついているので、サーバーが「公開する」と同時に、この記録のとおり新しい番号へ移す
   function normRemap(raw) {

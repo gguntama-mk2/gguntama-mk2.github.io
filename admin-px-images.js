@@ -8,7 +8,7 @@
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var BG_W = 1400, BG_H = 788, EYE_W = 480, EYE_H = 120, MAX_BYTES = 12 * 1024 * 1024;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
-  var ctx, host, characters = [], items = [], ui = {}, urls = {}, busy = false;
+  var ctx, host, characters = [], items = [], ui = {}, urls = {}, busy = false, uiGen = 0, cropping = false;
 
   var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   async function request(path, init) {
@@ -20,19 +20,30 @@
     }
   }
   async function request1(path, init) {
-    var headers = Object.assign({}, init.headers || {});
-    if (init.method === "POST") { headers["X-CSRF-Token"] = ctx.csrf(); if (typeof init.body === "string") headers["Content-Type"] = "application/json"; }
-    var res, ac = typeof AbortController === "function" ? new AbortController() : null, to = ac ? setTimeout(function () { ac.abort(); }, init.method === "POST" ? 120000 : 45000) : 0;      // 止まったままにしない（読み取り45秒・書き込み120秒）
-    try { res = await fetch(API + path, Object.assign({ credentials: "include" }, init, { headers: headers }, ac ? { signal: ac.signal } : {})); }
-    catch (e) { var ne = new Error(ac && ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした"); ne.retryable = true; throw ne; }
-    finally { if (to) clearTimeout(to); }
-    var body = await res.json().catch(function () { return null; });
-    if (body === null || typeof body !== "object") { var be = new Error(res.ok ? "サーバーの返答を読めませんでした" : "HTTP " + res.status); be.retryable = !res.ok && (res.status === 502 || res.status === 503 || res.status === 504); throw be; }
-    if (!res.ok) { var er = new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status); er.retryable = res.status === 502 || res.status === 503 || res.status === 504; throw er; }
+    var headers = Object.assign({}, init.headers || {}), write = init.method === "POST";
+    if (write) { headers["X-CSRF-Token"] = ctx.csrf(); if (typeof init.body === "string") headers["Content-Type"] = "application/json"; }
+    if (typeof AbortController !== "function") throw new Error("この環境では通信の時間制限が使えません");
+    var res, ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, write ? 120000 : 45000), raw, body;
+    try { res = await fetch(API + path, Object.assign({ credentials: "include" }, init, { headers: headers, signal: ac.signal })); raw = await res.text(); if (ac.signal.aborted) throw new Error("aborted"); }
+    catch (e) {
+      var status = res && res.status, denied = status === 401 || status === 403;
+      var ne = new Error(denied ? "HTTP " + status : write ? "書き込み結果が不明です。再送せず、最新の状態を確認してください。" : ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした");
+      ne.status = status; ne.retryable = !write && !denied && (!status || res.ok || status === 502 || status === 503 || status === 504); ne.unknownWrite = write && !denied; throw ne;
+    } finally { clearTimeout(to); }
+    try { body = JSON.parse(raw); } catch (_) { body = null; }
+    if (body === null || typeof body !== "object") {
+      var be = new Error(res.ok ? (write ? "書き込み結果が不明です。再送せず、最新の状態を確認してください。" : "サーバーの返答を読めませんでした") : "HTTP " + res.status);
+      be.status = res.status; be.retryable = !write && !res.ok && (res.status === 502 || res.status === 503 || res.status === 504); be.unknownWrite = write && (res.ok || res.status >= 500); if (be.unknownWrite && !res.ok) be.message += "。書き込み結果が不明です。再送せず、最新の状態を確認してください。"; throw be;
+    }
+    if (!res.ok) { var er = new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status); er.status = res.status; er.retryable = !write && (res.status === 502 || res.status === 503 || res.status === 504); er.unknownWrite = write && res.status >= 500; if (er.unknownWrite) er.message += "。書き込み結果が不明です。再送せず、最新の状態を確認してください。"; throw er; }
     return body;
   }
   function say(text, state) { ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
   function cur() { return ui.char && ui.char.value; }
+  function targetOf(id) { return { id: id, gen: uiGen, root: ui.root }; }
+  function targetValid(t) { return !!t && t.gen === uiGen && t.root === ui.root && t.root && t.root.isConnected && cur() === t.id && characters.some(function (c) { return c.id === t.id; }); }
+  function requireTarget(t) { if (!targetValid(t)) throw new Error("対象キャラまたは画面が変わりました。画像を選び直してください。"); }
+
   function pxs() { var w = ctx.win && ctx.win(); return w && w.PXS ? w.PXS : null; }
   function overridden() { return items.map(function (x) { return x.id; }); }   // 登録済みの絵（サイトに入っている絵ではない）
   function builtin(id) { var S = pxs(); return !!(S && S.has(id) && overridden().indexOf(id) < 0); }
@@ -44,7 +55,8 @@
   function entry(id) { return items.find(function (x) { return x.id === id; }); }
 
   async function loadItems() {
-    var r = await request("/api/v1/admin/px-overrides");
+    var root = ui.root, r = await request("/api/v1/admin/px-overrides");
+    if (root !== ui.root) throw new Error("画面が変わりました。");
     if (!r || !Array.isArray(r.items)) throw new Error("サーバーの返答の形が違います");      // 想定外の返答は、そのまま使わない（空にもしない）
     items = r.items.filter(function (x) { return x && typeof x.id === "string" && typeof x.sha === "string"; });
   }
@@ -82,6 +94,48 @@
     var g = cv.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, EYE_W, EYE_H);
     return toBlob(cv, "image/webp", 0.9);
   }
+  // 切り抜きの画面：画像を拡大縮小（スライダー・マウスホイール・ピンチ）し、ドラッグで位置を動かして、枠（W×H）に入れる範囲を決める。決定で WebP の Blob、キャンセルで null
+  function cropper(file, W, H, title) {
+    return decode(file).then(function (bm) {
+      return new Promise(function (done) {
+        var iw = bm.width || bm.naturalWidth, ih = bm.height || bm.naturalHeight, k0 = Math.max(W / iw, H / ih);
+        var z = 1, cx = iw / 2, cy = ih / 2, dispW = Math.min(720, Math.max(240, window.innerWidth - 56)), ds = dispW / W, dispH = Math.round(H * ds);
+        var back = make("div"); back.style.cssText = "position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:12px;overflow:auto";
+        var box = make("div"); box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", title);
+        box.style.cssText = "background:var(--panel,#242740);color:var(--text,#e9eaf4);border:1px solid var(--line,#3a3e63);border-radius:12px;padding:14px;max-width:100%;display:grid;gap:10px";
+        var cv = make("canvas"); cv.width = Math.round(W * ds); cv.height = dispH; cv.style.cssText = "width:" + cv.width + "px;height:" + dispH + "px;max-width:100%;background:#000;border-radius:8px;touch-action:none;cursor:grab";
+        var g = cv.getContext("2d");
+        function clamp() { var k = k0 * z, hw = W / k / 2, hh = H / k / 2; cx = Math.min(iw - hw, Math.max(hw, cx)); cy = Math.min(ih - hh, Math.max(hh, cy)); }
+        function draw(ctx, sc) { var k = k0 * z * sc; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W * sc, H * sc); ctx.imageSmoothingQuality = "high"; ctx.drawImage(bm, 0, 0, iw, ih, W * sc / 2 - cx * k, H * sc / 2 - cy * k, iw * k, ih * k); }
+        function paint() { clamp(); draw(g, ds); sl.value = String(z); }
+        var sl = make("input"); sl.type = "range"; sl.min = "1"; sl.max = "8"; sl.step = "0.01"; sl.value = "1"; sl.setAttribute("aria-label", "拡大縮小"); sl.style.width = "100%";
+        sl.addEventListener("input", function () { z = parseFloat(sl.value) || 1; paint(); });
+        cv.addEventListener("wheel", function (e) { e.preventDefault(); z = Math.min(8, Math.max(1, z * Math.exp(-e.deltaY * 0.0015))); paint(); }, { passive: false });
+        var ptrs = new Map(), last = null, pinch0 = null;
+        cv.addEventListener("pointerdown", function (e) { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); last = [e.clientX, e.clientY]; if (ptrs.size === 2) { var a = Array.from(ptrs.values()); pinch0 = { d: Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]), z: z }; } cv.style.cursor = "grabbing"; });
+        cv.addEventListener("pointermove", function (e) {
+          if (!ptrs.has(e.pointerId)) return; var prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+          if (ptrs.size >= 2 && pinch0) { var a = Array.from(ptrs.values()); z = Math.min(8, Math.max(1, pinch0.z * Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) / (pinch0.d || 1))); paint(); return; }
+          var k = k0 * z, scale = cv.getBoundingClientRect().width / W;      // 画面の1pxが、画像の何pxか
+          cx -= (e.clientX - prev[0]) / scale / k; cy -= (e.clientY - prev[1]) / scale / k; paint();
+        });
+        function up(e) { ptrs.delete(e.pointerId); pinch0 = null; if (!ptrs.size) cv.style.cursor = "grab"; }
+        cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+        var row = make("div"); row.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end";
+        var ok = make("button", "この範囲で決定", "btn primary"), no = make("button", "キャンセル", "btn"), rs = make("button", "リセット", "btn"); ok.type = no.type = rs.type = "button";
+        var closed = false, encoding = false, prev = document.activeElement;
+        function close(v) { if (closed) return; closed = true; document.removeEventListener("keydown", onKey, true); back.remove(); if (prev && prev.isConnected && prev.focus) prev.focus(); done(v); }
+        function onKey(e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(null); } }
+        no.addEventListener("click", function () { close(null); });
+        rs.addEventListener("click", function () { z = 1; cx = iw / 2; cy = ih / 2; paint(); });
+        ok.addEventListener("click", function () { if (closed || encoding) return; encoding = true; ok.disabled = true; var out = document.createElement("canvas"); out.width = W; out.height = H; draw(out.getContext("2d"), 1); toBlob(out, "image/webp", 0.9).then(close, function () { close(null); }); });
+        document.addEventListener("keydown", onKey, true);
+        row.append(rs, no, ok);
+        box.append(make("strong", title), make("small", "ドラッグで位置、スライダー・ホイール・ピンチで拡大縮小。枠の中が、保存される範囲です（" + W + "×" + H + "）。"), cv, sl, row);
+        back.appendChild(box); document.body.appendChild(back); paint(); ok.focus();
+      });
+    });
+  }
   var eyeMap = null;     // 元の目元画像（キャラ名→ファイル）。対戦履歴の部品から、必要になった時に1回だけ読む
   function loadEyeMap() {
     if (!eyeMap) eyeMap = fetch("js/26.js", { credentials: "same-origin" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
@@ -102,16 +156,29 @@
     if (b.size > MAX_BYTES) throw new Error("画像が大きすぎます（12MBまで）");
     return b;
   }
-  async function upload(kind, file) {
-    var fd = new FormData(); fd.append("character_id", cur()); fd.append("kind", kind);
-    fd.append("image", kind === "bg" ? await prepBg(file) : kind === "eyes" ? await prepEyes(file) : await prepGallery(file), "image");
+  async function upload(kind, file, prepared, target) {
+    requireTarget(target);
+    var image = kind === "bg" ? await prepBg(file) : kind === "eyes" ? (prepared ? file : await prepEyes(file)) : await prepGallery(file);
+    requireTarget(target);  // 変換中にキャラ/画面が変わったら送信しない
+    var fd = new FormData(); fd.append("character_id", target.id); fd.append("kind", kind); fd.append("image", image, "image");
     return request("/api/v1/admin/px-overrides/set", { method: "POST", body: fd });
   }
+  async function cropAndUpload(file, title, target) {
+    if (busy || cropping || !targetValid(target)) return;
+    cropping = true;
+    try {
+      var b = await cropper(file, EYE_W, EYE_H, title);
+      if (!b) return;
+      requireTarget(target);
+      await run("目元画像を差し替え", function () { return upload("eyes", b, true, target); });
+    } catch (e) { if (target.root === ui.root) say(e.message, "error"); }
+    finally { cropping = false; }
+  }
   async function run(label, fn) {
-    if (busy) return; busy = true; ui.root.setAttribute("aria-busy", "true");
-    try { await fn(); await loadItems(); render(); say(label + "しました。公開サイトは、開き直す（または再読み込みする）と反映されます。", "ok"); }
-    catch (e) { say(label + "できませんでした：" + e.message, "error"); }
-    finally { busy = false; ui.root.removeAttribute("aria-busy"); }
+    if (busy) return; busy = true; var root = ui.root; root.setAttribute("aria-busy", "true");
+    try { await fn(); if (root !== ui.root) return; await loadItems(); if (root !== ui.root) return; render(); say(label + "しました。公開サイトは、開き直す（または再読み込みする）と反映されます。", "ok"); }
+    catch (e) { if (root === ui.root) say(label + "：" + e.message, "error"); }
+    finally { busy = false; root.removeAttribute("aria-busy"); }
   }
   async function remove(id, label) {
     if (!confirm(label + "を削除します。元に戻せません。よろしいですか？")) return;
@@ -124,7 +191,8 @@
     lab.appendChild(inp); return lab;
   }
   function render() {
-    var id = cur(); ui.body.replaceChildren(); if (!id) return;
+    var id = cur(); ++uiGen; ui.body.replaceChildren(); if (!id) return;
+    var target = targetOf(id);
     var ch = characters.find(function (c) { return c.id === id; });
     // 背景
     var bg = make("section", undefined, "pt-px-sec"); bg.appendChild(make("h3", "背景の差し替え"));
@@ -135,7 +203,7 @@
       bg.appendChild(make("p", o ? "差し替え中の背景です。「元に戻す」でサイトに入っている絵に戻ります。" : "いまはサイトに入っている背景です。画像を選ぶと、1400×788（16:9）に中央で切り抜いて差し替えます。", "pt-px-sub"));
       bg.appendChild(thumb(o ? fileUrl(o) : builtinUrl(id), (ch ? ch.name : id) + "の背景"));
       var row = make("div", undefined, "pt-px-row");
-      row.appendChild(picker(o ? "別の画像に差し替える" : "背景を差し替える", false, function (fs) { run("背景を差し替え", function () { return upload("bg", fs[0]); }); }));
+      row.appendChild(picker(o ? "別の画像に差し替える" : "背景を差し替える", false, function (fs) { run("背景を差し替え", function () { return upload("bg", fs[0], false, target); }); }));
       if (o) { var rb = make("button", "元に戻す", "btn"); rb.type = "button"; rb.addEventListener("click", function () { remove(id, "差し替えた背景"); }); row.appendChild(rb); }
       bg.appendChild(row);
     }
@@ -151,7 +219,7 @@
     ga.appendChild(grid);
     var r2 = make("div", undefined, "pt-px-row");
     r2.appendChild(picker("画像を追加する（複数選べます）", true, function (fs) {
-      run("画像を追加", async function () { for (var i = 0; i < fs.length; i++) await upload("gallery", fs[i]); });
+      run("画像を追加", async function () { for (var i = 0; i < fs.length; i++) await upload("gallery", fs[i], false, target); });
     }));
     ga.appendChild(r2);
     // 目元画像（対戦履歴のキャラ札・絞り込みに出る細長い画像）
@@ -161,7 +229,9 @@
     var ef = thumb(eo ? fileUrl(eo) : builtinEye(id), (ch ? ch.name : id) + "の目元画像");
     ef.style.maxWidth = "480px"; var ei = ef.querySelector("img"); if (ei) ei.style.aspectRatio = "4 / 1"; ey.appendChild(ef);
     var r3 = make("div", undefined, "pt-px-row");
-    r3.appendChild(picker(eo ? "別の画像に差し替える" : "目元画像を差し替える", false, function (fs) { run("目元画像を差し替え", function () { return upload("eyes", fs[0]); }); }));
+    r3.appendChild(picker(eo ? "別の画像に差し替える" : "目元画像を差し替える", false, function (fs) {
+      cropAndUpload(fs[0], "目元画像の範囲を決める（" + (ch ? ch.name : id) + "）", target);
+    }));
     if (eo) { var re = make("button", "元に戻す", "btn"); re.type = "button"; re.addEventListener("click", function () { remove("eye-" + id, "差し替えた目元画像"); }); r3.appendChild(re); }
     ey.appendChild(r3);
     ui.body.append(bg, ga, ey);
@@ -175,14 +245,14 @@
     render();
   }
   function mount(target, context) {
-    ctx = context; host = target; host.replaceChildren();
+    ++uiGen; ctx = context; host = target; host.replaceChildren();
     var panel = make("section", undefined, "card"); ui.root = panel;
     panel.appendChild(make("h2", "背景・ギャラリー"));
     panel.appendChild(make("p", "キャラごとに、背景の差し替えと、ギャラリーの画像の追加ができます。技データ・チェックシートには影響しません。"));
     ui.char = make("select"); ui.char.addEventListener("change", render);
     ui.body = make("div"); ui.note = make("p", "キャラを選んでください。"); ui.note.setAttribute("role", "status"); ui.note.setAttribute("aria-live", "polite");
     panel.append(ui.char, ui.body, ui.note); host.appendChild(panel);
-    loadItems().then(function () { setCharacters(ctx.characters()); }).catch(function (e) { say("登録の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
+    loadItems().then(function () { if (ui.root === panel) setCharacters(ctx.characters()); }).catch(function (e) { if (ui.root !== panel) return; say("登録の一覧を取得できませんでした：" + e.message, "error"); setCharacters(ctx.characters()); });
   }
   function updateCharacters(list) { setCharacters(list); }
   window.PTAdminPxImages = Object.freeze({ mount: mount, updateCharacters: updateCharacters });
