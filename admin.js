@@ -62,7 +62,13 @@
     opt = opt || {};
     var method = opt.method || "GET", init = { method: method, credentials: "include", headers: {} };
     if (method !== "GET") { init.headers["Content-Type"] = "application/json"; init.headers["X-CSRF-Token"] = S.csrf; init.body = JSON.stringify(opt.body || {}); }
-    var r = await fetch(API + path, init), data = null;
+    // 通信の時間切れ：読み取りは45秒、書き込みは120秒で打ち切る（止まったままにしない）。通信エラー・時間切れは、一時的な失敗として印を付ける
+    var ac = typeof AbortController === "function" ? new AbortController() : null, to = ac ? setTimeout(function () { ac.abort(); }, method === "GET" ? 45000 : 120000) : 0;
+    if (ac) init.signal = ac.signal;
+    var r, data = null;
+    try { r = await fetch(API + path, init); }
+    catch (fe) { var ne = new Error(ac && ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした"); ne.transient = true; throw ne; }
+    finally { if (to) clearTimeout(to); }
     try { data = await r.json(); } catch (_) {}
     if (r.status === 403 && method !== "GET" && !opt.retried && data && /CSRF/.test(String(data.detail))) { await loadMe(); return api(path, Object.assign({}, opt, { retried: true })); }
     if (!r.ok) {
@@ -72,6 +78,18 @@
     return data;
   }
   async function loadMe() { var me = await api("/api/v1/me"); S.me = me; S.csrf = me.csrf_token || ""; return me; }
+  // 開いた直後だけ、サーバーが眠っていて（無料プラン）つながらないことがある。通信エラー・502/503/504 のときは、案内を出して自動でやり直す（401・403 などはやり直さない）
+  async function loadMeRetry() {
+    for (var n = 0; ; n++) {
+      try { return await loadMe(); }
+      catch (e) {
+        var transient = e && (e.transient === true || e.status === 502 || e.status === 503 || e.status === 504);      // 通信エラー・時間切れ・502/503/504 だけ。それ以外（プログラムの誤り等）はやり直さない
+        if (!transient || n >= 5) throw e;
+        app.replaceChildren(h("div", { class: "center card" }, h("h2", { text: "サーバーに接続しています…" }), h("p", { text: "サーバーが眠っているときは、起きるまで1分ほどかかることがあります。自動でやり直しています。（" + (n + 1) + "回目）" })));
+        await new Promise(function (ok) { setTimeout(ok, 2000 * Math.pow(2, Math.min(n, 3))); });
+      }
+    }
+  }
 
   // ------------------------------------------------------------ 確認ダイアログ（画面の中に出す。文字は textContent）
   // opt: { title, body:[要素/文字], actions:[{label, value, cls}] } → 押されたボタンの value を返す（Esc・外側クリックは null）。最初に焦点が当たるのは「キャンセル」側
@@ -103,7 +121,7 @@
   async function boot() {
     // 他のページの中に埋め込まれて（クリックジャッキング）、管理者に気づかれず「公開」などを押させられないよう、枠の中では動かさない
     if (window.top !== window.self) { app.replaceChildren(h("div", { class: "center card" }, h("h2", { text: "このページは、他のページの中では使えません" }), h("p", null, h("a", { href: location.href, target: "_top", rel: "noopener", text: "新しいページとして開く" })))); return; }
-    try { await loadMe(); }
+    try { await loadMeRetry(); }
     catch (e) {
       if (e.status === 401) return showLogin();
       return showMsg("サーバーにつながりませんでした", "しばらくしてから、もう一度開いてください。（" + e.message + "）");
@@ -213,8 +231,43 @@
     D.spFrame.addEventListener("load", function () { S.spWin = D.spFrame.contentWindow; postPreview(); });
     D.spBox.replaceChildren(D.spFrame);
   }
+  var baseSeq = 0;
+  // 枠（iframe）の「読み込み完了」の時点では、元データ（COLS・INFO_TAGS・CHARACTERS）がまだ揃っていないことがある。揃うまで待つ（技表に必須のものだけ。コンボ COMBOS は任意で、後述の lateCombos が別に待つ）
+  async function waitBaseReady(W, my) {
+    var t0 = Date.now();
+    for (;;) {
+      if (my !== baseSeq) return false;
+      try { if (W.eval("typeof COLS !== 'undefined' && typeof INFO_TAGS !== 'undefined' && typeof CHARACTERS !== 'undefined'") === true) return true; } catch (e) {}
+      if (Date.now() - t0 > 60000) throw new Error("元データがそろいませんでした（時間切れ）。「元データを読み込み直す」を押してください");
+      await new Promise(function (ok) { setTimeout(ok, 100); });
+    }
+  }
+  // コンボ（COMBOS）だけ取れなかったとき：技表など他の機能は使えるまま、コンボ動画の画面だけ空にして案内を出し、揃うまで裏で待って、揃ったら入れ替える
+  function comboNote(text) {
+    var el = document.getElementById("ptComboNote");
+    if (!text) { if (el) el.remove(); return; }
+    if (!el) { el = h("p", { id: "ptComboNote", class: "pt-note", role: "status" }); sec.combo.insertBefore(el, sec.combo.firstChild); }
+    el.textContent = text;
+  }
+  async function lateCombos(W, my) {
+    comboNote("コンボの元データを読み込み中です。技表など他の機能は、そのまま使えます。（自動で待っています）");
+    var t0 = Date.now();
+    while (my === baseSeq && Date.now() - t0 < 60000) {
+      await new Promise(function (ok) { setTimeout(ok, 2000); });
+      if (my !== baseSeq) return;
+      try {
+        if (W.eval("typeof COMBOS !== 'undefined'") === true) {
+          var chars = S.chars.map(function (c) { return { id: c.id, name: c.name }; });
+          window.PTAdminComboVideos.updateData({ characters: chars, combos: JSON.parse(W.eval("JSON.stringify(COMBOS)")), rev: JSON.parse(W.eval("JSON.stringify(typeof COMBOS_REV === 'number' ? COMBOS_REV : 0)")) });
+          comboNote(""); return;
+        }
+      } catch (e) {}
+    }
+    if (my === baseSeq) comboNote("コンボの元データを読み込めませんでした。コンボ動画の登録は、いまは使えません。技表のほうの「元データを読み込み直す」で、もう一度試せます。");
+  }
   async function onBaseLoaded() {
-    var W = D.pcFrame.contentWindow;
+    var W = D.pcFrame.contentWindow, my = ++baseSeq;
+    try { if (!(await waitBaseReady(W, my))) return; } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
     try {
       var J = function (expr) { return JSON.parse(W.eval("JSON.stringify(" + expr + ")")); };
       S.cols = J("COLS.map(function(c){return {id:c.id,label:c.label}})");
@@ -222,14 +275,18 @@
       S.chars = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,moves:c.moves}})");
       window.PTAdminMoveMedia.updateCharacters(S.chars);
       S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars); window.PTAdminPxImages.updateCharacters(S.chars);
-      try { window.PTAdminComboVideos.updateData({ characters: S.chars.map(function (c) { return { id: c.id, name: c.name }; }), combos: J("COMBOS"), rev: J("typeof COMBOS_REV === 'number' ? COMBOS_REV : 0") }); }
-      catch (e2) { console.error("[admin] コンボの収録データを読み込めませんでした", e2); window.PTAdminComboVideos.updateData({ characters: S.chars, combos: {}, rev: 0 }); }
+      try { window.PTAdminComboVideos.updateData({ characters: S.chars.map(function (c) { return { id: c.id, name: c.name }; }), combos: J("COMBOS"), rev: J("typeof COMBOS_REV === 'number' ? COMBOS_REV : 0") }); comboNote(""); }
+      catch (e2) { console.error("[admin] コンボの収録データを読み込めませんでした", e2); window.PTAdminComboVideos.updateData({ characters: S.chars, combos: {}, rev: 0 }); lateCombos(W, my); }
       S.win = W;
     } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
     if (!(window.crypto && crypto.subtle)) { D.chars.textContent = "この環境では元データの指紋（SHA-256）を計算できないため、編集できません。https で開いたページから使ってください。"; return; }
-    try { S.pageHash = {}; await Promise.all(S.chars.map(async function (c) { S.pageHash[c.id] = await baseHashOf(c.id, c.moves); })); }
-    catch (e) { D.chars.textContent = "元データの指紋を計算できませんでした：" + e.message; return; }
-    await refreshOverview();
+    var ph = {};      // 待っている間は手元の入れ物に入れ、世代が合っているときだけ、まとめて反映する（古い読み込みが、新しい読み込みのデータを書き換えない）
+    try { await Promise.all(S.chars.map(async function (c) { ph[c.id] = await baseHashOf(c.id, c.moves); })); }
+    catch (e) { if (my === baseSeq) D.chars.textContent = "元データの指紋を計算できませんでした：" + e.message; return; }
+    if (my !== baseSeq) return;      // 待っている間に、枠が読み込み直された（新しい読み込みが引き継ぐ）
+    S.pageHash = ph;
+    await refreshOverview(my);
+    if (my !== baseSeq) return;
     renderChars(); loadOverlays();
     var keep = S.cur && baseOf(S.cur.id) ? S.cur.id : null;      // 元データを読み直したときは、開いていたキャラを開き直す
     S.cur = null;
@@ -238,9 +295,9 @@
   function reloadBase() {
     guardThen(function () { D.chars.textContent = "元データ（サイトの技表）を読み込み直しています…"; D.pcFrame.src = "pc.html?ptpreview=1&_=" + Date.now() + "#sheet"; });
   }
-  async function refreshOverview() {
-    try { var r = await api("/api/v1/admin/checksheet"); S.ovr = {}; r.characters.forEach(function (c) { S.ovr[c.char_id] = c; }); }
-    catch (e) { banner("err", "一覧を取得できませんでした：" + e.message); }
+  async function refreshOverview(my) {      // my：元データの読み込みの世代（古い世代の返事では、共有の状態もバナーも変えない）
+    try { var r = await api("/api/v1/admin/checksheet"); if (my !== undefined && my !== baseSeq) return; var ov = {}; r.characters.forEach(function (c) { ov[c.char_id] = c; }); S.ovr = ov; }
+    catch (e) { if (my !== undefined && my !== baseSeq) return; banner("err", "一覧を取得できませんでした：" + e.message); }
   }
   function banner(kind, text, actions) {
     D.banner.replaceChildren();

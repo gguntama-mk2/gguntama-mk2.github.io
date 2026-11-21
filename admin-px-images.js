@@ -6,17 +6,29 @@
   "use strict";
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
-  var BG_W = 1400, BG_H = 788, MAX_BYTES = 12 * 1024 * 1024;
+  var BG_W = 1400, BG_H = 788, EYE_W = 480, EYE_H = 120, MAX_BYTES = 12 * 1024 * 1024;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
   var ctx, host, characters = [], items = [], ui = {}, urls = {}, busy = false;
 
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   async function request(path, init) {
     init = init || {};
+    if (init.method === "POST") return request1(path, init);       // 書き込みは自動でやり直さない（二重登録を避ける）
+    for (var n = 0; ; n++) {       // 読み取りだけ、通信エラー・サーバーの一時的な不調（502/503/504）なら、少し待ってやり直す（無料サーバーが起きるのを待つ）
+      try { return await request1(path, init); }
+      catch (e) { if (n >= 4 || !(e && e.retryable)) throw e; await sleep(1500 * Math.pow(2, n)); }
+    }
+  }
+  async function request1(path, init) {
     var headers = Object.assign({}, init.headers || {});
     if (init.method === "POST") { headers["X-CSRF-Token"] = ctx.csrf(); if (typeof init.body === "string") headers["Content-Type"] = "application/json"; }
-    var res = await fetch(API + path, Object.assign({ credentials: "include" }, init, { headers: headers }));
-    var body = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status);
+    var res, ac = typeof AbortController === "function" ? new AbortController() : null, to = ac ? setTimeout(function () { ac.abort(); }, init.method === "POST" ? 120000 : 45000) : 0;      // 止まったままにしない（読み取り45秒・書き込み120秒）
+    try { res = await fetch(API + path, Object.assign({ credentials: "include" }, init, { headers: headers }, ac ? { signal: ac.signal } : {})); }
+    catch (e) { var ne = new Error(ac && ac.signal.aborted ? "時間切れ（応答がありません）" : "通信できませんでした"); ne.retryable = true; throw ne; }
+    finally { if (to) clearTimeout(to); }
+    var body = await res.json().catch(function () { return null; });
+    if (body === null || typeof body !== "object") { var be = new Error(res.ok ? "サーバーの返答を読めませんでした" : "HTTP " + res.status); be.retryable = !res.ok && (res.status === 502 || res.status === 503 || res.status === 504); throw be; }
+    if (!res.ok) { var er = new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status); er.retryable = res.status === 502 || res.status === 503 || res.status === 504; throw er; }
     return body;
   }
   function say(text, state) { ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
@@ -31,11 +43,20 @@
   }
   function entry(id) { return items.find(function (x) { return x.id === id; }); }
 
-  async function loadItems() { items = (await request("/api/v1/admin/px-overrides")).items || []; }
+  async function loadItems() {
+    var r = await request("/api/v1/admin/px-overrides");
+    if (!r || !Array.isArray(r.items)) throw new Error("サーバーの返答の形が違います");      // 想定外の返答は、そのまま使わない（空にもしない）
+    items = r.items.filter(function (x) { return x && typeof x.id === "string" && typeof x.sha === "string"; });
+  }
   function fileUrl(it) {      // 登録済みの画像を表示用に取り出す（同じ画像は使い回す）
     if (urls[it.sha]) return Promise.resolve(urls[it.sha]);
     return fetch(API + "/api/v1/px-overrides/file/" + it.sha, { credentials: "omit" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
       .then(function (b) { return (urls[it.sha] = URL.createObjectURL(b)); });
+  }
+  function builtinUrl(id) {      // サイト内の絵は「必要になってから読み込む」ので、最初は空。読み込みを待って URL を取り直す
+    var S = pxs(); if (!S) return Promise.reject(new Error("no PXS"));
+    var u = S.url(id); if (u) return Promise.resolve(u);
+    return Promise.resolve(S.bitmap(id)).then(function () { var v = S.url(id); if (!v) throw new Error("empty"); return v; });
   }
   function thumb(src, label) {
     var f = make("figure", undefined, "pt-px-fig"); var im = make("img"); im.alt = label; im.loading = "lazy"; im.draggable = false;
@@ -54,6 +75,24 @@
     var g = cv.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, BG_W, BG_H);
     return toBlob(cv, "image/webp", 0.92);
   }
+  async function prepEyes(file) {     // 対戦履歴のキャラ札用：4:1（480×120）に中央で切り抜いて WebP にする
+    var bm = await decode(file), w = bm.width || bm.naturalWidth, h = bm.height || bm.naturalHeight;
+    var k = Math.max(EYE_W / w, EYE_H / h), cw = EYE_W / k, ch = EYE_H / k;
+    var cv = document.createElement("canvas"); cv.width = EYE_W; cv.height = EYE_H;
+    var g = cv.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, EYE_W, EYE_H);
+    return toBlob(cv, "image/webp", 0.9);
+  }
+  var eyeMap = null;     // 元の目元画像（キャラ名→ファイル）。対戦履歴の部品から、必要になった時に1回だけ読む
+  function loadEyeMap() {
+    if (!eyeMap) eyeMap = fetch("js/26.js", { credentials: "same-origin" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+      .then(function (t) { var m = /PT_EYES=(\{[^}]*\})/.exec(t); if (!m) throw new Error("PT_EYES not found"); return JSON.parse(m[1]); })
+      .catch(function (e) { eyeMap = null; throw e; });
+    return eyeMap;
+  }
+  function norm(x) { return String(x).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  function builtinEye(id) {      // キャラIDに合う元の目元画像のURL（無ければ reject）
+    return loadEyeMap().then(function (m) { var k = Object.keys(m).find(function (n) { return norm(n) === norm(id); }); if (!k) throw new Error("none"); return m[k]; });
+  }
   async function prepGallery(file) {  // そのまま保存（大きすぎるときだけ、縮めて WebP にする）
     if (/^image\/(png|jpeg|webp|avif)$/.test(file.type) && file.size <= MAX_BYTES) return file;
     var bm = await decode(file), w = bm.width || bm.naturalWidth, h = bm.height || bm.naturalHeight, k = Math.min(1, 4096 / Math.max(w, h));
@@ -65,7 +104,7 @@
   }
   async function upload(kind, file) {
     var fd = new FormData(); fd.append("character_id", cur()); fd.append("kind", kind);
-    fd.append("image", kind === "bg" ? await prepBg(file) : await prepGallery(file), "image");
+    fd.append("image", kind === "bg" ? await prepBg(file) : kind === "eyes" ? await prepEyes(file) : await prepGallery(file), "image");
     return request("/api/v1/admin/px-overrides/set", { method: "POST", body: fd });
   }
   async function run(label, fn) {
@@ -94,7 +133,7 @@
       bg.appendChild(make("p", "このキャラには、まだ背景がありません（背景が入っているキャラだけ差し替えできます）。", "pt-px-sub"));
     } else {
       bg.appendChild(make("p", o ? "差し替え中の背景です。「元に戻す」でサイトに入っている絵に戻ります。" : "いまはサイトに入っている背景です。画像を選ぶと、1400×788（16:9）に中央で切り抜いて差し替えます。", "pt-px-sub"));
-      bg.appendChild(thumb(o ? fileUrl(o) : (S ? S.url(id) : ""), (ch ? ch.name : id) + "の背景"));
+      bg.appendChild(thumb(o ? fileUrl(o) : builtinUrl(id), (ch ? ch.name : id) + "の背景"));
       var row = make("div", undefined, "pt-px-row");
       row.appendChild(picker(o ? "別の画像に差し替える" : "背景を差し替える", false, function (fs) { run("背景を差し替え", function () { return upload("bg", fs[0]); }); }));
       if (o) { var rb = make("button", "元に戻す", "btn"); rb.type = "button"; rb.addEventListener("click", function () { remove(id, "差し替えた背景"); }); row.appendChild(rb); }
@@ -104,7 +143,7 @@
     var ga = make("section", undefined, "pt-px-sec"); ga.appendChild(make("h3", "ギャラリーの画像"));
     ga.appendChild(make("p", "追加した画像は、サイトのギャラリー（" + (ch ? ch.name : id) + "）の最後に並びます。元の画像はそのまま残ります。png / jpeg / webp / avif、1枚12MBまで。", "pt-px-sub"));
     var grid = make("div", undefined, "pt-px-grid");
-    builtinGallery(id).forEach(function (k) { var c = make("div", undefined, "pt-px-card"); c.appendChild(thumb(S ? S.url(k) : "", "サイトの画像")); c.appendChild(make("small", "サイト内の画像")); grid.appendChild(c); });
+    builtinGallery(id).forEach(function (k) { var c = make("div", undefined, "pt-px-card"); c.appendChild(thumb(builtinUrl(k), "サイトの画像")); c.appendChild(make("small", "サイト内の画像")); grid.appendChild(c); });
     items.filter(function (it) { return it.kind === "gallery" && it.character_id === id; }).forEach(function (it) {
       var c = make("div", undefined, "pt-px-card"); c.appendChild(thumb(fileUrl(it), "追加した画像" + it.id.split("~")[1]));
       var b = make("button", "削除", "btn pt-px-del"); b.type = "button"; b.addEventListener("click", function () { remove(it.id, "追加した画像"); }); c.appendChild(b); grid.appendChild(c);
@@ -115,7 +154,17 @@
       run("画像を追加", async function () { for (var i = 0; i < fs.length; i++) await upload("gallery", fs[i]); });
     }));
     ga.appendChild(r2);
-    ui.body.append(bg, ga);
+    // 目元画像（対戦履歴のキャラ札・絞り込みに出る細長い画像）
+    var ey = make("section", undefined, "pt-px-sec"); ey.appendChild(make("h3", "目元画像（対戦履歴）"));
+    var eo = entry("eye-" + id);
+    ey.appendChild(make("p", eo ? "差し替え中の目元画像です。「元に戻す」でサイトに入っている画像に戻ります。" : "いまはサイトに入っている目元画像です。画像を選ぶと、480×120（4:1）に中央で切り抜いて差し替えます。対戦履歴のキャラ札に使われます。", "pt-px-sub"));
+    var ef = thumb(eo ? fileUrl(eo) : builtinEye(id), (ch ? ch.name : id) + "の目元画像");
+    ef.style.maxWidth = "480px"; var ei = ef.querySelector("img"); if (ei) ei.style.aspectRatio = "4 / 1"; ey.appendChild(ef);
+    var r3 = make("div", undefined, "pt-px-row");
+    r3.appendChild(picker(eo ? "別の画像に差し替える" : "目元画像を差し替える", false, function (fs) { run("目元画像を差し替え", function () { return upload("eyes", fs[0]); }); }));
+    if (eo) { var re = make("button", "元に戻す", "btn"); re.type = "button"; re.addEventListener("click", function () { remove("eye-" + id, "差し替えた目元画像"); }); r3.appendChild(re); }
+    ey.appendChild(r3);
+    ui.body.append(bg, ga, ey);
   }
   function setCharacters(list) {
     characters = Array.isArray(list) ? list.filter(function (c) { return c && CHAR_RE.test(c.id); }) : [];
