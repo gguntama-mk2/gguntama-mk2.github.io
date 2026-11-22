@@ -121,7 +121,7 @@ const server = http.createServer(async (req, res) => {
       await page.locator("#ptUsersSearch").fill("");  await page.waitForTimeout(600);
       const doc = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
       if (width < 800) assert(doc[0] <= doc[1], "no horizontal overflow " + doc);
-      await page.screenshot({ path: process.env.SHOT_DIR ? process.env.SHOT_DIR + "/users-" + width + ".png" : "/dev/null", fullPage: true });
+      if (process.env.SHOT_DIR) await page.screenshot({ path: process.env.SHOT_DIR + "/users-" + width + ".png", fullPage: true });
       assert.deepEqual(errors, [], errors.join("; "));
       console.log("PASS", width); await page.close();
     }
