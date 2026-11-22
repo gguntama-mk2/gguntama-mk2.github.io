@@ -1213,20 +1213,30 @@
   // ------------------------------------------------------------ 管理者の一覧
   // Desktop: comparison table / Mobile: each account as a full-width card.
   // Keeping the toolbar mounted preserves the keyboard/focus while filtering on phones.
-  var USERS_PAGE_SIZE = 50, usersRequest = 0, usersSearchTimer = null;
+  var USERS_PAGE_SIZES = [25, 50, 100], usersRequest = 0, usersSearchTimer = null;
+  function usersPageSize() { return USERS_PAGE_SIZES.indexOf(S.usersLimit) >= 0 ? S.usersLimit : 50; }
   var ACT_LABEL = { active: "アクティブ", recent: "最近", dormant: "休眠", unknown: "記録なし" };
   var ACT_CLASS = { active: "badge pub", recent: "badge", dormant: "badge stale", unknown: "badge" };
   var ACT_TIP = { active: "7日以内に利用", recent: "30日以内に利用（7日より前）", dormant: "30日以上利用なし", unknown: "利用の記録がありません（記録の開始前から使っていない、またはまだ一度も使っていない）" };
   var USERS_SORTS = [
     ["default|", "標準（管理者が先・登録順）"], ["last_access|desc", "最終アクセス：新しい順"], ["last_access|asc", "最終アクセス：古い順"],
     ["created|desc", "登録日：新しい順"], ["created|asc", "登録日：古い順"], ["name|asc", "名前：昇順"], ["name|desc", "名前：降順"], ["id|asc", "PROJECT T ID順"]];
-  var USERS_STATUS = [["all", "全員"], ["active", "アクティブ"], ["recent", "最近"], ["dormant", "休眠"], ["unknown", "記録なし"]];
+  var USERS_STATUS = [["all", "全員"], ["active", "アクティブ"], ["recent", "最近"], ["dormant", "休眠"], ["unknown", "記録なし"], ["unknown_used", "記録なし・利用歴あり"], ["unknown_never", "記録なし・未使用"], ["contact", "要連絡"]];
+  var USERS_PROVIDERS = [["", "すべて"], ["discord", "Discord"], ["google", "Google"]];
   function activityBadge(u) {
-    var a = u.activity || "unknown";
+    var a = u.activity || "unknown", d = u.unknown_detail;
+    if (a === "unknown" && d) {
+      var used = d.past_use === "used";
+      return h("span", { class: "badge", title: used ? "最終アクセスの記録はありませんが、Recorder端末" + d.devices + "台・試合" + d.matches + "件の利用歴があります（記録の開始前から使っていた可能性）" : "登録だけで、端末も試合の記録もありません（一度も使っていない可能性）",
+        text: used ? "記録なし・利用歴あり" : "記録なし・未使用" });
+    }
     return h("span", { class: ACT_CLASS[a] || "badge", title: ACT_TIP[a] || "", text: ACT_LABEL[a] || "記録なし" });
   }
   function accessText(u) {
-    if (!u.last_access_at) return h("span", { class: "muted", text: "記録なし" });
+    if (!u.last_access_at) {
+      var d = u.unknown_detail;
+      return h("span", { class: "muted", text: d && d.past_use === "used" && d.trace_at ? "記録なし（形跡：" + fmtAt(d.trace_at) + "）" : "記録なし" });
+    }
     return h("span", { title: "サイト：" + (fmtAt(u.last_site_at) || "記録なし") + "　Recorder：" + (fmtAt(u.last_recorder_at) || "記録なし"),
       text: fmtAgo(u.last_access_at) + "（" + fmtAt(u.last_access_at) + "）" });
   }
@@ -1262,6 +1272,15 @@
       : h("button", { type: "button", class: "btn", "data-grant": u.project_t_id, text: "管理者にする",
           onclick: function () { changeRole(u.project_t_id, "grant"); } });
   }
+  function noteBadges(u) {
+    var out = [];
+    if (u.contact_needed) out.push(h("span", { class: "badge stale", text: "要連絡" }));
+    if (u.has_note) out.push(h("span", { class: "badge", text: "メモあり" }));
+    return out;
+  }
+  function detailButton(u) {
+    return h("button", { type: "button", class: "btn", "data-detail": u.project_t_id, text: "詳細", onclick: function () { openUserDetail(u.project_t_id); } });
+  }
   function userField(label, content, extraClass) {
     return h("div", { class: "pt-user-field" + (extraClass ? " " + extraClass : "") },
       h("dt", { text: label }), h("dd", null, content));
@@ -1270,7 +1289,7 @@
     var mine = u.project_t_id === S.me.project_t_id;
     return h("article", { class: "pt-user-card", "aria-label": (u.display_name || "名前なし") + " のアカウント" },
       h("div", { class: "pt-user-head" },
-        h("div", null, h("div", { class: "pt-user-name", text: u.display_name || "（名前なし）" }),
+        h("div", null, h("div", { class: "pt-user-name", text: u.display_name || "（名前なし）" }), noteBadges(u),
           mine ? h("div", { class: "pt-user-self", text: "ログイン中のアカウント" }) : null),
         h("span", { class: u.is_admin ? "badge pub" : "badge", text: u.is_admin ? "管理者" : "一般" })),
       h("dl", { class: "pt-user-fields" },
@@ -1285,7 +1304,7 @@
           userField("登録日", fmtAt(u.created_at) || "不明"),
           userField("最終アクセス", accessText(u)),
           userField("状態", activityBadge(u)))),
-      h("div", { class: "pt-user-action" }, roleAction(u, mine)));
+      h("div", { class: "pt-user-action" }, detailButton(u), roleAction(u, mine)));
   }
   function userRow(u) {
     var mine = u.project_t_id === S.me.project_t_id;
@@ -1293,13 +1312,13 @@
       h("td", null, h("code", { text: u.project_t_id })),
       h("td", null, u.tekken_id ? h("code", { text: u.tekken_id }) : h("span", { class: "muted", text: "未連携" })),
       h("td", null, identityStatus(u)),
-      h("td", { text: u.display_name || "（名前なし）" }),
+      h("td", null, (u.display_name || "（名前なし）") + " ", noteBadges(u)),
       h("td", { text: (u.providers || []).join("・") }),
       h("td", { text: fmtAt(u.created_at) }),
       h("td", null, accessText(u)),
       h("td", null, activityBadge(u)),
       h("td", null, h("span", { class: u.is_admin ? "badge pub" : "badge", text: u.is_admin ? "管理者" : "一般" })),
-      h("td", null, roleAction(u, mine)));
+      h("td", null, h("div", { class: "pt-row-actions" }, detailButton(u), roleAction(u, mine))));
   }
   function buildUsersUI() {
     var input = h("input", { type: "search", id: "ptUsersSearch", autocomplete: "off",
@@ -1337,6 +1356,15 @@
     var warning = h("div", { class: "banner warn", id: "adminCountWarn", hidden: true });
     var message = h("div", { id: "usersMsg", role: "status", "aria-live": "polite" });
     var resultLabel = h("p", { class: "pt-users-result-label", role: "status" });
+    var provSelect = h("select", { id: "ptUsersProv", "aria-label": "ログイン方法で絞り込み", onchange: function (ev) {
+      S.usersProvider = ev.target.value; S.usersOffset = 0; loadUsers(undefined, true);
+    } }, USERS_PROVIDERS.map(function (o) { return h("option", { value: o[0], text: o[1] }); }));
+    provSelect.value = S.usersProvider || "";
+    var limitSelect = h("select", { id: "ptUsersLimit", "aria-label": "表示件数", onchange: function (ev) {
+      S.usersLimit = parseInt(ev.target.value, 10); S.usersOffset = 0; loadUsers(undefined, true);
+    } }, USERS_PAGE_SIZES.map(function (n) { return h("option", { value: String(n), text: n + "件" }); }));
+    limitSelect.value = String(usersPageSize());
+    var statsPanel = buildStatsPanel();
     var tableBody = h("tbody");
     var sortHeads = {};
     var table = h("table", { "aria-label": "管理者とTEKKEN IDの一覧" },
@@ -1364,12 +1392,103 @@
           h("div", { class: "row" }, grantInput, grantBtn))),
       h("div", { class: "pt-users-filters" },
         h("div", { class: "pt-users-chips", role: "group", "aria-label": "状態で絞り込み" }, chipButtons),
-        h("div", { class: "pt-users-sort" }, h("label", { for: "ptUsersSort", text: "並び替え" }), sortSelect)),
+        h("div", { class: "pt-users-sort" }, h("label", { for: "ptUsersSort", text: "並び替え" }), sortSelect),
+        h("div", { class: "pt-users-sort" }, h("label", { for: "ptUsersProv", text: "ログイン方法" }), provSelect),
+        h("div", { class: "pt-users-sort" }, h("label", { for: "ptUsersLimit", text: "表示件数" }), limitSelect)),
+      statsPanel,
       h("details", { class: "pt-users-policy" },
         h("summary", { text: "管理者の運用ルール" }),
         h("p", { text: "管理者アカウントは二段階認証（2FA）を有効にし、アカウントを共有せず、必要以上に権限を付与しないでください。自分自身と最後の管理者は解除できません。" })),
       resultLabel,
       h("div", { class: "pt-users-desktop tw" }, table), cards, empty, pages));
+  }
+  // ---- 推移グラフ（新規登録・サイトを使った人数）
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs) { var e = document.createElementNS(SVGNS, tag); Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); }); return e; }
+  function barChart(title, days, values, color, note) {
+    var W = 640, H = 170, L = 30, B = 22, T = 8, max = Math.max.apply(null, values.concat([1])), n = values.length, bw = (W - L - 6) / n;
+    var svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": title, class: "pt-chart" });
+    [0, 0.5, 1].forEach(function (f) {
+      var y = T + (H - T - B) * (1 - f), g = svgEl("line", { x1: L, x2: W, y1: y, y2: y, stroke: "currentColor", "stroke-opacity": "0.15" }); svg.appendChild(g);
+      var tx = svgEl("text", { x: L - 4, y: y + 4, "text-anchor": "end", "font-size": "10", fill: "currentColor", "fill-opacity": "0.7" }); tx.textContent = Math.round(max * f); svg.appendChild(tx);
+    });
+    values.forEach(function (v, i) {
+      var hgt = (H - T - B) * v / max, r = svgEl("rect", { x: L + i * bw + 1, y: H - B - hgt, width: Math.max(1, bw - 2), height: hgt, fill: color });
+      var tt = svgEl("title"); tt.textContent = days[i] + "：" + v + "人"; r.appendChild(tt); svg.appendChild(r);
+    });
+    [0, Math.floor(n / 2), n - 1].forEach(function (i) {
+      var tx = svgEl("text", { x: L + i * bw + bw / 2, y: H - 6, "text-anchor": i === 0 ? "start" : i === n - 1 ? "end" : "middle", "font-size": "10", fill: "currentColor", "fill-opacity": "0.7" });
+      tx.textContent = days[i].slice(5); svg.appendChild(tx);
+    });
+    return h("div", { class: "pt-chart-box" }, h("h4", { text: title }), svg, note ? h("p", { class: "muted", text: note }) : null);
+  }
+  function buildStatsPanel() {
+    var body = h("div", { class: "pt-stats-body" }), range = 30;
+    var sel = h("select", { "aria-label": "期間", onchange: function (ev) { range = parseInt(ev.target.value, 10); load(); } },
+      [14, 30, 90].map(function (n) { return h("option", { value: String(n), text: "直近" + n + "日", selected: n === 30 }); }));
+    async function load() {
+      body.replaceChildren(h("p", { class: "muted", text: "読み込み中…" }));
+      try {
+        var s = await api("/api/v1/admin/users/stats?days=" + range), sum = s.registered.reduce(function (a, b) { return a + b; }, 0);
+        body.replaceChildren(
+          h("p", { text: "この期間の新規登録：" + sum + "人　／　登録の合計：" + s.users_total + "人" }),
+          barChart("日ごとの新規登録（人）", s.days, s.registered, "#4aa3ff"),
+          barChart("日ごとにサイトを使った人数（人）", s.days, s.active, "#3ecf8e",
+            s.active_since ? "この記録は " + s.active_since + " から始まっています（それより前は数えていません）。" : "記録はこれから貯まります。"));
+      } catch (e) { body.replaceChildren(h("p", { class: "err", text: "取得できませんでした：" + e.message })); }
+    }
+    var d = h("details", { class: "pt-users-stats", ontoggle: function () { if (d.open) load(); } },
+      h("summary", { text: "登録・利用の推移（グラフ）" }), h("div", { class: "row" }, h("label", { text: "期間 " }), sel), body);
+    return d;
+  }
+  // ---- ユーザー詳細（ダイアログ）とメモ
+  async function openUserDetail(pid) {
+    var dlg = document.getElementById("ptUserDetail");
+    if (!dlg) {
+      dlg = h("dialog", { id: "ptUserDetail", class: "pt-detail", "aria-label": "ユーザー詳細" });
+      document.body.appendChild(dlg);
+      dlg.addEventListener("click", function (ev) { if (ev.target === dlg) dlg.close(); });
+    }
+    dlg.replaceChildren(h("p", { text: "読み込み中…" }));
+    if (!dlg.open) dlg.showModal();
+    try {
+      var d = await api("/api/v1/admin/users/" + encodeURIComponent(pid) + "/detail");
+      renderUserDetail(dlg, d);
+    } catch (e) {
+      dlg.replaceChildren(h("p", { class: "err", text: "取得できませんでした：" + e.message }), h("button", { type: "button", class: "btn", text: "閉じる", onclick: function () { dlg.close(); } }));
+    }
+  }
+  function renderUserDetail(dlg, d) {
+    function kv(k, v) { return h("div", { class: "pt-user-field" }, h("dt", { text: k }), h("dd", null, v)); }
+    var accounts = (d.accounts || []).map(function (a) { return a.provider + (a.username ? "（" + a.username + "）" : "") + "　連携：" + (fmtAt(a.linked_at) || "不明"); });
+    var devs = (d.devices || []).map(function (x) { return h("li", { text: x.name + (x.enabled ? "" : "（無効）") + "　登録：" + (fmtAt(x.created_at) || "不明") + "　最終通信：" + (fmtAt(x.last_seen_at) || "なし") }); });
+    var ta = h("textarea", { rows: "4", maxlength: "1000", "aria-label": "管理者メモ", placeholder: "運営用のメモ（本人には見えません・1000文字まで）" }); ta.value = d.note || "";
+    var cb = h("input", { type: "checkbox", id: "ptNoteContact" }); cb.checked = !!d.contact_needed;
+    var msg = h("p", { class: "muted", role: "status" });
+    var save = h("button", { type: "button", class: "btn", text: "メモを保存", onclick: async function () {
+      save.disabled = true; msg.textContent = "保存中…";
+      try { await api("/api/v1/admin/users/" + encodeURIComponent(d.project_t_id) + "/note", { method: "PUT", body: { note: ta.value, contact_needed: cb.checked } });
+        msg.textContent = "保存しました。"; loadUsers(undefined, true); }
+      catch (e) { msg.textContent = "保存できませんでした：" + e.message; }
+      save.disabled = false;
+    } });
+    dlg.replaceChildren(
+      h("h3", { text: (d.display_name || "（名前なし）") + " の詳細" }),
+      h("dl", { class: "pt-user-fields" },
+        kv("PROJECT T ID", h("code", { text: d.project_t_id })),
+        kv("TEKKEN ID", d.tekken_id ? d.tekken_id + "（" + (d.tekken_id_enabled ? "有効" : "無効") + "）" : "未連携"),
+        kv("権限", d.is_admin ? "管理者" : "一般"),
+        kv("登録日", fmtAt(d.created_at) || "不明"),
+        kv("最終アクセス", accessText(d)), kv("状態", activityBadge(d)),
+        kv("サイトを使った日数", String(d.active_days || 0) + "日（記録開始以降）"),
+        kv("試合の記録", d.match_count + "件" + (d.last_match_at ? "（最新の登録：" + fmtAt(d.last_match_at) + "）" : "")),
+        kv("録画", d.recording_count + "件")),
+      h("h4", { text: "ログイン方法" }), accounts.length ? h("ul", null, accounts.map(function (a) { return h("li", { text: a }); })) : h("p", { class: "muted", text: "なし" }),
+      h("h4", { text: "Recorder 端末" }), devs.length ? h("ul", null, devs) : h("p", { class: "muted", text: "なし" }),
+      h("h4", { text: "管理者メモ" }), ta,
+      h("label", { class: "pt-note-contact", for: "ptNoteContact" }, cb, " 連絡が必要"),
+      d.note_updated_at ? h("p", { class: "muted", text: "最終更新：" + fmtAt(d.note_updated_at) }) : null,
+      h("div", { class: "row" }, save, h("button", { type: "button", class: "btn", text: "閉じる", onclick: function () { dlg.close(); } })), msg);
   }
   function setUsersStatus(s) { S.usersStatus = s; S.usersOffset = 0; loadUsers(undefined, true); }
   function toggleUsersSort(col) {
@@ -1407,12 +1526,13 @@
     ui.label.textContent = "ユーザーを読み込み中…";
     var query = (S.usersQuery || "").slice(0, 64), skip = S.usersOffset || 0;
     try {
-      var url = "/api/v1/admin/users?limit=" + USERS_PAGE_SIZE + "&offset=" + skip + (query ? "&q=" + encodeURIComponent(query) : "")
+      var url = "/api/v1/admin/users?limit=" + usersPageSize() + "&offset=" + skip + (query ? "&q=" + encodeURIComponent(query) : "")
         + (S.usersStatus && S.usersStatus !== "all" ? "&status=" + encodeURIComponent(S.usersStatus) : "")
+        + (S.usersProvider ? "&provider=" + encodeURIComponent(S.usersProvider) : "")
         + (S.usersSort && S.usersSort !== "default" ? "&sort=" + encodeURIComponent(S.usersSort) + (S.usersOrder ? "&order=" + encodeURIComponent(S.usersOrder) : "") : "");
       var r = await api(url);
       if (seq !== usersRequest) return;
-      ui.count.textContent = (query || (S.usersStatus && S.usersStatus !== "all")) ? "該当 " + r.total + " 人 ／ 管理者 " + r.admins + " 人" : "登録 " + r.total + " 人 ／ 管理者 " + r.admins + " 人";
+      ui.count.textContent = (query || S.usersProvider || (S.usersStatus && S.usersStatus !== "all")) ? "該当 " + r.total + " 人 ／ 管理者 " + r.admins + " 人" : "登録 " + r.total + " 人 ／ 管理者 " + r.admins + " 人";
       syncUsersControls(r);
       ui.warn.hidden = r.admins >= 2;
       if (!ui.warn.hidden) ui.warn.textContent = "管理者が" + r.admins + "人だけです。予備の管理者をもう1人置くことをおすすめします。";
@@ -1420,13 +1540,13 @@
       ui.cards.replaceChildren.apply(ui.cards, r.users.map(userCard));
       ui.empty.hidden = r.users.length !== 0;
       ui.label.textContent = r.total ? (skip + 1) + "～" + (skip + r.users.length) + " 件を表示（全 " + r.total + " 件）" : "検索結果はありません";
-      var page = Math.floor(skip / USERS_PAGE_SIZE) + 1, totalPages = Math.max(1, Math.ceil(r.total / USERS_PAGE_SIZE));
+      var page = Math.floor(skip / usersPageSize()) + 1, totalPages = Math.max(1, Math.ceil(r.total / usersPageSize()));
       ui.pages.replaceChildren(
         h("button", { type: "button", class: "btn", disabled: skip === 0, text: "前のページ",
-          onclick: function () { loadUsers(undefined, false, skip - USERS_PAGE_SIZE); } }),
+          onclick: function () { loadUsers(undefined, false, skip - usersPageSize()); } }),
         h("span", { class: "muted", text: page + " / " + totalPages + " ページ" }),
         h("button", { type: "button", class: "btn", disabled: skip + r.users.length >= r.total, text: "次のページ",
-          onclick: function () { loadUsers(undefined, false, skip + USERS_PAGE_SIZE); } }));
+          onclick: function () { loadUsers(undefined, false, skip + usersPageSize()); } }));
     } catch (e) {
       if (seq === usersRequest) {
         ui.label.textContent = "ユーザーを取得できませんでした";
