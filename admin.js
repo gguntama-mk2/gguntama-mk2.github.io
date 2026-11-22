@@ -43,6 +43,17 @@
   var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
   // サーバーの日時は UTC（末尾に Z が付かない形）なので、UTC として読んでから、ブラウザの時刻（日本なら日本時間）で表示する
   var fmtAt = function (s) { if (!s) return ""; try { var t = /(Z|[+-]\d\d:?\d\d)$/.test(s) ? s : s + "Z"; return new Date(t).toLocaleString("ja-JP", { hour12: false }); } catch (_) { return s; } };
+  var fmtAgo = function (s) {
+    if (!s) return "";
+    try {
+      var t = /(Z|[+-]\d\d:?\d\d)$/.test(s) ? s : s + "Z", sec = Math.max(0, (Date.now() - new Date(t).getTime()) / 1000);
+      if (sec < 90) return "たった今";
+      if (sec < 3600) return Math.floor(sec / 60) + "分前";
+      if (sec < 86400) return Math.floor(sec / 3600) + "時間前";
+      if (sec < 86400 * 60) return Math.floor(sec / 86400) + "日前";
+      return Math.floor(sec / 86400 / 30) + "か月前";
+    } catch (_) { return ""; }
+  };
   var shortId = function (s) { return s ? s.slice(0, 8) + "…" : "（初期設定／退会済み）"; };
   // 元データの指紋（base_hash）。サーバーの checksheet_base.py と、まったく同じ文字列を SHA-256 にかける：
   //   {"char_id":…,"moves":[…]} を、キーを並べ替え・空白なし・日本語そのままの JSON にする（配列の順は意味を持つので、そのまま）
@@ -1203,6 +1214,22 @@
   // Desktop: comparison table / Mobile: each account as a full-width card.
   // Keeping the toolbar mounted preserves the keyboard/focus while filtering on phones.
   var USERS_PAGE_SIZE = 50, usersRequest = 0, usersSearchTimer = null;
+  var ACT_LABEL = { active: "アクティブ", recent: "最近", dormant: "休眠", unknown: "記録なし" };
+  var ACT_CLASS = { active: "badge pub", recent: "badge", dormant: "badge stale", unknown: "badge" };
+  var ACT_TIP = { active: "7日以内に利用", recent: "30日以内に利用（7日より前）", dormant: "30日以上利用なし", unknown: "利用の記録がありません（記録の開始前から使っていない、またはまだ一度も使っていない）" };
+  var USERS_SORTS = [
+    ["default|", "標準（管理者が先・登録順）"], ["last_access|desc", "最終アクセス：新しい順"], ["last_access|asc", "最終アクセス：古い順"],
+    ["created|desc", "登録日：新しい順"], ["created|asc", "登録日：古い順"], ["name|asc", "名前：昇順"], ["name|desc", "名前：降順"], ["id|asc", "PROJECT T ID順"]];
+  var USERS_STATUS = [["all", "全員"], ["active", "アクティブ"], ["recent", "最近"], ["dormant", "休眠"], ["unknown", "記録なし"]];
+  function activityBadge(u) {
+    var a = u.activity || "unknown";
+    return h("span", { class: ACT_CLASS[a] || "badge", title: ACT_TIP[a] || "", text: ACT_LABEL[a] || "記録なし" });
+  }
+  function accessText(u) {
+    if (!u.last_access_at) return h("span", { class: "muted", text: "記録なし" });
+    return h("span", { title: "サイト：" + (fmtAt(u.last_site_at) || "記録なし") + "　Recorder：" + (fmtAt(u.last_recorder_at) || "記録なし"),
+      text: fmtAgo(u.last_access_at) + "（" + fmtAt(u.last_access_at) + "）" });
+  }
   var usersNote = function (kind, text) {
     if (S.usersMsg) S.usersMsg.replaceChildren(text ? h("div", { class: "banner " + kind, text: text }) : "");
   };
@@ -1255,7 +1282,9 @@
           h("code", { text: u.project_t_id }), copyUserIdButton(u.project_t_id, "PROJECT T IDをコピー"))),
         h("div", { class: "pt-user-extra" },
           userField("ログイン方法", u.providers && u.providers.length ? u.providers.join("・") : "不明"),
-          userField("登録日", fmtAt(u.created_at) || "不明"))),
+          userField("登録日", fmtAt(u.created_at) || "不明"),
+          userField("最終アクセス", accessText(u)),
+          userField("状態", activityBadge(u)))),
       h("div", { class: "pt-user-action" }, roleAction(u, mine)));
   }
   function userRow(u) {
@@ -1267,12 +1296,14 @@
       h("td", { text: u.display_name || "（名前なし）" }),
       h("td", { text: (u.providers || []).join("・") }),
       h("td", { text: fmtAt(u.created_at) }),
+      h("td", null, accessText(u)),
+      h("td", null, activityBadge(u)),
       h("td", null, h("span", { class: u.is_admin ? "badge pub" : "badge", text: u.is_admin ? "管理者" : "一般" })),
       h("td", null, roleAction(u, mine)));
   }
   function buildUsersUI() {
     var input = h("input", { type: "search", id: "ptUsersSearch", autocomplete: "off",
-      placeholder: "PROJECT T ID・TEKKEN ID・名前", "aria-label": "ユーザーを検索",
+      placeholder: "名前・PROJECT T ID・TEKKEN ID・連携名（空白で複数語）", "aria-label": "ユーザーを検索",
       oninput: function (ev) {
         S.usersQuery = ev.target.value.trim();
         S.usersOffset = 0;
@@ -1287,6 +1318,16 @@
         }
       } });
     input.value = S.usersQuery || "";
+    var chips = {};
+    var chipButtons = USERS_STATUS.map(function (s) {
+      var b = h("button", { type: "button", class: "btn pt-chip", "data-status": s[0], "aria-pressed": s[0] === (S.usersStatus || "all") ? "true" : "false",
+        text: s[1], onclick: function () { setUsersStatus(s[0]); } });
+      chips[s[0]] = b; return b;
+    });
+    var sortSelect = h("select", { id: "ptUsersSort", "aria-label": "並び替え", onchange: function (ev) {
+      var v = ev.target.value.split("|"); S.usersSort = v[0]; S.usersOrder = v[1] || ""; S.usersOffset = 0; loadUsers(undefined, true);
+    } }, USERS_SORTS.map(function (o) { return h("option", { value: o[0], text: o[1] }); }));
+    sortSelect.value = (S.usersSort || "default") + "|" + (S.usersOrder || "");
     var grantInput = h("input", { type: "text", id: "grantId", autocomplete: "off",
       placeholder: "PROJECT T ID（36文字）", "aria-label": "管理者にするPROJECT T ID" });
     var grantBtn = h("button", { type: "button", class: "btn", id: "grantBtn", text: "管理者権限を付与",
@@ -1297,15 +1338,21 @@
     var message = h("div", { id: "usersMsg", role: "status", "aria-live": "polite" });
     var resultLabel = h("p", { class: "pt-users-result-label", role: "status" });
     var tableBody = h("tbody");
+    var sortHeads = {};
     var table = h("table", { "aria-label": "管理者とTEKKEN IDの一覧" },
       h("thead", null, h("tr", null,
-        ["PROJECT T ID", "TEKKEN ID", "連携状態", "名前", "ログイン方法", "登録日", "権限", "操作"].map(function (t) { return h("th", { text: t }); }))),
+        [["PROJECT T ID"], ["TEKKEN ID"], ["連携状態"], ["名前", "name"], ["ログイン方法"], ["登録日", "created"], ["最終アクセス", "last_access"], ["状態"], ["権限"], ["操作"]].map(function (c) {
+          if (!c[1]) return h("th", { text: c[0] });
+          var b = h("button", { type: "button", class: "pt-sort-head", "data-sort": c[1], "data-label": c[0], text: c[0], onclick: function () { toggleUsersSort(c[1]); } });
+          sortHeads[c[1]] = b;
+          return h("th", { "aria-sort": "none" }, b);
+        }))),
       tableBody);
     var cards = h("div", { class: "pt-users-cards", "aria-label": "ユーザー一覧" });
     var empty = h("p", { class: "pt-users-empty", hidden: true, text: "該当するユーザーはいません。" });
     var pages = h("div", { class: "pt-users-pagination" });
     S.usersMsg = message;
-    S.usersUI = { search: input, count: counter, warn: warning, msg: message,
+    S.usersUI = { chips: chips, sortSelect: sortSelect, sortHeads: sortHeads, search: input, count: counter, warn: warning, msg: message,
       label: resultLabel, tbody: tableBody, cards: cards, empty: empty, pages: pages };
     sec.users.replaceChildren(h("div", { class: "card" },
       h("div", { class: "pt-users-title" }, h("h2", { text: "ユーザー管理" }), counter),
@@ -1315,11 +1362,37 @@
         h("details", { class: "pt-users-grant" },
           h("summary", { text: "管理者を追加する" }),
           h("div", { class: "row" }, grantInput, grantBtn))),
+      h("div", { class: "pt-users-filters" },
+        h("div", { class: "pt-users-chips", role: "group", "aria-label": "状態で絞り込み" }, chipButtons),
+        h("div", { class: "pt-users-sort" }, h("label", { for: "ptUsersSort", text: "並び替え" }), sortSelect)),
       h("details", { class: "pt-users-policy" },
         h("summary", { text: "管理者の運用ルール" }),
         h("p", { text: "管理者アカウントは二段階認証（2FA）を有効にし、アカウントを共有せず、必要以上に権限を付与しないでください。自分自身と最後の管理者は解除できません。" })),
       resultLabel,
       h("div", { class: "pt-users-desktop tw" }, table), cards, empty, pages));
+  }
+  function setUsersStatus(s) { S.usersStatus = s; S.usersOffset = 0; loadUsers(undefined, true); }
+  function toggleUsersSort(col) {
+    // 同じ列をもう一度押すと、昇順と降順が入れ替わる。別の列は、最終アクセスと登録日は新しい順、名前は昇順から
+    var firstDesc = col === "last_access" || col === "created";
+    if (S.usersSort === col) S.usersOrder = S.usersOrder === "asc" ? "desc" : "asc";
+    else { S.usersSort = col; S.usersOrder = firstDesc ? "desc" : "asc"; }
+    S.usersOffset = 0; loadUsers(undefined, true);
+  }
+  function syncUsersControls(r) {
+    var ui = S.usersUI, sc = r.status_counts || {}, all = (sc.active || 0) + (sc.recent || 0) + (sc.dormant || 0) + (sc.unknown || 0);
+    USERS_STATUS.forEach(function (s) {
+      var b = ui.chips[s[0]], n = s[0] === "all" ? all : (sc[s[0]] || 0);
+      b.textContent = s[1] + " " + n;
+      b.setAttribute("aria-pressed", s[0] === (S.usersStatus || "all") ? "true" : "false");
+    });
+    var key = (S.usersSort || "default") + "|" + (S.usersOrder || ""), has = USERS_SORTS.some(function (o) { return o[0] === key; });
+    ui.sortSelect.value = has ? key : "";                                          // 見出しの押下で、選択肢にない組み合わせになったとき
+    Object.keys(ui.sortHeads).forEach(function (c) {
+      var th = ui.sortHeads[c].parentNode, on = S.usersSort === c, dir = on ? (S.usersOrder || "desc") : "";
+      th.setAttribute("aria-sort", on ? (dir === "asc" ? "ascending" : "descending") : "none");
+      ui.sortHeads[c].textContent = ui.sortHeads[c].getAttribute("data-label") + (on ? (dir === "asc" ? " ▲" : " ▼") : "");
+    });
   }
   async function loadUsers(q, keepNote, offset) {
     if (!S.usersUI) buildUsersUI();
@@ -1334,10 +1407,13 @@
     ui.label.textContent = "ユーザーを読み込み中…";
     var query = (S.usersQuery || "").slice(0, 64), skip = S.usersOffset || 0;
     try {
-      var url = "/api/v1/admin/users?limit=" + USERS_PAGE_SIZE + "&offset=" + skip + (query ? "&q=" + encodeURIComponent(query) : "");
+      var url = "/api/v1/admin/users?limit=" + USERS_PAGE_SIZE + "&offset=" + skip + (query ? "&q=" + encodeURIComponent(query) : "")
+        + (S.usersStatus && S.usersStatus !== "all" ? "&status=" + encodeURIComponent(S.usersStatus) : "")
+        + (S.usersSort && S.usersSort !== "default" ? "&sort=" + encodeURIComponent(S.usersSort) + (S.usersOrder ? "&order=" + encodeURIComponent(S.usersOrder) : "") : "");
       var r = await api(url);
       if (seq !== usersRequest) return;
-      ui.count.textContent = query ? "検索結果 " + r.total + " 人 ／ 管理者 " + r.admins + " 人" : "登録 " + r.total + " 人 ／ 管理者 " + r.admins + " 人";
+      ui.count.textContent = (query || (S.usersStatus && S.usersStatus !== "all")) ? "該当 " + r.total + " 人 ／ 管理者 " + r.admins + " 人" : "登録 " + r.total + " 人 ／ 管理者 " + r.admins + " 人";
+      syncUsersControls(r);
       ui.warn.hidden = r.admins >= 2;
       if (!ui.warn.hidden) ui.warn.textContent = "管理者が" + r.admins + "人だけです。予備の管理者をもう1人置くことをおすすめします。";
       ui.tbody.replaceChildren.apply(ui.tbody, r.users.map(userRow));
