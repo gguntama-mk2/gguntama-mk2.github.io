@@ -188,7 +188,8 @@
   #secUsers .pt-users-policy p { margin:8px 0; }
   #secUsers .pt-users-result-label { color:var(--sub); font-size:12px; margin:8px 0; }
   #secUsers .pt-users-desktop { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  #secUsers .pt-users-desktop table { min-width:1500px; table-layout:auto; }
+  main:has(#secUsers:not([hidden])) { max-width:1840px; }      /* ユーザー管理は列が多いので、この画面だけ横幅を広げる（横スクロールバーを出さない） */
+  #secUsers .pt-users-desktop table { min-width:0; width:100%; table-layout:auto; }
   #secUsers .pt-users-desktop th, #secUsers .pt-users-desktop td { white-space:nowrap; vertical-align:middle; padding:10px 9px; }
   #secUsers .pt-users-desktop tr:hover td { background:rgba(255,255,255,.035); }
   #secUsers .pt-users-desktop code { font-size:12px; white-space:nowrap; }
@@ -553,7 +554,7 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261122b" defer></script>
+<script src="admin.js?v=20261123a" defer></script>
 <script src="admin-move-media.js?v=20261113a" defer></script>
 <script src="admin-move-icons.js?v=20261113a" defer></script>
 <script src="admin-combo-videos.js?v=20261114a" defer></script>
