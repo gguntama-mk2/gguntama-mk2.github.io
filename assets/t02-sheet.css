@@ -54,3 +54,6 @@
 #t02Sheet .move-card .cell.na{opacity:.45;cursor:default}
 #t02Sheet .move-card.t02-done .mc-ck[aria-pressed=true]{opacity:1}
 #t02Sheet .t02-memo{width:100%;box-sizing:border-box;min-height:56px;padding:8px;border-radius:8px;border:1px solid #3a3e63;background:#1a1c2c;color:inherit;font:inherit}
+/* コマンドが長い技でも、途中で切れずに全部見えるようにする（折り返し＋大きさを自動で調整） */
+#t02Sheet .move-card .head .nm .cmdtxt{height:auto!important;max-height:none!important;overflow:visible!important;white-space:normal!important;overflow-wrap:anywhere;font-size:calc(.8rem*var(--t02cs,1));line-height:2.25}
+#t02Sheet .move-card .head .nm{min-width:0}

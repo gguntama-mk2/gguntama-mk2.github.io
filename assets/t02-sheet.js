@@ -116,7 +116,7 @@ function fallbackCard(){
 }
 
 /* ===== T02 real-data layer (test): moves come from the production sheet's own list (#list, hidden) + c/<id>.json ===== */
-const PAGE=40;let listHost=null,statusEl=null,MOVES=[],curChar='',shownN=PAGE,loadedChar='',loadTimer=0,linkReady=null;const RAW={};
+const PAGE=100000;let listHost=null,statusEl=null,MOVES=[],curChar='',shownN=PAGE,loadedChar='',loadTimer=0,linkReady=null;const RAW={};
 const mi=()=>window.PT_T02_MOVEINFO;
 function num1(x){const m=/-?\d+(?:\.\d+)?/.exec(String(x==null?'':x).replace(/[＋+]/g,'+').replace(/[−－ー]/g,'-'));return m?parseFloat(m[0]):null;}
 function sgn(x){const t=String(x==null?'':x).replace(/[＋]/g,'+').replace(/[−－ー]/g,'-');const m=/([+-]?)\s*(\d+)/.exec(t);if(!m)return null;return (m[1]==='-'?-1:1)*parseInt(m[2],10);}
@@ -179,24 +179,39 @@ function renderMoves(){
  const vis=items.slice(0,shownN),made=[];
  for(const m of vis){const r=cardFor(m);list.append(r.card);made.push([m,r.nm]);}
  if(items.length>vis.length){const more=btn('さらに表示（残り '+(items.length-vis.length)+' 技）',()=>{shownN+=PAGE;renderMoves();},'more');more.id='t02More';list.append(more);}
- linkCards(made);}
+ fitAll();linkCards(made);}
+function cmdRows(n){const rg=document.createRange(),tops=new Set();for(const ch of n.childNodes){rg.selectNode(ch);for(const r of rg.getClientRects())if(r.width>0&&r.height>0)tops.add(Math.round(r.top/10));}return tops.size;}
+function cmdOver(n,box){const rg=document.createRange();let mx=0;for(const ch of n.childNodes){rg.selectNode(ch);for(const r of rg.getClientRects())mx=Math.max(mx,r.right);}return mx>box.right+1;}
+function fitCmd(card){const n=card.querySelector('.cmdtxt');if(!n)return;n.style.removeProperty('--t02cs');const box=card.querySelector('.nm').getBoundingClientRect();if(!box.width)return;
+ for(const sc of [1,.9,.8,.7,.6]){n.style.setProperty('--t02cs',String(sc));if(cmdRows(n)<=2&&!cmdOver(n,box))return;}}
+function fitAll(){if(!listHost)return;listHost.querySelectorAll('.move-card').forEach(fitCmd);}
+window.addEventListener('resize',()=>{clearTimeout(fitAll._t);fitAll._t=setTimeout(fitAll,150);});
 function linkCards(made){const C=window.PT_T02_COMBO;if(!C)return;const ch=curChar;
  (linkReady||(linkReady=C.ready())).then(ok=>{if(!ok||ch!==curChar)return;const lk=C.linkerFor(ch);if(!lk)return;
   for(const [m,nm] of made){if(!nm.isConnected)continue;nm.tabIndex=0;nm.setAttribute('role','button');C.decorate(nm,nm,ch,m.name,m.cmd,true,lk).then(r=>{if(!r){nm.removeAttribute('role');nm.removeAttribute('tabindex');}});}});}
 function prodCards(){return [...document.querySelectorAll('#viewSheet #list > article.card')];}
-async function loadFromProduction(){
+let loadedSig='';
+function liveMoves(id){try{const c=(typeof CHARACTERS!=='undefined')&&CHARACTERS.find(x=>x.id===id);if(c&&Array.isArray(c.moves)&&c.moves.length&&c.moves[0].a)return c.moves;}catch(e){}return null;}
+async function loadFromProduction(force){
  const cards=prodCards();const ic=cards[0]&&cards[0].querySelector('.pt-ic[data-c]');const id=ic?ic.dataset.c:'';
  if(!id){if(!listHost.firstChild){MOVES=[];renderMoves();}return;}
- if(id===loadedChar&&MOVES.length)return;
- let raw=RAW[id];if(raw===undefined){try{const r=await fetch('c/'+encodeURIComponent(id)+'.json');raw=r.ok?await r.json():null;}catch(e){raw=null;}RAW[id]=raw;}
- if(!raw||!mi()){MOVES=[];loadedChar='';curChar='';renderMoves();return;}
+ /* 本番と同じ「管理者の上書きを反映済みの技データ」をそのまま使う。取れないときだけ元ファイルを読む */
+ let raw=liveMoves(id);
+ if(!raw){raw=RAW[id];if(raw===undefined){try{const r=await fetch('c/'+encodeURIComponent(id)+'.json');raw=r.ok?await r.json():null;}catch(e){raw=null;}RAW[id]=raw;}}
+ if(!raw||!mi()){MOVES=[];loadedChar='';curChar='';loadedSig='';renderMoves();return;}
+ const sig=id+'|'+raw.length+'|'+cards.length+'|'+JSON.stringify(raw).length;
+ if(!force&&sig===loadedSig&&MOVES.length)return;
  const byK=new Map();raw.forEach((o,idx)=>byK.set(String(o&&o.k!=null?o.k:idx),o));
- MOVES=cards.map(c=>{const i=c.dataset.i;const o=byK.get(String(i))||{};const a=o.a||{};const info=mi()(o);const cn=c.querySelector('.cmdtxt');
+ const used=new Set();const norm=t=>String(t||'').replace(/\s+/g,'');
+ MOVES=cards.map(c=>{const i=c.dataset.i;const cname=(c.querySelector('.nt')||{}).textContent||'';let o=byK.get(String(i));
+  /* 名前が食い違うときは、同じ名前の未使用の技を探す（取り違え防止） */
+  if(!o||norm(o.name)!==norm(cname)){const alt=raw.find(x=>x&&!used.has(x)&&norm(x.name)===norm(cname));if(alt)o=alt;}
+  if(o)used.add(o);o=o||{};const a=o.a||{};const info=mi()(o);const cn=c.querySelector('.cmdtxt');
   return {i:+i,name:(c.querySelector('.nt')||{}).textContent||o.name||'',y:o.y||'',a,cmd:String(a.command||''),cmdNode:cn,cmdText:(cn&&cn.textContent)||'',atk:info.atk,tags:new Set(info.tags.map(t=>t.id)),tagLabels:info.tags.map(t=>t.text||t.label)};});
- curChar=id;loadedChar=id;shownN=PAGE;linkReady=null;renderMoves();}
+ const sameChar=id===loadedChar;curChar=id;loadedChar=id;loadedSig=sig;if(!sameChar)shownN=PAGE;linkReady=null;renderMoves();}
 let resyncT=0;function resyncAll(){clearTimeout(resyncT);resyncT=setTimeout(()=>{if(!listHost||!listHost.isConnected)return;if(state.prog!=='all'||state.bookmark){renderMoves();return;}listHost.querySelectorAll('.move-card').forEach(c=>c._t02sync&&c._t02sync());},500);}
 function watchProduction(){document.addEventListener('click',resyncAll,true);const pl=document.querySelector('#viewSheet #list');if(!pl)return;
- new MutationObserver(()=>{clearTimeout(loadTimer);loadTimer=setTimeout(()=>{loadedChar===''||prodCards()[0]&&prodCards()[0].querySelector('.pt-ic[data-c]')&&prodCards()[0].querySelector('.pt-ic[data-c]').dataset.c!==loadedChar?(loadedChar='',loadFromProduction()):0;},150);}).observe(pl,{childList:true});}
+ new MutationObserver(()=>{clearTimeout(loadTimer);loadTimer=setTimeout(()=>loadFromProduction(false),200);}).observe(pl,{childList:true});}
 function buildSheet(v){
  /* order: 1) character (header #charBtn)  2) search row  3) applied-condition chips  4) status / progress  5) move list */
  const tools=mk('div','tools');const search=mk('input','search');search.type='search';search.id='t02Search';search.placeholder='技名・コマンドを検索';search.setAttribute('aria-label','技名・コマンドを検索');search.inputMode='search';search.value=state.query;
