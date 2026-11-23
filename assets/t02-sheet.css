@@ -45,3 +45,12 @@
 #t02Pop .t02-cbub-n{min-width:44px;min-height:44px;padding:0 12px;border:1px solid #ffd21f;border-radius:10px;background:#2a2410;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
 #t02Pop .t02-cbub-n:focus-visible{outline:3px solid #fff;outline-offset:2px}
 #t02Sheet .t02-jump-note{margin:8px 12px;font-size:12px;color:#ffd21f}
+/* 保存つなぎ込み（本番カードの保存機能を使う） */
+#t02Sheet .move-card .t02-cnt{font-size:12px;opacity:.8;white-space:nowrap;margin-left:6px}
+#t02Sheet .move-card .t02-mbadge{font-size:11px;padding:1px 6px;border-radius:8px;border:1px solid currentColor;opacity:.8;margin-left:4px}
+#t02Sheet .move-card .cell[role=checkbox]{position:relative;cursor:pointer}
+#t02Sheet .move-card .cell[role=checkbox] .t02-box{display:inline-block;width:18px;height:18px;border:2px solid #9a9dc0;border-radius:5px;margin-left:8px;vertical-align:middle;box-sizing:border-box}
+#t02Sheet .move-card .cell[aria-checked=true] .t02-box{background:#ffd21f;border-color:#ffd21f;box-shadow:inset 0 0 0 3px #1a1c2c}
+#t02Sheet .move-card .cell.na{opacity:.45;cursor:default}
+#t02Sheet .move-card.t02-done .mc-ck[aria-pressed=true]{opacity:1}
+#t02Sheet .t02-memo{width:100%;box-sizing:border-box;min-height:56px;padding:8px;border-radius:8px;border:1px solid #3a3e63;background:#1a1c2c;color:inherit;font:inherit}

@@ -5,7 +5,7 @@
 const $=id=>document.getElementById(id);
 const mobile=true;
 const COLUMN=[['command','コマンド'],['attack','攻撃判定'],['startup','発生(持続)'],['damage','ダメージ'],['guard','ガード状況'],['hit','ヒット状況'],['counter','カウンター状況'],['wall','壁やられ'],['gimmick','ギミック'],['tbreak','投げ抜け'],['chip','削りダメージ'],['homing','ホーミング性能'],['tracking','追尾方向'],['jump','ジャンプステータス'],['crouch','しゃがみステータス'],['heat','ヒートタイマー消費フレーム'],['recovery','全体硬直']];
-const state={query:'',showCommand:false,showAnswer:false,bookmark:false,userCols:null,cardBm:false,cardCk:false};
+const state={query:'',showCommand:false,showAnswer:false,bookmark:false,prog:'all',userCols:null,cardBm:false,cardCk:false};
 function mk(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;}
 function btn(txt,cb,cl){const b=mk('button',cl||'',txt);b.type='button';b.addEventListener('click',cb);return b;}
 function info(title,p){const w=mk('div','warning-panel');w.append(mk('h2','',title),mk('p','',p));return w;}
@@ -15,7 +15,7 @@ function addControl(host,label,key,onChange){const b=btn(label,()=>{state[key]=!
 function closeProdDrawers(){document.querySelectorAll('.sheet.show [data-close]').forEach(b=>b.click());const mn=$('mn');if(mn&&mn.classList.contains('on'))mn.querySelector('.mn-close')?.click();}
 /* ===== T02 (SP only): filter model, display-priority contract, sheet top reorganisation ===== */
 const PRIMARY=[['startup','発生'],['guard','ガード'],['hit','ヒット']];
-const DETAIL_GROUPS=[['数値・判定',['attack','damage','counter','chip','recovery']],['状態・特殊属性',['wall','gimmick','tbreak','homing','tracking','jump','crouch','heat']]];
+const DETAIL_GROUPS=[['基本・フレーム',['command','startup','guard','hit']],['数値・判定',['attack','damage','counter','chip','recovery']],['状態・特殊属性',['wall','gimmick','tbreak','homing','tracking','jump','crouch','heat']]];
 /* Display-settings priority contract (T02): when a user display set exists (state.userCols !== null) it alone decides which
  * move fields are shown; the T02 default layout is used ONLY when no user set exists and never overwrites a user set.
  * Real persistence / restore of the user set is NOT connected in this isolated build (HOLD). */
@@ -133,6 +133,8 @@ function passFilters(m){const f=applied;
  if(f.heat.size&&![...f.heat].some(h=>m.tags.has(HEAT_MAP[h])||(h==='hn'&&/ヒート中/.test(m.cmd)&&!['ho','hs','he','hb','hd','ra'].some(x=>m.tags.has(x)))))return false;
  if(f.info.size&&![...f.info].every(k=>INFO_MAP[k]==='*atk'?!!m.atk:m.tags.has(INFO_MAP[k])))return false;
  return true;}
+function pcard(i){return document.querySelector('#viewSheet #list > article.card[data-i="'+i+'"]');}
+function pst(i){const c=pcard(i);if(!c)return{done:false,rv:false,cnt:''};const n=c.querySelector('.cnt');return{done:c.classList.contains('done'),rv:c.classList.contains('rv'),cnt:n?n.textContent:'',memo:!!(c.querySelector('.mbadge')&&!c.querySelector('.mbadge').hidden)};}
 function matchQuery(m,q){if(!q)return true;const h=(m.name+' '+m.y+' '+m.cmd+' '+m.cmdText).toLowerCase();return q.split(/\s+/).every(w=>h.includes(w));}
 function sortMoves(a){const k=applied.sort;if(k==='default')return a;const key={startup:m=>{const v=num1(m.a.startup);return v==null?1e9:v;},guard:m=>{const v=sgn(m.a.guard);return v==null?1e9:-v;},hit:m=>{const v=sgn(m.a.hit);return v==null?1e9:-v;},damage:m=>{const v=num1(m.a.damage);return v==null?1e9:-v;}}[k];return a.slice().sort((x,y)=>key(x)-key(y)||x.i-y.i);}
 function firstLine(x){const t=String(x==null?'':x).split('\n')[0].trim();return t||'--';}
@@ -143,30 +145,36 @@ function cardFor(m){
  const nm=mk('span','nm');const txt=mk('div','txt');txt.append(mk('span','nt',m.name));nm.append(txt);
  if(m.cmdNode){const c=m.cmdNode.cloneNode(true);c.className='cmdtxt';c.removeAttribute('aria-hidden');nm.append(c);}else nm.append(mk('span','cmdtxt',m.cmd));
  const arrow=mk('span','arrow','▼');arrow.setAttribute('aria-hidden','true');hd.append(nm,arrow);top.append(hd);
+ const cntEl=mk('span','t02-cnt');hd.append(cntEl);const mbadge=mk('span','t02-mbadge','メモ');mbadge.hidden=true;hd.append(mbadge);let opened=false;let syncCells=()=>{};
  const acts=mk('div','mc-acts');
- const bm=mk('button','mc-act mc-bm');bm.type='button';bm.setAttribute('aria-pressed','false');bm.setAttribute('aria-label',m.name+'：ブックマーク（UI確認のみ・保存されません）');bm.append(mk('span','g','☆'));
- const ck=mk('button','mc-act mc-ck');ck.type='button';ck.setAttribute('aria-pressed','false');ck.setAttribute('aria-label',m.name+'：チェック（UI確認のみ・保存されません）');ck.append(mk('span','g','✓'));
- bm.addEventListener('click',()=>{const p=bm.getAttribute('aria-pressed')!=='true';bm.setAttribute('aria-pressed',String(p));bm.firstChild.textContent=p?'★':'☆';});
- ck.addEventListener('click',()=>{ck.setAttribute('aria-pressed',String(ck.getAttribute('aria-pressed')!=='true'));});
+ const bm=mk('button','mc-act mc-bm');bm.type='button';bm.setAttribute('aria-pressed','false');bm.setAttribute('aria-label',m.name+'：ブックマーク');bm.append(mk('span','g','☆'));
+ const ck=mk('button','mc-act mc-ck');ck.type='button';ck.setAttribute('aria-pressed','false');ck.setAttribute('aria-label',m.name+'：この技をすべてチェック／外す');ck.append(mk('span','g','✓'));
+ const sync=()=>{const p=pst(m.i);bm.setAttribute('aria-pressed',String(p.rv));bm.firstChild.textContent=p.rv?'★':'☆';ck.setAttribute('aria-pressed',String(p.done));card.classList.toggle('t02-done',p.done);cntEl.textContent=p.cnt;mbadge.hidden=!p.memo;};
+ const withProd=fn=>{const c=pcard(m.i);if(!c)return;fn(c);setTimeout(()=>{sync();syncCells();},30);};
+ bm.addEventListener('click',()=>withProd(c=>{const b=c.querySelector('.rvbtn');if(b)b.click();}));
+ ck.addEventListener('click',()=>withProd(c=>{const was=c.classList.contains('open');if(!was){const h=c.querySelector('.head');if(h)h.click();}const b=c.querySelector('.rowact button');if(b)b.click();if(!was&&!opened&&c.classList.contains('open')){const h=c.querySelector('.head');if(h)h.click();}}));
  acts.append(bm,ck);top.append(acts);card.append(top);
  const stats=mk('div','sp-stats');for(const [k,label] of PRIMARY){if(!colVisible(k))continue;const it=mk('span','sp-stat');it.dataset.col=k;it.append(mk('small','',label),mk('b','',firstLine(m.a[k])));stats.append(it);}
  if(!stats.children.length)stats.hidden=true;card.append(stats);
  const detail=mk('div','body card-detail');detail.hidden=true;detail.id='t02d-'+m.i;hd.setAttribute('aria-controls',detail.id);
- for(const [title,keys] of DETAIL_GROUPS){const ks=keys.filter(colVisible);if(!ks.length)continue;const group=mk('div','grp');group.append(mk('h4','',title));const grid=mk('div','grid');for(const k of ks){const label=COLUMN.find(x=>x[0]===k)[1];const cell=mk('div','cell');cell.dataset.col=k;cell.append(mk('span','lab',label),mk('span','val',(m.a[k]!=null&&String(m.a[k]).trim()!=='')?String(m.a[k]):'--'));grid.append(cell);}group.append(grid);detail.append(group);}
+ for(const [title,keys] of DETAIL_GROUPS){const ks=keys.filter(colVisible);if(!ks.length)continue;const group=mk('div','grp');group.append(mk('h4','',title));const grid=mk('div','grid');for(const k of ks){const label=COLUMN.find(x=>x[0]===k)[1];const cell=mk('div','cell');cell.dataset.col=k;cell.append(mk('span','lab',label),mk('span','val',(m.a[k]!=null&&String(m.a[k]).trim()!=='')?String(m.a[k]):'--'));cell.append(mk('span','t02-box'));cell.setAttribute('role','checkbox');cell.tabIndex=0;cell.setAttribute('aria-checked','false');cell.setAttribute('aria-label',m.name+' '+label);const act=()=>withProd(c=>{const pc=c.querySelector('.cell[data-col="'+k+'"]');if(pc&&pc.getAttribute('aria-disabled')!=='true')pc.click();});cell.addEventListener('click',act);cell.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();act();}});grid.append(cell);}group.append(grid);detail.append(group);}
  if(m.tagLabels.length){const g=mk('div','grp');g.append(mk('h4','','技の情報'));const w=mk('div','tgs');for(const t of m.tagLabels)w.append(mk('span','tg2',t));g.append(w);detail.append(g);}
- const extra=mk('div','grp');extra.append(mk('h4','','動画・メモ・進捗'));const eg=mk('div','grid');
- for(const label of ['動画（未接続）','メモ（未接続・保存なし）','進捗（未接続）']){const c=mk('div','cell');c.append(mk('span','lab',label),mk('span','val','--'));eg.append(c);}
- extra.append(eg);detail.append(extra);card.append(detail);
- hd.addEventListener('click',()=>{const o=!card.classList.contains('open');card.classList.toggle('open',o);detail.hidden=!o;hd.setAttribute('aria-expanded',String(o));});
+ const extra=mk('div','grp');extra.append(mk('h4','','メモ'));const ta=mk('textarea','t02-memo');ta.rows=2;ta.maxLength=1000;ta.placeholder='メモ（自由入力）';ta.setAttribute('aria-label',m.name+' のメモ');
+ ta.addEventListener('input',()=>{const c=pcard(m.i);const pt=c&&c.querySelector('textarea');if(pt){pt.value=ta.value;pt.dispatchEvent(new Event('input',{bubbles:true}));}setTimeout(sync,30);});ta.addEventListener('change',()=>{const c=pcard(m.i);const pt=c&&c.querySelector('textarea');if(pt)pt.dispatchEvent(new Event('change',{bubbles:true}));});
+ extra.append(ta);
+ syncCells=()=>{const c=pcard(m.i);if(!c)return;for(const cell of detail.querySelectorAll('.cell[data-col]')){const pc=c.querySelector('.cell[data-col="'+cell.dataset.col+'"]');if(!pc){cell.removeAttribute('role');continue;}cell.setAttribute('aria-checked',pc.getAttribute('aria-checked')||'false');if(pc.getAttribute('aria-disabled')==='true'){cell.setAttribute('aria-disabled','true');cell.tabIndex=-1;cell.classList.add('na');}}const pt=c.querySelector('textarea');if(pt&&document.activeElement!==ta)ta.value=pt.value;};
+ detail.append(extra);card.append(detail);
+ hd.addEventListener('click',()=>{const o=!card.classList.contains('open');card.classList.toggle('open',o);detail.hidden=!o;hd.setAttribute('aria-expanded',String(o));const c=pcard(m.i);if(c){const isOpen=c.classList.contains('open');if(o&&!isOpen){c.querySelector('.head').click();opened=true;}else if(!o&&isOpen&&opened){c.querySelector('.head').click();opened=false;}}setTimeout(()=>{sync();syncCells();},30);});
+ sync();card._t02sync=()=>{sync();syncCells();};
  return {card,nm};}
 function setStatus(pill,text){if(!statusEl)return;const p=statusEl.querySelector('.pill'),s=statusEl.querySelector('.st');if(p)p.textContent=pill;if(s)s.textContent=text;}
 function renderMoves(){
  const list=listHost;if(!list)return;list.replaceChildren();
- if(!MOVES.length){const fb=fallbackCard();list.append(fb);setStatus('データ未接続','技・チェック保存は未接続です（件数は表示しません）');
+ if(!MOVES.length){const fb=fallbackCard();list.append(fb);setStatus('データ未接続','技データを読み込めません（件数は表示しません）');
   const q=state.query.trim();if(q){fb.hidden=true;list.append(info('検索結果なし','技データを接続していないため検索は実行できません。'));}return;}
  const q=state.query.trim().toLowerCase();
- const items=sortMoves(MOVES.filter(m=>matchQuery(m,q)&&passFilters(m)));
- setStatus('実データ','全 '+MOVES.length+' 技'+(items.length!==MOVES.length?' ／ 該当 '+items.length+' 技':'')+'。チェック・ブックマークは保存されません（保存は未接続）');
+ const items=sortMoves(MOVES.filter(m=>{if(state.prog!=='all'||state.bookmark){const p=pst(m.i);if(state.prog==='done'&&!p.done)return false;if(state.prog==='todo'&&p.done)return false;if(state.bookmark&&!p.rv)return false;}return matchQuery(m,q)&&passFilters(m);}));
+ setStatus('実データ','全 '+MOVES.length+' 技'+(items.length!==MOVES.length?' ／ 該当 '+items.length+' 技':'')+'。チェック・ブックマーク・メモはこの端末に保存されます');
  if(!items.length){list.append(info('条件に合う技がありません。','検索語や絞り込みを変えてください。'));return;}
  const vis=items.slice(0,shownN),made=[];
  for(const m of vis){const r=cardFor(m);list.append(r.card);made.push([m,r.nm]);}
@@ -186,7 +194,8 @@ async function loadFromProduction(){
  MOVES=cards.map(c=>{const i=c.dataset.i;const o=byK.get(String(i))||{};const a=o.a||{};const info=mi()(o);const cn=c.querySelector('.cmdtxt');
   return {i:+i,name:(c.querySelector('.nt')||{}).textContent||o.name||'',y:o.y||'',a,cmd:String(a.command||''),cmdNode:cn,cmdText:(cn&&cn.textContent)||'',atk:info.atk,tags:new Set(info.tags.map(t=>t.id)),tagLabels:info.tags.map(t=>t.text||t.label)};});
  curChar=id;loadedChar=id;shownN=PAGE;linkReady=null;renderMoves();}
-function watchProduction(){const pl=document.querySelector('#viewSheet #list');if(!pl)return;
+let resyncT=0;function resyncAll(){clearTimeout(resyncT);resyncT=setTimeout(()=>{if(!listHost||!listHost.isConnected)return;if(state.prog!=='all'||state.bookmark){renderMoves();return;}listHost.querySelectorAll('.move-card').forEach(c=>c._t02sync&&c._t02sync());},500);}
+function watchProduction(){document.addEventListener('click',resyncAll,true);const pl=document.querySelector('#viewSheet #list');if(!pl)return;
  new MutationObserver(()=>{clearTimeout(loadTimer);loadTimer=setTimeout(()=>{loadedChar===''||prodCards()[0]&&prodCards()[0].querySelector('.pt-ic[data-c]')&&prodCards()[0].querySelector('.pt-ic[data-c]').dataset.c!==loadedChar?(loadedChar='',loadFromProduction()):0;},150);}).observe(pl,{childList:true});}
 function buildSheet(v){
  /* order: 1) character (header #charBtn)  2) search row  3) applied-condition chips  4) status / progress  5) move list */
@@ -197,18 +206,18 @@ function buildSheet(v){
  const settingsBtn=btn('',()=>{const open=settingsPanel.hidden;settingsPanel.hidden=!open;settingsBtn.setAttribute('aria-expanded',String(open));},'sp-iconbtn sp-settings-btn');settingsBtn.id='spSettingsButton';settingsBtn.setAttribute('aria-controls','spSettingsPanel');settingsBtn.setAttribute('aria-expanded','false');settingsBtn.setAttribute('aria-label','表示設定・その他の操作');
  const si=mk('span','ic');si.append(svgIcon('M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6'));settingsBtn.append(si,mk('span','lb','表示設定'));searchRow.append(settingsBtn);tools.append(searchRow);
  const settingsPanel=mk('section','sp-settings-panel');settingsPanel.id='spSettingsPanel';settingsPanel.hidden=true;settingsPanel.setAttribute('aria-label','表示設定');
- const g1=mk('div','sp-set-grp');g1.append(mk('h3','','表示の切り替え'));const toggles=mk('div','tgls');addControl(toggles,'コマンド表示','showCommand',()=>{});addControl(toggles,'答えを表示','showAnswer',()=>{});addControl(toggles,'ブックマークのみ','bookmark',()=>{});g1.append(toggles);
- const g2=mk('div','sp-set-grp');g2.append(mk('h3','','データ操作（未接続）'));const ops=mk('div','tgls');const opMsg=mk('p','sp-settings-note','');opMsg.id='spOpMsg';opMsg.setAttribute('role','status');
- for(const [label,id] of [['このキャラをリセット','spReset'],['書き出し・読み込み','spIo']]){const b=btn(label,()=>{opMsg.textContent='「'+label+'」は未接続です。実データのチェック・保存データは存在せず、変更もされません。';},'cmdtgl sp-op');b.id=id;b.setAttribute('aria-disabled','true');ops.append(b);}
+ const g1=mk('div','sp-set-grp');g1.append(mk('h3','','表示の切り替え'));const toggles=mk('div','tgls');addControl(toggles,'コマンド表示','showCommand',()=>{});addControl(toggles,'答えを表示','showAnswer',()=>{});addControl(toggles,'ブックマークのみ','bookmark',()=>{shownN=PAGE;renderMoves();});g1.append(toggles);
+ const g2=mk('div','sp-set-grp');g2.append(mk('h3','','データ操作'));const ops=mk('div','tgls');const opMsg=mk('p','sp-settings-note','');opMsg.id='spOpMsg';opMsg.setAttribute('role','status');
+ for(const [label,id,pid] of [['このキャラをリセット','spReset','resetBtn'],['書き出し・読み込み','spIo','openIO']]){const b=btn(label,()=>{const t=$(pid);if(t){t.click();opMsg.textContent='';setTimeout(()=>renderMoves(),400);}else opMsg.textContent='この操作は使えません。';},'cmdtgl sp-op');b.id=id;ops.append(b);}
  g2.append(ops,opMsg);
- settingsPanel.append(g1,g2,mk('p','sp-settings-note','表示設定はテスト版の操作状態です。実データと保存には接続していません。'));tools.append(settingsPanel);
+ settingsPanel.append(g1,g2,mk('p','sp-settings-note','チェック・ブックマーク・メモは、本番と同じ保存先（この端末のブラウザ）に保存されます。'));tools.append(settingsPanel);
  chipHost=mk('div','flt-chips');chipHost.id='filterChips';chipHost.hidden=true;tools.append(chipHost);
  
- const st=mk('div','sp-status');st.setAttribute('role','status');st.append(mk('span','pill','データ未接続'),mk('span','st','技・チェック保存は未接続です（件数は表示しません）'));tools.append(st);
+ const st=mk('div','sp-status');st.setAttribute('role','status');st.append(mk('span','pill','データ未接続'),mk('span','st','技データを読み込めません'));tools.append(st);
  // Progress filter (all / todo / done) is SEPARATE from attribute filters (発生・ガード・ヒット・特殊状態).
  const prow=mk('div','sp-progress');prow.append(mk('span','plabel','進捗'));
  const seg=mk('div','seg');seg.id='t02Seg';seg.setAttribute('role','group');seg.setAttribute('aria-label','進捗の表示（属性の絞り込みとは別）');
- for(const [name,label] of [['all','すべて'],['todo','未完了'],['done','完了']]){const b=btn(label,()=>{for(const x of seg.querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));},'');b.dataset.f=name;b.setAttribute('aria-pressed',String(name==='all'));seg.append(b);}
+ for(const [name,label] of [['all','すべて'],['todo','未完了'],['done','完了']]){const b=btn(label,()=>{for(const x of seg.querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));state.prog=name;shownN=PAGE;renderMoves();},'');b.dataset.f=name;b.setAttribute('aria-pressed',String(name==='all'));seg.append(b);}
  prow.append(seg);tools.append(prow);v.append(tools);
  const fnote=mk('p','sp-filter-note','絞り込み条件を保持しています。技データ未接続のため、一覧への適用結果は表示されません。');fnote.id='spFilterNote';fnote.hidden=true;v.append(fnote);
  const list=mk('div','list card-list');list.id='t02List';v.append(list);listHost=list;statusEl=st;
