@@ -312,6 +312,23 @@ td.ck, th.ck { width:44px; padding-left:6px; padding-right:6px; }
 #vs-side.lbopen .vbox.lb .boxbody { max-height:calc(100vh - 60px); }
 #vs-side.lbopen .vbox.lb .player { aspect-ratio:16/9; flex:1 1 auto; min-height:0; }
 #vs-side.lbopen .vbox.lb #vs-zoom { border-color:var(--accent); color:var(--accent); }
+/* 拡大＝横画面レイアウト：左に動画、右にラウンド、下に再生UI。縦持ちのときは画面ごと90度回転して横長に表示する */
+#vs-side.lbopen .vbox.lb { left:0; top:0; bottom:auto; width:100vw; height:100vh; height:100dvh; max-width:none; max-height:none; border-radius:0; transform:none; display:flex; flex-direction:column; }
+@media (orientation:portrait){
+  #vs-side.lbopen .vbox.lb { width:100vh; width:100dvh; height:100vw; transform-origin:0 0; transform:translateX(100vw) rotate(90deg); }
+}
+#vs-side.lbopen .vbox.lb > .boxhd { position:absolute; top:4px; right:6px; z-index:5; height:auto; min-height:0; padding:0; border:0; background:transparent; box-shadow:none; }
+#vs-side.lbopen .vbox.lb > .boxhd h2, #vs-side.lbopen .vbox.lb > .boxhd .sub { display:none; }
+#vs-side.lbopen .vbox.lb #vs-zoom { padding:5px 12px; min-height:30px; }
+#vs-side.lbopen .vbox.lb .boxbody { flex:1 1 auto; max-height:none; min-height:0; padding:6px; display:grid; grid-template-columns:minmax(0,1fr) 152px; grid-template-rows:minmax(0,1fr) auto; grid-template-areas:"p r" "c r"; gap:6px; overflow:hidden; }
+#vs-side.lbopen .vbox.lb .player { grid-area:p; aspect-ratio:auto; min-height:0; width:100%; height:100%; flex:none; }
+#vs-side.lbopen .vbox.lb .controls { grid-area:c; margin:0; gap:4px; justify-content:center; padding:0 !important; display:flex !important; flex-wrap:nowrap !important; }
+#vs-side.lbopen .vbox.lb .controls .btn { flex:1 1 0; min-width:0; width:auto; padding:4px 2px; min-height:30px; font-size:.7rem; white-space:nowrap; }
+#vs-side.lbopen .vbox.lb .controls select { flex:0 0 auto; min-height:30px; max-width:78px; padding:2px 4px; font-size:.68rem; }
+#vs-side.lbopen .vbox.lb .controls .time { position:static; transform:none; margin-left:2px; font-size:.66rem; white-space:nowrap; }
+#vs-side.lbopen .vbox.lb .rounds { grid-area:r; flex-direction:column; flex-wrap:nowrap; align-items:stretch; gap:5px; margin:0; padding-top:34px; overflow-y:auto; min-height:0; }
+#vs-side.lbopen .vbox.lb .rounds .rbox { width:100%; }
+#vs-side.lbopen .vbox.lb .rounds .rbox .rjump { flex:1 1 auto; justify-content:center; }
 
 /* 詳細の箱（右）。上下の矢印で前後の試合へ */
 #vs-side > .vs-detail-info { grid-column:2; grid-row:2; margin:0; min-width:0; min-height:0; display:flex; flex-direction:column; position:relative; overflow:visible; }
