@@ -7,10 +7,14 @@
 let bubble=null,owner=null,pre=null;
 /* The combo module ships an embedded (older) data revision and adopts the live data (combos-live.json) a moment after it loads.
  * Numbers/matches are only trusted after that adoption (CB.live().rev>0); after 6 s the embedded data is used as a fallback. */
+/* トップ表示中はコンボ集を読み込まない（通信量の削減）。トップを離れた時点で読み込みを始める。 */
+const onHome=()=>{try{return typeof window.pageNow==='function'&&window.pageNow()==='home';}catch(e){return false;}};
+const away=()=>new Promise(ok=>{if(!onHome())return ok();const mo=new MutationObserver(()=>{if(!onHome()){mo.disconnect();ok();}});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-page']});});
 function ready(){if(pre)return pre;
- if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return Promise.resolve(false);
+ pre=away().then(()=>{
+ if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return false;
  const load=(window.CB&&CB.ids)?Promise.resolve():window.PT_LAZY_PRELOAD('combo');
- pre=load.then(()=>new Promise(ok=>{let n=0;const iv=setInterval(()=>{n++;let live=0;try{live=CB.live().rev;}catch(e){}if(live>0||n>60){clearInterval(iv);ok(!!(window.CB&&CB.ids));}},100);}),()=>false);return pre;}
+ return load.then(()=>new Promise(ok=>{let n=0;const iv=setInterval(()=>{n++;let live=0;try{live=CB.live().rev;}catch(e){}if(live>0||n>60){clearInterval(iv);ok(!!(window.CB&&CB.ids));}},100);}),()=>false);});return pre;}
 function close(ret){if(!bubble)return;bubble.remove();const o=owner;bubble=null;owner=null;if(o){o.setAttribute('aria-expanded','false');if(ret)o.focus();}}
 function go(){if(typeof window.setPage==='function'){window.setPage('combo');try{window.scrollTo(0,0);}catch(e){}}}
 function note(t){const n=document.getElementById('t02JumpNote')||document.getElementById('t02JumpNotePc');if(n){n.hidden=false;n.textContent=t;}}

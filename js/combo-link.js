@@ -8,10 +8,14 @@ var CSS=".cblink-hit{outline:1px solid #ffd21fa8;outline-offset:1px;border-radiu
 var st=document.createElement('style');st.id='cblink-css';st.textContent=CSS;document.head.appendChild(st);
 var bubble=null,owner=null,pre=null;
 /* コンボ集モジュールは埋め込みの古いデータを持ち、開いた直後にライブデータへ切り替わる。切替後（CB.live().rev>0）に判定する。最大6秒で埋め込みデータにフォールバック。 */
+/* トップ表示中はコンボ集を読み込まない（通信量の削減）。トップを離れた時点で読み込みを始める。 */
+function onHome(){try{return typeof window.pageNow==='function'&&window.pageNow()==='home';}catch(e){return false;}}
+function away(){return new Promise(function(ok){if(!onHome())return ok();var mo=new MutationObserver(function(){if(!onHome()){mo.disconnect();ok();}});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-page']});});}
 function ready(){if(pre)return pre;
- if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return Promise.resolve(false);
+ pre=away().then(function(){
+ if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return false;
  var load=(window.CB&&CB.ids)?Promise.resolve():window.PT_LAZY_PRELOAD('combo');
- pre=load.then(function(){return new Promise(function(ok){var n=0,iv=setInterval(function(){n++;var live=0;try{live=CB.live().rev;}catch(e){}if(live>0||n>60){clearInterval(iv);ok(!!(window.CB&&CB.ids));}},100);});},function(){return false;});return pre;}
+ return load.then(function(){return new Promise(function(ok){var n=0,iv=setInterval(function(){n++;var live=0;try{live=CB.live().rev;}catch(e){}if(live>0||n>60){clearInterval(iv);ok(!!(window.CB&&CB.ids));}},100);});},function(){return false;});});return pre;}
 function linker(char){if(!window.CB||!CB.linker)return null;try{return CB.linker(char,true);}catch(e){return null;}}
 function find(char,cmd,lk){try{return (lk||linker(char))(cmd).sort(function(a,b){return a.no-b.no;});}catch(e){return[];}}
 function close(ret){if(!bubble)return;bubble.remove();var o=owner;bubble=null;owner=null;if(o){o.setAttribute('aria-expanded','false');if(ret)o.focus();}}
