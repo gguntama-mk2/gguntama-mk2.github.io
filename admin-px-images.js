@@ -8,6 +8,7 @@
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var BG_W = 1400, BG_H = 788, EYE_W = 480, EYE_H = 120, MAX_BYTES = 12 * 1024 * 1024;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
+  var EYE_UPLOAD_MIME = "application/vnd.projectt.eye-rgba";
   var ctx, host, characters = [], items = [], ui = {}, urls = {}, busy = false, uiGen = 0, cropping = false;
 
   var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
@@ -87,17 +88,10 @@
     var g = cv.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, BG_W, BG_H);
     return toBlob(cv, "image/webp", 0.92);
   }
-  async function prepEyes(file) {     // 対戦履歴のキャラ札用：4:1（480×120）に中央で切り抜いて WebP にする
-    var bm = await decode(file), w = bm.width || bm.naturalWidth, h = bm.height || bm.naturalHeight;
-    var k = Math.max(EYE_W / w, EYE_H / h), cw = EYE_W / k, ch = EYE_H / k;
-    var cv = document.createElement("canvas"); cv.width = EYE_W; cv.height = EYE_H;
-    var g = cv.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, EYE_W, EYE_H);
-    return toBlob(cv, "image/webp", 0.9);
-  }
   // 切り抜きの画面：画像を拡大縮小（スライダー・マウスホイール・ピンチ）し、ドラッグで位置を動かして、枠（W×H）に入れる範囲を決める。決定で WebP の Blob、キャンセルで null
   function cropper(file, W, H, title) {
     return decode(file).then(function (bm) {
-      return new Promise(function (done) {
+      return new Promise(function (done, fail) {
         var iw = bm.width || bm.naturalWidth, ih = bm.height || bm.naturalHeight, k0 = Math.max(W / iw, H / ih);
         var z = 1, cx = iw / 2, cy = ih / 2, dispW = Math.min(720, Math.max(240, window.innerWidth - 56)), ds = dispW / W, dispH = Math.round(H * ds);
         var back = make("div"); back.style.cssText = "position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:12px;overflow:auto";
@@ -124,11 +118,24 @@
         var row = make("div"); row.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end";
         var ok = make("button", "この範囲で決定", "btn primary"), no = make("button", "キャンセル", "btn"), rs = make("button", "リセット", "btn"); ok.type = no.type = rs.type = "button";
         var closed = false, encoding = false, prev = document.activeElement;
-        function close(v) { if (closed) return; closed = true; document.removeEventListener("keydown", onKey, true); back.remove(); if (prev && prev.isConnected && prev.focus) prev.focus(); done(v); }
+        function close(v, error) { if (closed) return; closed = true; document.removeEventListener("keydown", onKey, true); back.remove(); if (prev && prev.isConnected && prev.focus) prev.focus(); if (error) fail(error); else done(v); }
         function onKey(e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(null); } }
         no.addEventListener("click", function () { close(null); });
         rs.addEventListener("click", function () { z = 1; cx = iw / 2; cy = ih / 2; paint(); });
-        ok.addEventListener("click", function () { if (closed || encoding) return; encoding = true; ok.disabled = true; var out = document.createElement("canvas"); out.width = W; out.height = H; draw(out.getContext("2d"), 1); toBlob(out, "image/webp", 0.9).then(close, function () { close(null); }); });
+        ok.addEventListener("click", function () {
+          if (closed || encoding) return;
+          encoding = true;
+          ok.disabled = true;
+          try {
+            var out = document.createElement("canvas"); out.width = W; out.height = H;
+            var context = out.getContext("2d");
+            draw(context, 1);
+            var pixels = context.getImageData(0, 0, W, H).data;
+            close(new Blob([pixels], { type: EYE_UPLOAD_MIME }));
+          } catch (err) {
+            close(null, new Error("目元画像の画素を読み取れませんでした"));
+          }
+        });
         document.addEventListener("keydown", onKey, true);
         row.append(rs, no, ok);
         box.append(make("strong", title), make("small", "ドラッグで位置、スライダー・ホイール・ピンチで拡大縮小。枠の中が、保存される範囲です（" + W + "×" + H + "）。"), cv, sl, row);
@@ -156,11 +163,11 @@
     if (b.size > MAX_BYTES) throw new Error("画像が大きすぎます（12MBまで）");
     return b;
   }
-  async function upload(kind, file, prepared, target) {
+  async function upload(kind, file, target) {
     requireTarget(target);
-    var image = kind === "bg" ? await prepBg(file) : kind === "eyes" ? (prepared ? file : await prepEyes(file)) : await prepGallery(file);
+    var image = kind === "bg" ? await prepBg(file) : kind === "eyes" ? file : await prepGallery(file);
     requireTarget(target);  // 変換中にキャラ/画面が変わったら送信しない
-    var fd = new FormData(); fd.append("character_id", target.id); fd.append("kind", kind); fd.append("image", image, "image");
+    var fd = new FormData(); fd.append("character_id", target.id); fd.append("kind", kind); fd.append("image", image, kind === "eyes" ? "eye.rgba" : "image");
     return request("/api/v1/admin/px-overrides/set", { method: "POST", body: fd });
   }
   async function cropAndUpload(file, title, target) {
@@ -170,7 +177,7 @@
       var b = await cropper(file, EYE_W, EYE_H, title);
       if (!b) return;
       requireTarget(target);
-      await run("目元画像を差し替え", function () { return upload("eyes", b, true, target); });
+      await run("目元画像を差し替え", function () { return upload("eyes", b, target); });
     } catch (e) { if (target.root === ui.root) say(e.message, "error"); }
     finally { cropping = false; }
   }
@@ -203,7 +210,7 @@
       bg.appendChild(make("p", o ? "差し替え中の背景です。「元に戻す」でサイトに入っている絵に戻ります。" : "いまはサイトに入っている背景です。画像を選ぶと、1400×788（16:9）に中央で切り抜いて差し替えます。", "pt-px-sub"));
       bg.appendChild(thumb(o ? fileUrl(o) : builtinUrl(id), (ch ? ch.name : id) + "の背景"));
       var row = make("div", undefined, "pt-px-row");
-      row.appendChild(picker(o ? "別の画像に差し替える" : "背景を差し替える", false, function (fs) { run("背景を差し替え", function () { return upload("bg", fs[0], false, target); }); }));
+      row.appendChild(picker(o ? "別の画像に差し替える" : "背景を差し替える", false, function (fs) { run("背景を差し替え", function () { return upload("bg", fs[0], target); }); }));
       if (o) { var rb = make("button", "元に戻す", "btn"); rb.type = "button"; rb.addEventListener("click", function () { remove(id, "差し替えた背景"); }); row.appendChild(rb); }
       bg.appendChild(row);
     }
@@ -219,7 +226,7 @@
     ga.appendChild(grid);
     var r2 = make("div", undefined, "pt-px-row");
     r2.appendChild(picker("画像を追加する（複数選べます）", true, function (fs) {
-      run("画像を追加", async function () { for (var i = 0; i < fs.length; i++) await upload("gallery", fs[i], false, target); });
+      run("画像を追加", async function () { for (var i = 0; i < fs.length; i++) await upload("gallery", fs[i], target); });
     }));
     ga.appendChild(r2);
     // 目元画像（対戦履歴のキャラ札・絞り込みに出る細長い画像）
