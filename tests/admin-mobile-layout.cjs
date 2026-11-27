@@ -16,7 +16,7 @@ const users = [
 
 const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://localhost").pathname;
-  if (pathname === "/admin.html" || pathname === "/admin.js") {
+  if (/^\/(admin\.html|admin(?:-[a-z-]+)?\.js|community-seed\.js)$/.test(pathname)) {
     const file = path.join(process.cwd(), pathname.slice(1));
     const body = await fs.readFile(file);
     res.writeHead(200, { "Content-Type": pathname.endsWith(".html") ? "text/html; charset=utf-8" : "text/javascript; charset=utf-8" });
@@ -74,11 +74,6 @@ async function check(page, width) {
       const page = await browser.newPage({ viewport: { width, height: 850 } });
       const errors = [];
       page.on("pageerror", e => errors.push(e.message));
-      await page.addInitScript(() => {
-        window.PTAdminMoveMedia = { mount() {}, updateCharacters() {} };
-        window.PTAdminMoveIcons = { mount() {}, updateCharacters() {} };
-        window.PTAdminCloudAnalysis = { mount() {}, refresh() {} };
-      });
       await page.route(/\/api\/v1\//, async route => {
         const url = new URL(route.request().url());
         let data;
