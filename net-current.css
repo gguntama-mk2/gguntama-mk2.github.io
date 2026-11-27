@@ -49,3 +49,57 @@
 .net-panel .pn-transfer input{max-width:100%;color:#f6f2ec}
 .net-panel .pn-transfer p{overflow-wrap:anywhere}
 #secNet .pn-body{min-width:0;max-width:100%} #secNet .pn-dlg{box-sizing:border-box} #secNet .pn-row{overflow-wrap:anywhere}
+/* ---- Kuro01: 使いやすさの改善（表示のみ。操作・保存・認証・競合保護の動作は変えない） ---- */
+/* 保存状態の表示（操作バーに固定） */
+#secNet .pn-bar{position:sticky;top:0;z-index:6;align-items:center;background:var(--adm-panel);border:1px solid var(--adm-line);border-radius:8px;padding:7px 9px;margin:8px 0}
+#secNet .pn-dirty{margin-left:auto;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+#secNet .pn-dirty:empty{display:none}
+#secNet .pn-dirty[data-state="saved"]{color:#9be8c8;border-color:#3f8f72;background:#1d3a31}
+#secNet .pn-dirty[data-state="base"]{color:var(--adm-sub);border-color:#4a4e72;background:#222640}
+#secNet .pn-dirty[data-state="dirty"]{color:#ffd9a0;border-color:#c98a3a;background:#44331d}
+#secNet .pn-dirty[data-state="busy"]{color:#b9d4ff;border-color:#4a76b8;background:#1d2b44}
+#secNet .pn-dirty[data-state="conflict"],#secNet .pn-dirty[data-state="unknown"]{color:#ffc2b8;border-color:#c25b4a;background:#44201d}
+/* 立ち／しゃがみの切り替え（つながった選択ボタン） */
+#secNet .pn-st.pn-seg{display:inline-flex;gap:0;margin:8px 0;border:1px solid #565975;border-radius:8px;overflow:hidden}
+#secNet .pn-st.pn-seg button{border:0;border-radius:0;padding:8px 22px;font-size:15px;background:#2a2f49;color:var(--adm-text);cursor:pointer}
+#secNet .pn-st.pn-seg button+button{border-left:1px solid #565975}
+#secNet .pn-st.pn-seg button[aria-pressed="true"]{background:var(--adm-accent);color:#1d1f2e;font-weight:700}
+/* 枠へのジャンプ・絞り込み */
+#secNet .pn-jump{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:8px 0}
+#secNet .pn-jump .pn-filter{flex:1 1 100%;min-width:0;margin:0 0 2px;font-size:13px;color:var(--adm-sub);cursor:pointer}
+#secNet .pn-jump button{padding:2px 9px;font-size:12px;border:1px solid #565975;border-radius:999px;background:#262a42;color:var(--adm-sub);cursor:pointer}
+#secNet .pn-jump button.pn-has{color:#fff2c6;border-color:#c9a65a;background:#3a3550}
+/* 画面の情報密度：枠・技の行を詰める。空の枠は1行に */
+#secNet .pn-row{padding:7px 10px;margin:6px 0;scroll-margin-top:64px}
+#secNet .pn-row h3{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center;margin:0 0 4px;font-size:15px}
+#secNet .pn-row[data-empty="1"]:not([data-invalid="true"]){padding:4px 10px;opacity:.85}
+#secNet .pn-row[data-empty="1"]:not([data-invalid="true"]) h3{margin:0}
+#secNet .pn-row[data-empty="1"]:not([data-invalid="true"]) .pn-hint{margin:2px 0 0;font-size:12px}
+#secNet .pn-filled-only .pn-row[data-empty="1"]:not([data-invalid="true"]){display:none}
+#secNet ol.pn-mv{margin:0;padding-left:0;list-style:none;counter-reset:mv}
+#secNet ol.pn-mv>li{counter-increment:mv;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:4px 0 4px 26px;border-top:1px dashed #3a3e63;position:relative}
+#secNet ol.pn-mv>li::before{content:counter(mv);position:absolute;left:4px;color:var(--adm-sub);font-size:12px}
+#secNet ol.pn-mv>li button{padding:2px 9px;font-size:12px}
+#secNet ol.pn-mv>li .pn-ordinal{margin-left:0}
+#secNet .pn-row .pn-add{margin-top:6px}
+/* キャラ選択：広い画面では左に一覧、狭い画面では上に小さく */
+#secNet .pn-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px;width:auto;max-height:170px}
+#secNet .pn-list button{text-align:left;padding:5px 8px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(min-width:900px){
+  #secNet .pn-wrap{display:grid;grid-template-columns:232px minmax(0,1fr);grid-template-rows:auto 1fr;gap:8px 18px;align-items:start}
+  #secNet .pn-char-toolbar{grid-column:1;grid-row:1;flex-direction:column;align-items:stretch;gap:4px;margin:0}
+  #secNet .pn-char-toolbar input{max-width:none;min-width:0;width:100%;box-sizing:border-box}
+  #secNet .pn-list{grid-column:1;grid-row:2;grid-template-columns:1fr 1fr;max-height:calc(100vh - 190px);position:sticky;top:8px}
+  #secNet .pn-body{grid-column:2;grid-row:1 / span 2}
+}
+/* 技を選ぶ画面：候補を詰めて見やすく */
+#secNet .pn-dlg [data-act="picker-results"] li{margin:2px 0}
+#secNet .pn-dlg [data-act="picker-results"] button{padding:5px 8px;font-size:14px}
+#secNet .pn-picker-tools{gap:6px 14px}
+#secNet [data-act="no-moves"]{border-left:3px solid #f2af83;background:#322b37;border-radius:4px;padding:8px 10px;margin:8px 0;color:#f8e2cd}
+#secNet .pn-transfer{padding:6px 10px;margin:6px 0}
+#secNet .pn-transfer h4{margin:0 0 2px;font-size:14px}
+#secNet .pn-transfer p{margin:2px 0;font-size:12px}
+#secNet .pn-transfer{overflow-wrap:anywhere}
+#secNet .pn-transfer label{display:inline-flex;flex-wrap:wrap;gap:4px 8px;align-items:center;max-width:100%}
+#secNet .pn-transfer input[type="file"]{max-width:100%;min-width:0}

@@ -6,7 +6,7 @@
   "use strict";
   var C = window.PTCore, MIN_F = C.MIN_F, MAX_F = C.MAX_F, STD = C.STD, SHOW = 6;
   var store = null, S = { chars: [], cur: null, edit: [], stance: "stand", dirty: false, viewEpoch: 0, readSeq: 0, editEpoch: 0, busy: false, locked: null, pick: null, charQuery: "", conflict: null, syncPending: null };
-  var clone = C.clone, root, ui = {}, activeIdentity = null, heldDraft = null, keyListener = null, verifyIdentity = null, transferStage = null;
+  var clone = C.clone, root, ui = {}, activeIdentity = null, heldDraft = null, keyListener = null, saveKeyListener = null, verifyIdentity = null, transferStage = null;
   var savedBaseline = [], undoStack = [], redoStack = [], MAX_UNDO = 40, onSelected=null;
   function identityEq(a,b) { return !!a && !!b && a.principal === b.principal && a.epoch === b.epoch; }
   function clearUndo(base) { undoStack=[];redoStack=[];savedBaseline=clone(base||[]); }
@@ -30,7 +30,7 @@
         uncertain:S.locked?{operation_id:S.locked.op,kind:S.locked.kind}:null};
     }
     if(seen && activeIdentity && seen.principal && seen.principal!==activeIdentity.principal)heldDraft=null;
-    if(root&&keyListener)root.removeEventListener("keydown",keyListener);keyListener=null;
+    if(root&&keyListener)root.removeEventListener("keydown",keyListener);keyListener=null;if(root&&saveKeyListener)root.removeEventListener("keydown",saveKeyListener);saveKeyListener=null;
     clearEditorState();S.chars=[];activeIdentity=null;
   }
   function discardHeld() { heldDraft=null;transferStage=null; }
@@ -65,7 +65,7 @@
   }
   function h(tag, a) { var e = document.createElement(tag); a = a || {}; Object.keys(a).forEach(function (k) { var v = a[k]; if (v == null || v === false) return; if (k === "text") e.textContent = v; else if (k === "class") e.className = v; else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? "" : v); }); for (var i = 2; i < arguments.length; i++) { var c = arguments[i]; if (c == null || c === false) continue; e.appendChild(typeof c === "string" ? document.createTextNode(c) : c); } return e; }
   function note(t, kind) { ui.note.textContent = t || ""; ui.note.dataset.kind = kind || ""; }
-  function setDirty(v) { S.dirty = v; ui.dirty.textContent = v ? "未保存の変更あり" : ""; }
+  function setDirty(v) { S.dirty = v; paintStatus(); }
   function frozen() { return S.busy || !!S.locked || !!S.syncPending; }
   // 編集はすべてここを通す：書込み中・結果不明中・キャラ未選択は拒否。編集世代を進め、取得中の読み込みを無効にする
   function edit(fn) { if (!S.cur || S.cur.blocked) return false; if (frozen()) { note(S.locked ? "前の操作の結果が不明です。「結果を確認」を押してください" : "処理中のため編集できません", "err"); return false; }
@@ -212,18 +212,38 @@
       if(onSelected)try{onSelected({char:id,revision:r.revision});}catch(_e){}
     }, function (e) { if (ve === S.viewEpoch && rs === S.readSeq) note("読み込めませんでした：" + e.message, "err"); });
   }
+  // ---- Kuro01: 表示だけの改善（保存・認証・競合保護の動作は変えない）
+  function paintStatus() {
+    if (!ui.dirty) return; var c = S.cur, st = "", tx = "";
+    if (!c) { st = ""; tx = ""; }
+    else if (S.locked) { st = "unknown"; tx = "結果未確認（再送せず照会が必要）"; }
+    else if (S.conflict) { st = "conflict"; tx = "競合あり（編集内容は保全中）"; }
+    else if (S.busy || S.syncPending) { st = "busy"; tx = "保存・照合中…"; }
+    else if (S.dirty) { st = "dirty"; tx = "未保存の変更あり"; }
+    else if (c.revision > 0) { st = "saved"; tx = "下書き保存済み（版 " + c.revision + "）"; }
+    else { st = "base"; tx = "原本のまま（保存した下書きなし）"; }
+    ui.dirty.textContent = tx; ui.dirty.dataset.state = st;
+  }
+  function stanceCount(st) { return S.edit.filter(function (s) { return C.stateOf(s.slot_id) === st && s.mode === "manual" && s.moves.length; }).length; }
   // ---- 画面
   function render() {
     var c = S.cur; ui.title.textContent = c ? c.char.name : "キャラを選んでください"; ui.main.replaceChildren(); ui.recovery.replaceChildren(); if (!c) {drawTransfer();return;} drawRecovery();recoveryOffer();drawTransfer(); if (c.blocked) { ui.main.appendChild(h("p", { class: "pn-warn", "data-edit-blocked": "1", text: "【編集停止】元データが未検証のため、編集・プレビュー・公開は停止しています。公開の解除と履歴・差分の確認はできます。" })); ui.errs.replaceChildren(); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】元データが未検証のため、表示は検証済みの旧版、無ければ表示停止です" })); syncBar(); return; }
-    var tabs = h("div", { class: "pn-st" }); [["stand", "立ち"], ["crouch", "しゃがみ"]].forEach(function (p) { tabs.appendChild(h("button", { type: "button", "aria-pressed": String(S.stance === p[0]), onclick: function () { S.stance = p[0]; render(); } }, p[1])); }); ui.main.appendChild(tabs);
+    ui.main.classList.toggle("pn-filled-only", !!S.filledOnly); var tabs = h("div", { class: "pn-st pn-seg", role: "group", "aria-label": "立ち・しゃがみの切り替え" }); [["stand", "立ち"], ["crouch", "しゃがみ"]].forEach(function (p) { var n = stanceCount(p[0]); tabs.appendChild(h("button", { type: "button", "data-stance": p[0], "aria-pressed": String(S.stance === p[0]), onclick: function () { S.stance = p[0]; render(); } }, p[1] + (n ? "（" + n + "枠）" : ""))); }); ui.main.appendChild(tabs);
+    if (!c.char.moves.length) ui.main.appendChild(h("p", { class: "pn-warn", "data-act": "no-moves", text: "このキャラは技表が未登録のため、技を選べません。技表が登録されると編集できます。" }));
     var nf = h("input", { type: "number", min: String(MIN_F), max: String(MAX_F), step: "1", "aria-label": "追加する確反枠（-N F の N）", placeholder: "例 22", "data-act": "frame-input" });
     var frameIssue = h("span", { class: "pn-inline-input", "data-act": "frame-issue", role: "status" });
+    nf.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); var b = nf.parentNode && nf.parentNode.querySelector('[data-act="addframe"]'); if (b && !b.disabled) b.click(); } });
     nf.addEventListener("input", function () { var msg = addFrameMessage(nf.value); frameIssue.textContent = msg; nf.setAttribute("aria-invalid", msg ? "true" : "false"); });
     ui.main.appendChild(h("div", { class: "pn-addframe" }, "確反枠を追加：-", nf, "F ", h("button", { type: "button", "data-act": "addframe", disabled: frozen(), text: "＋枠を追加", onclick: function () { var issue = addFrameMessage(nf.value); if (issue) { frameIssue.textContent = issue; nf.setAttribute("aria-invalid", "true"); return note(issue, "err"); } var n = Number(nf.value), id = S.stance + ":" + n; edit(function () { S.edit = C.order(S.edit.concat([{ slot_id: id, mode: "manual", custom: STD.indexOf(n) < 0, moves: [] }])); }); } }), frameIssue));
     var pageValidation = validation();
     ui.main.appendChild(h("p", { class: "pn-validation-summary", "data-act": "validation-summary", role: "status", text: "入力エラー：" + pageValidation.errors.length + "件 ／ 未確認の技：" + pageValidation.unverified.length + "件" }));
+    var jump = h("div", { class: "pn-jump", role: "group", "aria-label": "枠へ移動" });
+    jump.appendChild(h("label", { class: "pn-filter" }, h("input", { type: "checkbox", "data-act": "filled-only", checked: !!S.filledOnly, onchange: function (e) { S.filledOnly = e.target.checked; render(); } }), " 技を登録した枠だけ表示"));
+    framesFor(S.stance).forEach(function (f) { var sid = S.stance + ":" + f, sl = slotOf(sid), n = sl && sl.mode === "manual" ? sl.moves.length : 0; if (S.filledOnly && !n) return;
+      jump.appendChild(h("button", { type: "button", "data-jump": sid, class: n ? "pn-has" : "", text: "-" + f + "F" + (n ? "（" + n + "）" : ""), onclick: function () { var r = ui.main.querySelector('[data-slot="' + sid + '"]'); if (r) r.scrollIntoView({ block: "start" }); } })); });
+    ui.main.appendChild(jump);
     framesFor(S.stance).forEach(function (f) {
-      var id = S.stance + ":" + f, s = slotOf(id) || { mode: "auto", moves: [] }, b = builtinOf(id), row = h("section", { class: "pn-row", "data-slot": id });
+      var id = S.stance + ":" + f, s = slotOf(id) || { mode: "auto", moves: [] }, b = builtinOf(id), row = h("section", { class: "pn-row", "data-slot": id, "data-empty": s.mode === "manual" && s.moves.length ? "0" : "1" });
       var sel = h("select", { "aria-label": "-" + f + "F の設定方法", disabled: frozen(), onchange: function (e) { var v = e.target.value; var cur = slotOf(id); if (cur && cur.mode === "manual" && cur.moves.length && v !== "manual" && !window.confirm("この枠の登録済みの技 " + cur.moves.length + " 件を外します（「組み込みに戻す」で元に戻せます）。よろしいですか？")) { render(); return; } edit(function () { var t = slotOf(id); if (!t) { t = { slot_id: id, mode: "auto", moves: [] }; S.edit = C.order(S.edit.concat([t])); } t.mode = v; if (v !== "manual") t.moves = []; }); } }, h("option", { value: "auto", text: "自動", selected: s.mode === "auto" }), h("option", { value: "manual", text: "手動", selected: s.mode === "manual" }), h("option", { value: "hidden", text: "表示なし", selected: s.mode === "hidden" }));
       var head = h("h3", null, "-" + f + "F ", sel, b ? h("small", { text: STD.indexOf(f) < 0 ? " 既存の標準外枠" : " 既存" }) : h("small", { text: " 新規" }));
       if (!b) head.appendChild(h("button", { type: "button", "data-act": "delslot", disabled: frozen(), text: "枠を削除", onclick: function () { if (window.confirm("-" + f + "F の枠を削除します。")) edit(function () { S.edit = S.edit.filter(function (x) { return x.slot_id !== id; }); }); } }));
@@ -266,7 +286,7 @@
     var v = pageValidation; ui.errs.replaceChildren(); C.publishHolds(S.edit, c.builtin, c.policy).forEach(function (x) { ui.errs.appendChild(h("li", { class: "pn-hold", "data-hold": x.code, text: "【保留】" + C.HOLD_TEXT[x.code] })); }); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】公開済みの設定は、保留解除の承認が失効したため停止し、検証済みの旧版の表示に戻しています。旧版が確認できない場合は表示を停止します（設定自体は消えていません）" })); if (!c.has_net) ui.errs.appendChild(h("li", { class: "pn-hint", "data-netless": "1", text: "このキャラはNET原本がありません。現行の表示は、手動の枠を入れるまで維持されます" })); v.errors.forEach(function (e) { ui.errs.appendChild(h("li", { text: e })); }); if (v.unverified.length) ui.errs.appendChild(h("li", { class: "pn-warn", text: "未確認の技が " + v.unverified.length + " 件あります（下書きには保存できますが、確認するまで公開できません）" }));
     syncBar();
   }
-  function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (S.locked) ui.confirm.disabled = S.busy; ui.confirm.hidden = !S.locked;if(ui.undo)ui.undo.disabled=!undoStack.length||frozen()||!S.cur||!!S.cur.blocked;if(ui.redo)ui.redo.disabled=!redoStack.length||frozen()||!S.cur||!!S.cur.blocked; }
+  function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (S.locked) ui.confirm.disabled = S.busy; ui.confirm.hidden = !S.locked;if(ui.undo)ui.undo.disabled=!undoStack.length||frozen()||!S.cur||!!S.cur.blocked;if(ui.redo)ui.redo.disabled=!redoStack.length||frozen()||!S.cur||!!S.cur.blocked; paintStatus(); }
   // PNINT06: keyboard operation only changes the selection highlight; Enter is the explicit add action.
   function picker(slot, f, replacement) {
     var c = S.cur; if (frozen() || !c || !slotOf(slot)) return;
@@ -275,7 +295,7 @@
       q=h("input", {type:"search", placeholder:"技名・コマンド・発生・技IDで検索", "aria-label":"技検索（上下キーで選択、Enterで登録、Escで閉じる）", "aria-controls":"pn-picker-options", "data-act":"picker-query"}),
       resultCount=h("p",{class:"pn-hint",role:"status"}),list=h("ul",{id:"pn-picker-options", "data-act":"picker-results"}),
       orderSelect=h("select", {"data-act":"picker-sort","aria-label":"候補の並び",onchange:draw},h("option",{value:"source",text:"技表順"}),h("option",{value:"startup",text:"発生の早い順"}),h("option",{value:"name",text:"技名順"})),
-      hideChosen=h("input",{type:"checkbox","data-act":"hide-chosen",onchange:draw}), active=0, buttons=[];
+      hideChosen=h("input",{type:"checkbox","data-act":"hide-chosen",onchange:draw}), fastOnly=h("input",{type:"checkbox","data-act":"fast-only",onchange:draw}), active=0, buttons=[];
     function valid() { return S.pick === tok && S.cur === c && tok.ve === S.viewEpoch && dlg.isConnected && !frozen(); }
     function returnFocus() { var row = ui.main.querySelector('[data-slot="'+slot+'"]'); var next = row && (replacement === undefined ? row.querySelector('[data-act="add"]') : row.querySelectorAll('[data-act="replace"]')[replacement]); if (next && !next.disabled) next.focus(); else if (opener && opener.isConnected) opener.focus(); else ui.charSearch.focus(); }
     function closePicker() { if (S.pick === tok) S.pick=null; dlg.remove(); returnFocus(); }
@@ -286,7 +306,7 @@
       if(shouldScroll) buttons[active].scrollIntoView({block:"nearest"}); }
     function draw() { list.replaceChildren();buttons=[];active=0;
       var chosen = {}, sl=slotOf(slot); (sl ? sl.moves : []).forEach(function(m){chosen[m.k]=1;});
-      var t=normalized(q.value), all=movesOf(c).filter(function(m){return m.k>=0 && (!hideChosen.checked || !chosen[m.k]) && (!t || normalized(m.name+" "+m.command+" "+m.startup+" "+m.k).includes(t));});
+      var t=normalized(q.value), all=movesOf(c).filter(function(m){return m.k>=0 && (!hideChosen.checked || !chosen[m.k]) && (!fastOnly.checked || startF(m)<=f) && (!t || normalized(m.name+" "+m.command+" "+m.startup+" "+m.k).includes(t));});
       if(orderSelect.value==="startup") all.sort(function(a,b){return startF(a)-startF(b)||a.k-b.k;});
       if(orderSelect.value==="name") all.sort(function(a,b){return String(a.name).localeCompare(String(b.name),"ja")||a.k-b.k;});
       resultCount.textContent=all.length+"件の候補（最大80件表示）";
@@ -309,10 +329,14 @@
         if(e.target===q || (e.target.closest && e.target.closest('[data-act="picker-results"]'))){
           e.preventDefault();if(e.key==="Home")active=0;else if(e.key==="End")active=buttons.length-1;
           else active+=e.key==="ArrowDown"?1:-1;mark(true);q.focus(); }
-      }else if(e.key==="Enter" && e.target===q){e.preventDefault();if(buttons[active]&&!buttons[active].disabled)buttons[active].click();}
+      }else if(e.key==="Enter" && e.target===q){
+        // Leave IME confirmation to the browser. Some IME key events use keyCode 229.
+        if(e.isComposing || e.keyCode===229)return;
+        e.preventDefault();if(buttons[active]&&!buttons[active].disabled)buttons[active].click();
+      }
     });
     dlg.appendChild(h("h4",{text:"-"+f+"F "+(replacement === undefined ? "に使う技を選ぶ" : "の差し替え先を選ぶ")}));dlg.appendChild(q);
-    dlg.appendChild(h("div",{class:"pn-picker-tools"},h("label",null,"並び：",orderSelect),h("label",null,hideChosen," 登録済みの技を隠す")));
+    dlg.appendChild(h("div",{class:"pn-picker-tools"},h("label",null,"並び：",orderSelect),h("label",null,hideChosen," 登録済みの技を隠す"),h("label",null,fastOnly," -"+f+"F 以内に出せる技だけ")));
     dlg.appendChild(resultCount);dlg.appendChild(list);dlg.appendChild(h("button",{type:"button",text:"閉じる",onclick:closePicker}));ui.main.appendChild(dlg);draw();q.focus();
   }
   // ---- PNINT04: authoritative post-write re-fetch. No blind adoption of response revisions.
@@ -540,23 +564,25 @@
     if(heldDraft && (!activeIdentity||heldDraft.identity.principal!==activeIdentity.principal))heldDraft=null;
     ++S.viewEpoch; ++S.readSeq; ++S.editEpoch; S.cur = null; S.edit = []; S.dirty = false; S.busy = false; S.locked = null; S.pick = null;S.conflict=null;S.syncPending=null;S.charQuery="";S.stance="stand";clearUndo([]);
     store = st; root = el; ui.list = h("div", { class: "pn-list" });
-    ui.charSearch=h("input",{type:"search","aria-label":"キャラを検索",placeholder:"キャラ名 / ID で検索","data-act":"char-search",oninput:function(e){S.charQuery=e.target.value;drawCharList();}});
+    ui.charSearch=h("input",{type:"search","aria-label":"キャラを検索",placeholder:"キャラ名 / ID で検索","data-act":"char-search",oninput:function(e){S.charQuery=e.target.value;drawCharList();},onkeydown:function(e){if(e.key==="Enter"){e.preventDefault();var f=ui.list.querySelector("[data-char]");if(f)f.click();}}});
     ui.charCount=h("span",{class:"pn-hint",role:"status"});ui.transfer=h("div",{class:"pn-transfer-container"});ui.recovery=h("div",{class:"pn-recovery",role:"region","aria-label":"編集内容の復旧と競合確認"});
-    ui.title = h("h2"); ui.dirty = h("span", { class: "pn-dirty" }); ui.note = h("p", { role: "status", class: "pn-note" }); ui.main = h("div"); ui.errs = h("ul", { class: "pn-errs" }); ui.pv = h("div", { class: "pn-pv" });
+    ui.title = h("h2"); ui.dirty = h("span", { class: "pn-dirty", role: "status", "aria-live": "polite" }); ui.note = h("p", { role: "status", class: "pn-note" }); ui.main = h("div"); ui.errs = h("ul", { class: "pn-errs" }); ui.pv = h("div", { class: "pn-pv" });
     ui.undo=h("button",{type:"button","data-act":"undo",disabled:true,text:"元に戻す",onclick:function(){applyHistory(true);}});
     ui.redo=h("button",{type:"button","data-act":"redo",disabled:true,text:"やり直す",onclick:function(){applyHistory(false);}});
     ui.save = h("button", { type: "button", text: "下書き保存", onclick: doSave }); ui.confirm = h("button", { type: "button", text: "結果を確認", hidden: true, onclick: doConfirm });
-    ui.bar = h("div", { class: "pn-bar" }, ui.undo,ui.redo,ui.save, h("button", { type: "button", text: "プレビュー", onclick: doPreview }), h("button", { type: "button", text: "差分確認", onclick: doDiff }), h("button", { type: "button", text: "履歴", onclick: doHistory }), ui.confirm);
+    ui.bar = h("div", { class: "pn-bar" }, ui.undo,ui.redo,ui.save, h("button", { type: "button", text: "プレビュー", onclick: doPreview }), h("button", { type: "button", text: "差分確認", onclick: doDiff }), h("button", { type: "button", text: "履歴", onclick: doHistory }), ui.confirm, ui.dirty);
     el.replaceChildren(h("div", { class: "pn-wrap" },h("div",{class:"pn-char-toolbar"},ui.charSearch,ui.charCount),ui.list,
-      h("div", { class: "pn-body" }, ui.title, ui.dirty, ui.note, ui.transfer, ui.recovery, ui.bar, ui.errs, ui.main, ui.pv)));
-    if(keyListener)root.removeEventListener("keydown",keyListener);
+      h("div", { class: "pn-body" }, ui.title, ui.note, ui.transfer, ui.recovery, ui.bar, ui.errs, ui.main, ui.pv)));
+    if(keyListener)root.removeEventListener("keydown",keyListener);if(saveKeyListener)root.removeEventListener("keydown",saveKeyListener);
     keyListener=function(e){if(!(e.ctrlKey||e.metaKey)||e.altKey||S.pick)return;
       var target=e.target,tag=(target&&target.tagName||"").toLowerCase();if(["input","textarea","select"].includes(tag)||target&&target.isContentEditable)return;
       var k=e.key.toLowerCase();if(k==="z"||k==="y"){e.preventDefault();applyHistory(k==="z"&&!e.shiftKey);}};
+    saveKeyListener=function(e){if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey||e.key.toLowerCase()!=="s"||S.pick)return;e.preventDefault();if(S.cur&&ui.save&&!ui.save.disabled)doSave();};
+    root.addEventListener("keydown",saveKeyListener);
     root.addEventListener("keydown",keyListener);return loadList();
   }
   function unmount(preserveHeld) {
-    if(root && keyListener)root.removeEventListener("keydown",keyListener);keyListener=null;
+    if(root && keyListener)root.removeEventListener("keydown",keyListener);keyListener=null;if(root&&saveKeyListener)root.removeEventListener("keydown",saveKeyListener);saveKeyListener=null;
     if(!preserveHeld) heldDraft=null;onSelected=null;transferStage=null;verifyIdentity=null;clearEditorState();activeIdentity=null;S.chars=[];S.charQuery="";
   }
   function status() { return { char:S.cur ? S.cur.id:null,stance:S.stance,dirty:!!S.dirty,busy:!!S.busy,locked:!!S.locked,

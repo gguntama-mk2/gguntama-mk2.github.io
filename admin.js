@@ -232,7 +232,7 @@
     D.diff = h("div", { class: "card", id: "diffBox", hidden: true });
     D.editor = h("div", { class: "editor card", id: "editor" });
     D.hist = h("div", { class: "card", id: "hist" });
-    D.pcFrame = h("iframe", { id: "pvPC", title: "PC版プレビュー（元データの読み込み）", src: "pc.html?ptpreview=1#sheet" });
+    D.pcFrame = h("iframe", { id: "pvPC", title: "PC版プレビュー（元データの読み込み）", src: "about:blank" });
     D.spFrame = null;
     D.spBox = h("div", { id: "spBox" });
     D.pvBox = h("div", { class: "card" }, h("div", { class: "row" }, h("b", { text: "プレビュー" }), h("span", { class: "muted", text: "実際のサイトの技チェックシートに、編集中の内容をその場で映します（保存・公開はされません）" }),
@@ -252,7 +252,8 @@
       h("div", { class: "pt-sheet-char-caption", text: "キャラクターを選ぶ" }), D.chars),
       D.tool, D.diff, D.editor, D.hist, D.pvBox);
     D.chars.textContent = "元データ（サイトの技表）を読み込んでいます…（数十秒かかることがあります）";
-    D.pcFrame.addEventListener("load", onBaseLoaded);
+    // Start immediately; do not depend on the iframe load event (images/optional assets may delay it).
+    startBaseLoad(null);
   }
   function toggleSP(on) {
     if (!on) { D.spBox.replaceChildren(); D.spFrame = null; S.spWin = null; return; }
@@ -261,15 +262,90 @@
     D.spBox.replaceChildren(D.spFrame);
   }
   var baseSeq = 0;
-  // 枠（iframe）の「読み込み完了」の時点では、元データ（COLS・INFO_TAGS・CHARACTERS）がまだ揃っていないことがある。揃うまで待つ（技表に必須のものだけ。コンボ COMBOS は任意で、後述の lateCombos が別に待つ）
-  async function waitBaseReady(W, my) {
+  function baseDelay(ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); }
+  // The iframe is for metadata and preview only. Never read the lazy moves getter here.
+  async function waitBaseReady(W, my, token) {
     var t0 = Date.now();
     for (;;) {
       if (my !== baseSeq) return false;
-      try { if (W.eval("typeof COLS !== 'undefined' && typeof INFO_TAGS !== 'undefined' && typeof CHARACTERS !== 'undefined'") === true) return true; } catch (e) {}
-      if (Date.now() - t0 > 60000) throw new Error("元データがそろいませんでした（時間切れ）。「元データを読み込み直す」を押してください");
-      await new Promise(function (ok) { setTimeout(ok, 100); });
+      try {
+        if (new URLSearchParams(W.location.search).get("ptadminload") === token &&
+            W.document.readyState !== "loading" &&
+            W.eval("typeof COLS !== 'undefined' && typeof INFO_TAGS !== 'undefined' && typeof CHARACTERS !== 'undefined' && typeof moveInfo === 'function'") === true) return true;
+      } catch (_) {}
+      if (Date.now() - t0 > 60000) throw new Error("プレビューの初期化が時間切れになりました");
+      await baseDelay(100);
     }
+  }
+  async function readBaseJSON(path, my) {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (my !== baseSeq) throw new Error("読み込みが切り替わりました");
+      var ac = new AbortController(), timer = setTimeout(function () { ac.abort(); }, 15000), retry = true;
+      try {
+        var r = await fetch(path, { cache: "reload", credentials: "omit", signal: ac.signal });
+        if (!r.ok) { retry = r.status === 408 || r.status === 429 || r.status >= 500; throw new Error("HTTP " + r.status); }
+        var data = await r.json();
+        if (ac.signal.aborted || my !== baseSeq) throw new Error("読み込みが切り替わりました");
+        return data;
+      } catch (e) {
+        if (!retry || attempt === 2 || my !== baseSeq) throw new Error(path + "：" + e.message);
+      } finally { clearTimeout(timer); }
+      await baseDelay(500 * (attempt + 1));
+    }
+  }
+  async function readBaseSnapshot(W, my) {
+    var J = function (expr) { return JSON.parse(W.eval("JSON.stringify(" + expr + ")")); };
+    var cols = J("COLS.map(function(c){return {id:c.id,label:c.label}})"),
+        tags = J("INFO_TAGS.map(function(t){return {id:t.id,label:t.label,full:t.full}})"),
+        meta = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,n:c.n}})");
+    var manifest = await readBaseJSON("checksheet-base.json", my), entries = manifest && manifest.characters;
+    if (!manifest || manifest.algo !== "sha256-canon-v1" || !entries || !meta.length ||
+        Object.keys(entries).length !== meta.length || new Set(meta.map(function(c){return c.id;})).size !== meta.length) throw new Error("技データ一覧と指紋台帳が一致しません");
+    var chars = [], hashes = Object.create(null);
+    for (var i = 0; i < meta.length; i += 6) {
+      var chunk = await Promise.all(meta.slice(i, i + 6).map(async function (c) {
+        if (!/^[a-z0-9-]+$/.test(c.id) || !Number.isInteger(c.n) || c.n < 0 || !Object.prototype.hasOwnProperty.call(entries,c.id)) throw new Error("キャラクター一覧が不正です");
+        var expected = entries[c.id];
+        if (!expected || expected.moves !== c.n || !/^[a-f0-9]{64}$/.test(expected.hash)) throw new Error(c.name + "：技数または指紋台帳が一致しません");
+        var moves = c.n === 0 ? [] : await readBaseJSON("c/" + encodeURIComponent(c.id) + ".json", my);
+        if (!Array.isArray(moves) || moves.length !== c.n || moves.some(function(m){return !m || !Number.isInteger(m.k) || m.k < 0;}) || new Set(moves.map(function(m){return m.k;})).size !== moves.length) throw new Error(c.name + "：技データが不足または不正です");
+        var hash = await baseHashOf(c.id, moves);
+        if (hash !== expected.hash) throw new Error(c.name + "：技データの版が一致しません");
+        hashes[c.id] = hash;
+        return {id:c.id,en:c.en,name:c.name,moves:moves};
+      }));
+      if (my !== baseSeq) throw new Error("読み込みが切り替わりました");
+      chars = chars.concat(chunk);
+      D.chars.textContent = "元データを読み込んでいます…（" + chars.length + "/" + meta.length + "キャラ）";
+    }
+    return {cols:cols,tags:tags,chars:chars,hashes:hashes};
+  }
+  async function initialRead(path, valid) {
+    for (var n=0;;n++) {
+      if (!valid()) throw new Error("読み込みが切り替わりました");
+      try { return await api(path); }
+      catch(e) {
+        if (!valid() || n>=2 || !(e.transient === true || [502,503,504].indexOf(e.status)>=0)) throw e;
+        await baseDelay(1000*(n+1));
+      }
+    }
+  }
+  function baseFailure(e, my, keep) {
+    if (my !== baseSeq) return;
+    D.charPicker.disabled=true; D.charPicker.replaceChildren();
+    D.tool.replaceChildren(); D.editor.replaceChildren(); D.hist.replaceChildren(); D.diff.hidden=true;
+    S.cur=null; S.pageHash={}; S.win=null;
+    D.chars.textContent = "元データを読み込めませんでした。編集は停止しています。";
+    banner("err", e.message, [{label:"元データを読み込み直す",cls:"primary",fn:function(){startBaseLoad(keep);}}]);
+  }
+  function startBaseLoad(keep) {
+    var my=++baseSeq, token=String(Date.now())+"-"+my;
+    S.cur=null; S.win=null; S.pageHash={}; S.ovMoves={}; S._ovVer=(S._ovVer||0)+1;
+    D.charPicker.disabled=true; D.charPicker.replaceChildren();
+    D.tool.replaceChildren(); D.editor.replaceChildren(); D.hist.replaceChildren(); D.diff.hidden=true;
+    D.chars.textContent="元データ（サイトの技表）を読み込んでいます…"; banner("");
+    D.pcFrame.src="pc.html?ptpreview=1&ptadminload="+token+"#sheet";
+    onBaseLoaded(my,token,keep);
   }
   // コンボ（COMBOS）だけ取れなかったとき：技表など他の機能は使えるまま、コンボ動画の画面だけ空にして案内を出し、揃うまで裏で待って、揃ったら入れ替える
   function comboNote(text) {
@@ -294,35 +370,32 @@
     }
     if (my === baseSeq) comboNote("コンボの元データを読み込めませんでした。コンボ動画の登録は、いまは使えません。技表のほうの「元データを読み込み直す」で、もう一度試せます。");
   }
-  async function onBaseLoaded() {
-    var W = D.pcFrame.contentWindow, my = ++baseSeq;
-    try { if (!(await waitBaseReady(W, my))) return; } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
+  async function onBaseLoaded(my, token, keep) {
+    var W = D.pcFrame.contentWindow;
     try {
-      var J = function (expr) { return JSON.parse(W.eval("JSON.stringify(" + expr + ")")); };
-      S.cols = J("COLS.map(function(c){return {id:c.id,label:c.label}})");
-      S.tags = J("INFO_TAGS.map(function(t){return {id:t.id,label:t.label,full:t.full}})");
-      S.chars = J("CHARACTERS.map(function(c){return {id:c.id,en:c.en,name:c.name,moves:c.moves}})");
-      window.PTAdminMoveMedia.updateCharacters(S.chars);
-      S.win = W; window.PTAdminMoveIcons.updateCharacters(S.chars); window.PTAdminPxImages.updateCharacters(S.chars);
-      try { window.PTAdminComboVideos.updateData({ characters: S.chars.map(function (c) { return { id: c.id, name: c.name }; }), combos: J("COMBOS"), rev: J("typeof COMBOS_REV === 'number' ? COMBOS_REV : 0") }); comboNote(""); }
-      catch (e2) { console.error("[admin] コンボの収録データを読み込めませんでした", e2); window.PTAdminComboVideos.updateData({ characters: S.chars, combos: {}, rev: 0 }); lateCombos(W, my); }
-      S.win = W;
-    } catch (e) { D.chars.textContent = "元データを読み込めませんでした：" + e.message; return; }
-    if (!(window.crypto && crypto.subtle)) { D.chars.textContent = "この環境では元データの指紋（SHA-256）を計算できないため、編集できません。https で開いたページから使ってください。"; return; }
-    var ph = {};      // 待っている間は手元の入れ物に入れ、世代が合っているときだけ、まとめて反映する（古い読み込みが、新しい読み込みのデータを書き換えない）
-    try { await Promise.all(S.chars.map(async function (c) { ph[c.id] = await baseHashOf(c.id, c.moves); })); }
-    catch (e) { if (my === baseSeq) D.chars.textContent = "元データの指紋を計算できませんでした：" + e.message; return; }
-    if (my !== baseSeq) return;      // 待っている間に、枠が読み込み直された（新しい読み込みが引き継ぐ）
-    S.pageHash = ph;
-    await refreshOverview(my);
-    if (my !== baseSeq) return;
-    renderChars(); loadOverlays();
-    var keep = S.cur && baseOf(S.cur.id) ? S.cur.id : null;      // 元データを読み直したときは、開いていたキャラを開き直す
-    S.cur = null;
-    if (keep) openChar(keep); else if (S.chars.length) openChar(S.chars[0].id);
+      if (!(await waitBaseReady(W,my,token))) return;
+      if (!(window.crypto && crypto.subtle)) throw new Error("この環境では元データの指紋を計算できません。httpsで開いてください。");
+      var snapshot = await readBaseSnapshot(W,my);
+      if (my !== baseSeq) return;
+      var r = await initialRead("/api/v1/admin/checksheet",function(){return my===baseSeq;});
+      if (my !== baseSeq) return;
+      if (!r || !Array.isArray(r.characters)) throw new Error("技チェックシート一覧の応答が不正です");
+      var ov = {}; r.characters.forEach(function(c){ov[c.char_id]=c;});
+      S.cols=snapshot.cols; S.tags=snapshot.tags; S.chars=snapshot.chars; S.pageHash=snapshot.hashes; S.ovr=ov; S.win=W;
+      // Optional tabs must not interrupt a successfully loaded sheet.
+      try { window.PTAdminMoveMedia.updateCharacters(S.chars); } catch(e){console.error("[admin] media",e);}
+      try { window.PTAdminMoveIcons.updateCharacters(S.chars); } catch(e){console.error("[admin] icons",e);}
+      try { window.PTAdminPxImages.updateCharacters(S.chars); } catch(e){console.error("[admin] px",e);}
+      try { window.PTAdminComboVideos.updateData({characters:S.chars.map(function(c){return {id:c.id,name:c.name};}),combos:JSON.parse(W.eval("JSON.stringify(COMBOS)")),rev:JSON.parse(W.eval("JSON.stringify(typeof COMBOS_REV === 'number' ? COMBOS_REV : 0)"))}); comboNote(""); }
+      catch(e){ try { window.PTAdminComboVideos.updateData({characters:S.chars,combos:{},rev:0}); lateCombos(W,my); } catch(x){console.error("[admin] combo",x);} }
+      D.charPicker.disabled=false;
+      renderChars();
+      await openChar(keep && baseOf(keep) ? keep : S.chars[0].id);
+    } catch(e) { baseFailure(e,my,keep); }
   }
   function reloadBase() {
-    guardThen(function () { D.chars.textContent = "元データ（サイトの技表）を読み込み直しています…"; D.pcFrame.src = "pc.html?ptpreview=1&_=" + Date.now() + "#sheet"; });
+    if (S._sheetPending) { banner("warn", "保存・公開処理が完了するまでお待ちください。"); return; }
+    guardThen(function () { startBaseLoad(S.cur && S.cur.id); });
   }
   async function refreshOverview(my) {      // my：元データの読み込みの世代（古い世代の返事では、共有の状態もバナーも変えない）
     try { var r = await api("/api/v1/admin/checksheet"); if (my !== undefined && my !== baseSeq) return; var ov = {}; r.characters.forEach(function (c) { ov[c.char_id] = c; }); S.ovr = ov; }
@@ -378,8 +451,8 @@
     if (S.cur && S.cur.id !== id && S.ovMoves) { delete S.ovMoves[S.cur.id]; S._ovVer = (S._ovVer || 0) + 1; }   // 離れるキャラは、次にアイコン・動画の一覧を開くとき最新を取り直す
     banner("", "読み込み中…");
     var r, seq = (S._openSeq = (S._openSeq || 0) + 1), gen = baseSeq, edit = S._editSeq, write = S._writeSeq;      // 続けて別のキャラを開いたとき・元データを読み直したときは、古い応答を捨てる
-    try { r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); }
-    catch (e) { if (seq === S._openSeq && gen === baseSeq && edit === S._editSeq && write === S._writeSeq) banner("err", "読み込めませんでした：" + e.message); return; }
+    try { r = await initialRead("/api/v1/admin/checksheet/" + encodeURIComponent(id), function(){return seq===S._openSeq && gen===baseSeq && edit===S._editSeq && write===S._writeSeq;}); }
+    catch (e) { if (seq === S._openSeq && gen === baseSeq && edit === S._editSeq && write === S._writeSeq) banner("err", "読み込めませんでした：" + e.message, [{label:"再試行",fn:function(){guardThen(function(){openChar(id);});}}]); return; }
     if (seq !== S._openSeq || gen !== baseSeq || edit !== S._editSeq || write !== S._writeSeq || !S.pageHash || !(id in S.pageHash) || !baseOf(id)) return;
     S.dirty = false;
     var pageHash = S.pageHash[id];
@@ -592,6 +665,7 @@
     var c = S.cur;
     if (!skipCheck && !(await ensureBaseOk())) return false;       // 元データが更新されていたら、案内を出して止める（サーバーも同じ判定で 409 を返す）
     banner("", "保存中…");
+    S._sheetPending=(S._sheetPending||0)+1;
     try {
       c.remap = remapOut(c);
       var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id), { method: "POST", body: { moves: c.moves, expected_version: c.version, base_hash: c.contentBase, remap: c.remap } });
@@ -600,7 +674,7 @@
       await refreshOverview(); renderChars(); renderTool(); loadHistory();
       banner("ok", r.rebased ? "最新の元データに合わせて保存しました（版" + r.version + "）。公開するまで、一般のサイトには出ません。" : r.changed ? "下書きを保存しました（版" + r.version + "）。公開するまで、一般のサイトには出ません。" : "変更はありませんでした。");
       return true;
-    } catch (e) { explain(e); return false; }
+    } catch (e) { explain(e); return false; } finally { S._sheetPending--; }
   }
   async function publish() {
     S._writeSeq = (S._writeSeq || 0) + 1;
@@ -613,6 +687,7 @@
       ["公開してから一般のサイトに出るまで、最大1分ほどかかります。"]), "公開する", false);
     if (!ok) return;
     if (S.dirty || !c.exists || c.contentBase !== c.savedBase) { if (!(await saveDraft(true))) return; }   // 公開する内容を、先に下書きとして保存する（確認は済んでいる）
+    S._sheetPending=(S._sheetPending||0)+1;
     try {
       var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/publish", { method: "POST", body: { expected_version: c.version } });
       c.published = { version: c.version, moves: clone(c.moves), live: true, baseStatus: "current" };
@@ -620,21 +695,23 @@
       if (mv) { try { window.PTAdminMoveIcons.reload(); window.PTAdminMoveMedia.reload(); } catch (_) { /* パネルを開いたときに最新が読み込まれる */ } }
       await refreshOverview(); renderChars(); renderTool(); loadHistory();
       banner("ok", r.changed ? "公開しました。" + (mv ? "アイコン設定 " + mv.icons + " 件・技動画 " + mv.videos + " 件を、新しい技番号へ移しました。" : "") : "すでに公開済みの内容です。");
-    } catch (e) { explain(e); }
+    } catch (e) { explain(e); } finally { S._sheetPending--; }
   }
   async function revert() {
     S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!(await confirmModal("公開済みに戻す", ["下書きを、公開中の内容に戻します。", "いまの下書きの変更は（履歴の保存分を除き）失われます。"], "公開中の内容に戻す", true))) return;
+    S._sheetPending=(S._sheetPending||0)+1;
     try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/revert", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("公開中の内容に戻しました。"); }
-    catch (e) { explain(e); }
+    catch (e) { explain(e); } finally { S._sheetPending--; }
   }
   async function removeOverride() {
     S._writeSeq = (S._writeSeq || 0) + 1;
     var c = S.cur;
     if (!(await confirmModal("上書きの削除", ["「" + c.name + "」の上書きを削除します。", "サイトは、埋め込まれた元データの表示に戻ります（公開中の内容も消えます。履歴は残ります）。"], "上書きを削除する", true))) return;
+    S._sheetPending=(S._sheetPending||0)+1;
     try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/delete", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("上書きを削除しました（元データに戻りました）。"); }
-    catch (e) { explain(e); }
+    catch (e) { explain(e); } finally { S._sheetPending--; }
   }
 
   // ------------------------------------------------------------ 履歴
