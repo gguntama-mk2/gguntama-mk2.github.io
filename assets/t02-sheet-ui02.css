@@ -11,7 +11,7 @@
 @media(max-width:359px){#filterPanel{width:96vw}#filterPanel .flt-foot{grid-template-columns:1fr 1fr}#filterPanel .flt-btn.primary{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){#filterPanel{transition:none!important}}
 
-#viewSheet.ui01-ready>:not(#t02Sheet){display:none!important}
+#viewSheet.ui01-ready>:not(#t02Sheet):not(#warn){display:none!important}
 #toast{display:none!important}
 #ptmv-fail{display:none!important}
 #t02Sheet .sp-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:0 10px 10px}
