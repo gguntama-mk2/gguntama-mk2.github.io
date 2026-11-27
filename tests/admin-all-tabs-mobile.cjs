@@ -16,6 +16,7 @@ const chars = Array.from({length:35}, (_,i) => ({
 }));
 const preview = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
 var CHARACTERS = ${JSON.stringify(chars)};
+var COMBOS = {};
 var COLS = [{id:"command",label:"コマンド"},{id:"hit",label:"ヒット時"}];
 var INFO_TAGS = [{id:"test",label:"テストタグ",full:"テスト"}];
 function moveInfo(){return {tags:[]};}
@@ -30,7 +31,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname === "/pc.html" || pathname === "/sp.html"){
     res.writeHead(200,{"Content-Type":"text/html;charset=utf-8"});res.end(preview);return;
   }
-  if(/^\/(admin\.html|admin\.js|admin-move-icons\.js|admin-move-media\.js|admin-cloud-analysis\.js)$/.test(pathname)){
+  if(/^\/(admin\.html|admin(?:-[a-z-]+)?\.js|community-seed\.js)$/.test(pathname)){
     const body = await fs.readFile(path.join(process.cwd(), pathname.slice(1)));
     res.writeHead(200,{"Content-Type":pathname.endsWith(".html")?"text/html;charset=utf-8":"text/javascript;charset=utf-8"});res.end(body);return;
   }
@@ -94,7 +95,10 @@ const fixtures = (u) => {
         await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
       });
       await page.goto("http://127.0.0.1:"+server.address().port+"/admin.html");
-      await page.locator("#ptSheetCharPicker option").first().waitFor({state:"attached"});
+      await page.locator("#ptSheetCharPicker option").first().waitFor({state:"attached"}).catch(async error => {
+        console.error("preview load", width, errors, await page.locator("#secSheet").innerText());
+        throw error;
+      });
       await page.waitForFunction(()=>document.querySelector("#ptSheetMovePicker")&&document.querySelectorAll("#ptSheetMovePicker option").length>1,{timeout:8000}).catch(async err=>{
         console.log("SHEET DEBUG",JSON.stringify({
           errors, page:await page.evaluate(()=>({
