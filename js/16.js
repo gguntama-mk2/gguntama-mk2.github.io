@@ -792,8 +792,37 @@ openDlg(lb.dlg);setTimeout(()=>{const x=lb.dlg.querySelector(".vlb-x");if(x)x.fo
 function ytCloseAll(){[...YT_MINI].forEach(f=>f());if(ytLb&&ytLb.dlg.open)closeDlg(ytLb.dlg);}
 function ytRow(c,p){const nm=c.n||"コンボ",url="https://youtu.be/"+p.id+(p.start?"?t="+p.start:"");const row=document.createElement("div");row.className="cvid yt";const b=document.createElement("button");b.type="button";b.className="btn vid";b.setAttribute("aria-expanded","false");b.setAttribute("aria-label",nm+" の動画を再生");const lab=document.createElement("span");lab.textContent="動画を再生";b.innerHTML=PLAY_SVG;b.appendChild(lab);let box=null,st=null;const close=()=>{if(!box)return;if(st)st.stop();box.remove();box=null;st=null;YT_MINI.delete(close);b.setAttribute("aria-expanded","false");lab.textContent="動画を再生";};const open=()=>{[...YT_MINI].forEach(f=>f());box=document.createElement("div");box.className="vbox yt";box.setAttribute("role","group");box.setAttribute("aria-label",nm+" の動画");const bar=document.createElement("div");bar.className="ytbar";const zb=document.createElement("button");zb.type="button";zb.className="ytbtn ytzoom";zb.innerHTML=ZOOM_SVG+"<span>拡大</span>";zb.setAttribute("aria-label",nm+" の動画を拡大");const xb=document.createElement("button");xb.type="button";xb.className="ytbtn ytclose";xb.textContent="閉じる";xb.setAttribute("aria-label",nm+" の動画を閉じる");bar.append(zb,ytLink(url),xb);const fr=document.createElement("div");fr.className="ytfr";st=ytMake(p,nm+" の動画",p.start);fr.appendChild(st.frame);const note=document.createElement("p");note.className="vnote";note.hidden=true;st.onerr=code=>{note.textContent=ytErrText(code);note.hidden=false;};if(location.protocol==="file:"){note.textContent=YT_FILE_NOTE;note.hidden=false;}
 box.append(bar,fr,note);row.appendChild(box);YT_MINI.add(close);b.setAttribute("aria-expanded","true");lab.textContent="動画を閉じる";zb.onclick=()=>{const t=Math.floor(st&&st.t||0);close();ytLightbox(p,nm,t>0?t:p.start,c,b);};xb.onclick=()=>{close();try{b.focus({preventScroll:true});}catch(_){}};};b.onclick=()=>(box?close():open());row.appendChild(b);return row;}
+/* Current_A02: reverse link to a uniquely matching, already displayed starter. */
+function a02Visible(el){return !!(el&&el.isConnected&&el.getClientRects().length&&!el.closest('[hidden],.nomatch'));}
+function a02Targets(cid,id,match){
+ const host=document.getElementById("viewSheet");if(!host)return [];
+ const hit=cmd=>match(cmd).some(x=>String(x.id)===id);
+ if(host.classList.contains("ui01-ready")){
+  if(typeof window.PT_A02_STARTER_ROWS!=="function")return [];
+  return window.PT_A02_STARTER_ROWS(cid,hit).filter(a02Visible);
+ }
+ return Array.from(host.querySelectorAll('tbody tr[data-cmd]')).filter(row=>{
+  const icon=row.querySelector('.pt-ic[data-c]');return a02Visible(row)&&icon&&icon.dataset.c===cid&&hit(row.dataset.cmd||'');
+ });
+}
+let a02Request=0;
+function a02Reverse(cid,id,key){
+ if(typeof window.setPage!=="function"||typeof window.pageNow!=="function"||window.pageNow()!=="combo"||current!==cid)return;
+ if(!activeOf(cid).some(x=>String(x.id)===id&&starterKey(x.n)===key))return;
+ const request=++a02Request;
+ window.setPage("sheet");let tries=0;
+ const tick=()=>{
+  if(request!==a02Request||current!==cid||window.pageNow()!=="sheet")return;
+  if(!activeOf(cid).some(x=>String(x.id)===id&&starterKey(x.n)===key))return;
+  const rows=a02Targets(cid,id,window.CB.linker(cid,true));
+  if(rows.length===1){const row=rows[0];row.scrollIntoView({block:"center"});const trigger=row.querySelector('button.head, td.name .nm .nt[tabindex="0"]');if(trigger&&a02Visible(trigger)){try{trigger.focus({preventScroll:true});}catch(e){}}return;}
+  if(++tries<30){setTimeout(tick,100);return;}
+  window.alert(rows.length>1?"同じ始動条件の技が複数表示されています。技表から選んでください。":"表示中の技表で始動技を特定できません。キャラ・検索・絞り込みをご確認ください。");
+ };setTimeout(tick,100);
+}
 function cardEl(c,showG,canDrag){const cid=current;const card=document.createElement("article");card.className="combo";card.dataset.id=c.id;card.classList.toggle("arch",isArch(c));card.classList.toggle("sel",sel.has(c.id));card.dataset.grp=showG?"":(c.g||"その他");const hd=document.createElement("div");hd.className="chead";if(canDrag)hd.appendChild(gripEl(c,card));const sl=document.createElement("label");sl.className="selchk";const sb=document.createElement("input");sb.type="checkbox";sb.className="selbox";sb.checked=sel.has(c.id);sb.setAttribute("aria-label",(c.n||"コンボ")+" を削除する対象に選ぶ");sb.onchange=()=>{if(sb.checked)sel.add(c.id);else sel.delete(c.id);card.classList.toggle("sel",sb.checked);updateBulk();};sl.appendChild(sb);hd.appendChild(sl);card.addEventListener("click",e=>{if(!selMode||(e.target.closest&&e.target.closest("input, textarea, button, label, select, a")))return;sb.checked= !sb.checked;sb.onchange();});const no=numMap.get(c.id);if(no){const nb=document.createElement("span");nb.className="cno";nb.dataset.no=String(no);nb.title="上から"+no+"番目のコンボ";nb.setAttribute("aria-label","コンボ番号 "+no);const ns=document.createElement("small");ns.textContent="No.";nb.append(ns,document.createTextNode(String(no)));hd.appendChild(nb);}
 const h=document.createElement("h3");h.className="cn"+(c.n?"":" none");h.textContent=c.n||"（名前なし）";hd.appendChild(h);if(c.d!==undefined&&c.d!==null&&String(c.d)!==""){const d=document.createElement("span");d.className="dmg";const s=document.createElement("small");s.textContent="ダメージ";d.append(s,document.createTextNode(String(c.d)));hd.appendChild(d);}
+if(!isArch(c)&&starterKey(c.n)){const a02=document.createElement("button");a02.type="button";a02.className="btn";a02.textContent="始動技へ";a02.setAttribute("aria-label","表示中の技表でこのコンボの始動技へ移動");const a02id=String(c.id),a02key=starterKey(c.n);a02.addEventListener("click",e=>{e.stopPropagation();a02Reverse(cid,a02id,a02key);});hd.appendChild(a02);}
 card.appendChild(hd);const ni=(iconMode&&c.n)?nameIcons(c.n):null;if(ni){ni.className="cnicons";ni.setAttribute("aria-hidden","true");card.appendChild(ni);}
 const meta=document.createElement("div");meta.className="cmeta";if(isArch(c)){const a=document.createElement("span");a.className="avtag";a.textContent=verLabel(c.av)+"まで可能";a.title="このバージョンまでは出せたコンボです（アップデートで出せなくなりました）";meta.appendChild(a);}
 if(c.edited&& !c.user&& !ui.noEdTag){const e=document.createElement("span");e.className="edtag";e.textContent="書き換え済み";e.title="付属のコンボを書き換えて、このブラウザに保存しています。付属データが新しくなっても、この内容のままです（一覧の上の「書き換えた〇件を元の内容に戻す」か、「編集」の「元の内容に戻す」で、最新に戻せます）";meta.appendChild(e);meta.appendChild(edTagX());}
