@@ -540,6 +540,7 @@
   <h1>PROJECT T 管理者ページ</h1>
   <nav class="tabs" id="tabs" hidden>
     <button type="button" data-tab="sheet" aria-pressed="true">技チェックシート編集</button>
+    <button type="button" data-tab="net" aria-pressed="false" hidden>確定反撃表</button>
     <button type="button" data-tab="users" aria-pressed="false">管理者</button>
     <button type="button" data-tab="media" aria-pressed="false">技動画登録</button>
     <button type="button" data-tab="icons" aria-pressed="false">技アイコン設定</button>
@@ -554,7 +555,12 @@
   <div class="who" id="who"></div>
 </header>
 <main id="app"><div class="center card">確認しています…</div></main>
-<script src="admin.js?v=20261123a" defer></script>
+<link rel="stylesheet" href="net-current.css?v=current-net02">
+<script src="net-ptcore.js?v=current-net02" defer></script>
+<script src="net-http-store.js?v=current-net02" defer></script>
+<script src="net-admin-punish.js?v=current-net02" defer></script>
+<script src="net-host.js?v=current-net02" defer></script>
+<script src="admin.js?v=current-net02" defer></script>
 <script src="admin-move-media.js?v=20261113a" defer></script>
 <script src="admin-move-icons.js?v=20261113a" defer></script>
 <script src="admin-combo-videos.js?v=20261114a" defer></script>
