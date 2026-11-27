@@ -8,14 +8,32 @@ var CSS=".cblink-hit{outline:1px solid #ffd21fa8;outline-offset:1px;border-radiu
 var st=document.createElement('style');st.id='cblink-css';st.textContent=CSS;document.head.appendChild(st);
 var bubble=null,owner=null,pre=null;
 /* コンボ集モジュールは埋め込みの古いデータを持ち、開いた直後にライブデータへ切り替わる。切替後（CB.live().rev>0）に判定する。最大6秒で埋め込みデータにフォールバック。 */
-/* トップ表示中はコンボ集を読み込まない（通信量の削減）。トップを離れた時点で読み込みを始める。 */
-function onHome(){try{return typeof window.pageNow==='function'&&window.pageNow()==='home';}catch(e){return false;}}
-function away(){return new Promise(function(ok){if(!onHome())return ok();var mo=new MutationObserver(function(){if(!onHome()){mo.disconnect();ok();}});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-page']});});}
-function ready(){if(pre)return pre;
- pre=away().then(function(){
- if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return false;
- var load=(window.CB&&CB.ids)?Promise.resolve():window.PT_LAZY_PRELOAD('combo');
- return load.then(function(){return new Promise(function(ok){var n=0,iv=setInterval(function(){n++;var live=0;try{live=CB.live().rev;}catch(e){}if(live>0||n>60){clearInterval(iv);ok(!!(window.CB&&CB.ids));}},100);});},function(){return false;});});return pre;}
+/* Prime the combo list only while the PC move sheet is displayed. */
+function onSheet(){
+ return typeof window.pageNow==='function'&&window.pageNow()==='sheet';
+}
+function ready(){
+ if(pre)return pre;
+ if(!window.PT_LAZY_PRELOAD&&!(window.CB&&CB.ids))return Promise.resolve(false);
+ const load=(window.CB&&CB.ids)?Promise.resolve():window.PT_LAZY_PRELOAD('combo');
+ pre=load.then(function(){
+  return new Promise(function(resolve){
+   let polls=0;
+   const timer=setInterval(function(){
+    let revision=0;
+    try{revision=CB.live().rev;}catch(e){}
+    if(revision>0||++polls>=60){
+     clearInterval(timer);
+     resolve(!!(window.CB&&CB.linker));
+    }
+   },100);
+  });
+ },function(){return false;}).then(function(ok){
+  if(!ok)pre=null;
+  return ok;
+ });
+ return pre;
+}
 function linker(char){if(!window.CB||!CB.linker)return null;try{return CB.linker(char,true);}catch(e){return null;}}
 function find(char,cmd,lk){try{return (lk||linker(char))(cmd).sort(function(a,b){return a.no-b.no;});}catch(e){return[];}}
 function close(ret){if(!bubble)return;bubble.remove();var o=owner;bubble=null;owner=null;if(o){o.setAttribute('aria-expanded','false');if(ret)o.focus();}}
@@ -46,18 +64,44 @@ function decorate(zone,trigger,char,name,cmd,lk){
   trigger.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target===trigger){e.preventDefault();toggle(e);}});
   return true;}}
 function charOf(tr){var e=tr.querySelector('.pt-ic[data-c]');return e?e.dataset.c:'';}
-var busy=false,again=false;
+var busy=false,scheduled=false;
+function pendingRows(){
+ return Array.from(sheet.querySelectorAll('tbody tr[data-cmd]')).filter(function(row){
+  return !row.dataset.cblink&&row.querySelector('td.name .nm .nt');
+ });
+}
 function scan(){
- if(busy){again=true;return;}
- var rows=[].filter.call(document.querySelectorAll('tbody tr[data-cmd]'),function(tr){return !tr.dataset.cblink&&tr.querySelector('td.name .nm .nt');});
- if(!rows.length)return;rows.forEach(function(tr){tr.dataset.cblink='1';});busy=true;
- ready().then(function(ok){if(!ok)return;var lks={};
-  rows.forEach(function(tr){if(!tr.isConnected)return;var ch=charOf(tr);if(!ch)return;var lk=lks[ch]||(lks[ch]=linker(ch));if(!lk)return;
-   var nm=tr.querySelector('td.name .nm'),nt=nm.querySelector('.nt');decorate(nm,nt,ch,nt.textContent.trim(),tr.dataset.cmd||'',lk);});
- }).then(function(){busy=false;if(again){again=false;scan();}});}
+ if(busy||!onSheet()||!pendingRows().length)return;
+ busy=true;
+ ready().then(function(ok){
+  if(!ok||!onSheet())return;
+  const linkers=new Map();
+  pendingRows().forEach(function(row){
+   const character=charOf(row);
+   if(!character)return;
+   if(!linkers.has(character))linkers.set(character,linker(character));
+   const match=linkers.get(character);
+   if(!match)return;
+   const cell=row.querySelector('td.name .nm'),trigger=cell.querySelector('.nt');
+   decorate(cell,trigger,character,trigger.textContent.trim(),row.dataset.cmd||'',match);
+   row.dataset.cblink='1';
+  });
+ }).finally(function(){busy=false;});
+}
+function schedule(){
+ if(busy||scheduled||!onSheet())return;
+ scheduled=true;
+ requestAnimationFrame(function(){scheduled=false;scan();});
+}
 document.addEventListener('click',function(e){var zone=owner&&(owner.closest('.cblink-hit')||owner);if(bubble&&!bubble.contains(e.target)&&!(zone&&zone.contains(e.target)))close(false);},true);
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&bubble){e.stopPropagation();close(true);}},true);
 window.addEventListener('resize',function(){close(false);});
-new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
-scan();
+const sheet=document.getElementById('viewSheet');
+if(!sheet)return;
+new MutationObserver(schedule).observe(sheet,{childList:true,subtree:true});
+new MutationObserver(function(){
+ if(!onSheet()){close(false);return;}
+ schedule();
+}).observe(document.documentElement,{attributes:true,attributeFilter:['data-page']});
+schedule();
 })();
