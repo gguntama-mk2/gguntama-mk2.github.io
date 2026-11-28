@@ -6,7 +6,7 @@
 (function () {
   "use strict";
   var C = null, api = null, csrf = null, ui = {};
-  var S = { status: null, current: null, published: null, loading: false, err: "" };
+  var S = { status: null, current: null, published: null, loading: false, busy: false, err: "" };
   function h() { return C.ui.h.apply(null, arguments); }
   function btn() { return C.ui.btn.apply(null, arguments); }
   function fmt(ts) { if (!ts) return "—"; try { return new Date(ts * 1000).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", hour12: false }); } catch (_) { return String(ts); } }
@@ -48,48 +48,77 @@
   function say(t, state) { if (ui.note) { ui.note.textContent = t; ui.note.dataset.state = state || "neutral"; } }
   function errText(e) { var d = e && e.detail; return (d && (d.message || (d.errors && d.errors[0]))) || (e && e.message) || String(e); }
   async function load() {
+    if (S.loading) return;
     S.loading = true; S.err = ""; draw();
     try {
-      S.status = await api("/api/v1/admin/community");
-      S.current = S.status.current;
-      S.published = S.current ? (await api("/api/v1/admin/community/history/" + S.current)).data : null;
+      var status = await api("/api/v1/admin/community", {fresh:true});
+      if (!status || !Array.isArray(status.entries) || (status.current !== null && !Number.isSafeInteger(status.current))) throw Error("公開状態の応答が不正です");
+      var snapshot = status.current ? await api("/api/v1/admin/community/history/" + status.current, {fresh:true}) : null;
+      if (snapshot && (snapshot.version !== status.current || !snapshot.data)) throw Error("公開データの版が一致しません");
+      S.status = status; S.current = status.current; S.published = snapshot ? snapshot.data : null;
     } catch (e) { S.err = "公開の状態を読めませんでした：" + errText(e); S.status = null; S.published = null; S.current = null; }
     S.loading = false; draw();
   }
-  async function publish() {
-    var dr = C.getState(); delete dr.savedAt;
-    var er = C.validate(dr); if (er.length) return say("公開できません（下書きに問題があります）：" + er.slice(0, 3).join(" / "), "error");
-    var d = diff(S.published, dr);
-    if (S.published && !d.total) return say("下書きと公開中の内容が同じなので、公開するものがありません。", "ok");
-    var note = (ui.noteInput && ui.noteInput.value || "").trim().slice(0, 120);
-    var okd = await confirmModal("公開サイトに反映します", [h("p", { text: "公開中：" + (S.current ? "版 " + S.current : "なし") + " → 新しい版として公開します。差分：" }), diffView(d, !!S.published), h("p", { text: "公開すると、サイトを開いている人には1〜2分以内に反映されます。以前の版には「履歴」から戻せます。" })], "公開する");
-    if (!okd) return;
-    say("公開しています…", "neutral");
-    try {
-      var r = await api("/api/v1/admin/community/publish", { method: "POST", body: { data: dr, note: note, expected_version: S.current } });
-      if (ui.noteInput) ui.noteInput.value = "";
-      if (r.changed && C.markSaved) C.markSaved();
-      await load();
-      say(r.changed ? "公開しました（版 " + r.current + "）。" : "公開中の内容と同じだったため、新しい版は作られませんでした。", "ok");
-    } catch (e) {
-      if (e && e.status === 409) { await load(); say("公開できませんでした：ほかの人が先に公開しています。いま公開中の内容と差分を確かめてから、もう一度公開してください。", "error"); }
-      else say("公開できませんでした：" + errText(e), "error");
+  async function run(action) {
+    if (S.busy || S.loading || S.err || !S.status) return;
+    S.busy = true;
+    try { await action(); }
+    catch(e) {
+      if (e.status === 409) { await load(); say("公開版が変わりました。最新の差分を確認してください。", "error"); }
+      else if (e.unknownWrite) { await load(); say(e.message, "error"); }
+      else say(errText(e), "error");
+    } finally { S.busy = false; }
+  }
+  function checkedResult(r, version) {
+    if (!r || typeof r.changed !== "boolean" || !Number.isSafeInteger(r.current) ||
+        (r.changed ? r.current <= (version || 0) : r.current !== version)) {
+      var e = Error("公開結果を確認できません。公開中の版を確認してから操作してください。");
+      e.unknownWrite = true; throw e;
     }
   }
-  async function rollback(ver) {
-    var okd = await confirmModal("以前の版に戻します", [h("p", { text: "公開中の内容を、版 " + ver + " の内容に戻します（新しい版として公開されます）。手元の下書きは変わりません。" })], "この版に戻す", true);
-    if (!okd) return;
-    try { var r = await api("/api/v1/admin/community/rollback", { method: "POST", body: { version: ver, expected_version: S.current } }); await load(); say("版 " + ver + " の内容で公開し直しました（版 " + r.current + "）。", "ok"); }
-    catch (e) { if (e && e.status === 409) await load(); say("戻せませんでした：" + errText(e), "error"); }
+  function draft() {
+    var dr = C.getState(); delete dr.savedAt; return dr;
   }
-  async function pull(ver) {
-    var okd = await confirmModal("公開中の版を下書きに取り込みます", [h("p", { text: "手元の下書きを、版 " + ver + " の内容で置き換えます。いまの下書きは「直前に戻す」で1回分だけ戻せます。" })], "下書きに取り込む", true);
-    if (!okd) return;
-    try {
-      var r = await api("/api/v1/admin/community/history/" + ver);
-      if (C.replaceState(r.data, "版 " + ver + " を下書きに取り込みました。")) { C.redraw(); draw(); say("版 " + ver + " を下書きに取り込みました。プレイヤー管理・トーナメント管理の画面に反映されています。", "ok"); }
-      else say("下書きに取り込めませんでした（下書きの保存に失敗）。", "error");
-    } catch (e) { say("取り込めませんでした：" + errText(e), "error"); }
+  function publish() {
+    return run(async function() {
+      if (!C.sameStorage()) return say("別タブの下書きが更新されています。最新の下書きを開き直してください。", "error");
+      var dr = draft(), rev = S.current, before = canon(dr), er = C.validate(dr);
+      if (er.length) return say("下書きに問題があります：" + er.slice(0, 3).join(" / "), "error");
+      var d = diff(S.published, dr);
+      if (S.published && !d.total) return say("下書きと公開中の内容は同じです。", "ok");
+      var note = (ui.noteInput && ui.noteInput.value || "").trim().slice(0, 120);
+      var okd = await confirmModal("公開サイトに反映します", [h("p", { text: "公開中：" + (rev ? "版 " + rev : "なし") }), diffView(d, !!S.published)], "公開する");
+      if (!okd) return;
+      if (!C.sameStorage() || canon(draft()) !== before) return say("確認中に下書きが変わりました。差分を確認し直してください。", "error");
+      say("公開しています…", "neutral");
+      var r = await api("/api/v1/admin/community/publish", { method: "POST", body: { data: dr, note: note, expected_version: rev } });
+      checkedResult(r, rev);
+      if (r.changed && C.sameStorage() && canon(draft()) === before) C.markSaved();
+      await load();
+      say(r.changed ? "公開しました（版 " + r.current + "）。" : "すでに公開済みの内容です。", "ok");
+    });
+  }
+  function rollback(ver) {
+    return run(async function() {
+      var rev = S.current;
+      if (!(await confirmModal("以前の版に戻します", [h("p", { text: "公開中の内容を版 " + ver + " に戻します。手元の下書きは変更されません。" })], "この版に戻す", true))) return;
+      var r = await api("/api/v1/admin/community/rollback", { method:"POST", body:{version:ver,expected_version:rev} });
+      checkedResult(r, rev);
+      await load(); say(r.changed ? "版 " + ver + " の内容で公開しました（版 " + r.current + "）。" : "すでに同じ内容が公開されています。", "ok");
+    });
+  }
+  function pull(ver) {
+    return run(async function() {
+      var before = canon(draft());
+      if (!C.sameStorage()) return say("別タブの下書きが更新されています。最新の下書きを開き直してください。", "error");
+      if (!(await confirmModal("公開履歴を下書きに取り込みます", [h("p", { text: "手元の下書きを、版 " + ver + " の内容で置き換えます。直前の保存版は1回分戻せます。" })], "下書きに取り込む", true))) return;
+      var r = await api("/api/v1/admin/community/history/" + ver, {fresh:true});
+      if (!C.sameStorage() || canon(draft()) !== before) return say("確認中に下書きが変わりました。現在の下書きは保持しています。", "error");
+      if (!r || r.version !== ver || !r.data) throw Error("取得した履歴の版を確認できません");
+      if (C.replaceState(r.data, "版 " + ver + " を下書きに取り込みました。")) {
+        C.redraw(); draw(); say("版 " + ver + " を下書きに取り込みました。", "ok");
+      } else say("下書きに取り込めませんでした。", "error");
+    });
   }
   function confirmModal(title, body, okLabel, danger) {
     if (window.PTAdminModal) return window.PTAdminModal(title, body, okLabel, danger);
@@ -100,7 +129,7 @@
     var card = h("section", { class: "card" }); card.appendChild(h("h2", { text: "公開（プレイヤー・大会・イベント）" }));
     card.appendChild(h("p", { class: "pt-cm-sub", text: "プレイヤー管理・トーナメント管理で編集した下書きを、公開サイト（www.project-t-god.com）に反映します。公開のたびに「版」が1つ増え、履歴から以前の版に戻せます。" }));
     if (S.loading) { card.appendChild(h("p", { text: "公開の状態を読み込んでいます…" })); el.appendChild(card); return; }
-    if (S.err) { card.appendChild(h("p", { class: "pt-pb-err", text: S.err })); card.appendChild(btn("読み直す", load)); el.appendChild(card); return; }
+    if (S.err) { card.appendChild(h("p", { class: "pt-pb-err", text: S.err })); card.appendChild(btn("読み直す", function(){if(!S.busy) load();})); el.appendChild(card); return; }
     var dr = C.getState(); delete dr.savedAt;
     var cur = S.status && S.status.entries.filter(function (e) { return e.version === S.current; })[0];
     var st = h("div", { class: "pt-pb-status" }, [
@@ -111,7 +140,7 @@
     card.appendChild(h("h3", { text: "下書きと公開中の差分" }));
     card.appendChild(diffView(d, !!S.published));
     ui.noteInput = h("input", { type: "text", maxlength: "120", placeholder: "この公開のメモ（任意。例：韓国のプレイヤー3名を追加）" });
-    var bar = h("div", { class: "pt-cm-bar" }, [ui.noteInput, btn("この下書きを公開する", publish, "primary"), btn("読み直す", load)]);
+    var bar = h("div", { class: "pt-cm-bar" }, [ui.noteInput, btn("この下書きを公開する", publish, "primary"), btn("読み直す", function(){if(!S.busy) load();})]);
     if (S.published) bar.appendChild(btn("公開中の内容を下書きに取り込む", function () { pull(S.current); }));
     card.appendChild(bar);
     ui.note = h("p", { role: "status", "aria-live": "polite" }); card.appendChild(ui.note);
@@ -137,7 +166,7 @@
   }
   window.PTAdminCommunityPublish = Object.freeze({
     mount: function (el, context) { C = window.PTAdminCommunity; api = context.api; csrf = context.csrf; ui.root = el; load(); },
-    refresh: function () { if (ui.root) load(); },
+    refresh: function () { if (ui.root && !S.busy) load(); },
     _test: { diff: diff, canon: canon }
   });
 })();

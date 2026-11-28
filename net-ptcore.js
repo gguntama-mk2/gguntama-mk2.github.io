@@ -74,10 +74,10 @@
   }
   /* 組み込み(原本)との差だけを上書きとして持つ */
   function slotEq(a, b) { return canon({ mode: a.mode, moves: a.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att, review: m.review }; }) }) === canon({ mode: b.mode, moves: b.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att, review: m.review }; }) }); }
-  function overrides(slots, builtin) { var bm = {}; builtin.forEach(function (s) { bm[s.slot_id] = s; }); var out = []; slots.forEach(function (s) { var b = bm[s.slot_id]; if (b) { if (!slotEq(s, b)) out.push(clone(s)); } else if (!(s.mode === "auto" && !s.moves.length)) out.push(clone(s)); }); return order(out); }
+  function overrides(slots, builtin) { var bm = {}; builtin.forEach(function (s) { bm[s.slot_id] = s; }); var out = []; slots.forEach(function (s) { var b = bm[s.slot_id]; if (b) { if (!slotEq(s, b)) out.push(clone(s)); } else if (!(s.mode === "auto" && !s.moves.length && !s.custom)) out.push(clone(s)); }); return order(out); }
   function applyOverrides(builtin, ovr) { var m = {}; clone(builtin).forEach(function (s) { m[s.slot_id] = s; }); (ovr || []).forEach(function (o) { m[o.slot_id] = clone(o); }); return order(Object.keys(m).map(function (k) { return m[k]; })); }
   function summary(slots) { var m = {}; slots.forEach(function (s) { m[s.slot_id] = s.mode + ":" + s.moves.map(function (x) { return x.k + (x.att ? "*" : ""); }).join(","); }); return m; }
-  function diff(a, b) { var A = summary(a), B = summary(b), out = []; Object.keys(Object.assign({}, A, B)).sort().forEach(function (k) { if ((A[k] || "auto:") !== (B[k] || "auto:")) out.push({ slot: k, before: A[k] || "auto:", after: B[k] || "auto:" }); }); return out; }
+  function diff(a, b) { var A = summary(a), B = summary(b), out = []; Object.keys(Object.assign({}, A, B)).sort().forEach(function (k) { var fallback = STD.indexOf(frameOf(k)) >= 0 ? "auto:" : "未設定"; if ((A[k] || fallback) !== (B[k] || fallback)) out.push({ slot: k, before: A[k] || fallback, after: B[k] || fallback }); }); return out; }
   /* PN-K1: 公開前の保留(HOLD)判定。未決事項を勝手に確定せず、公開だけを止める。下書き保存は妨げない。
      HOLD_AUTO_MEANING  : 原本のある枠を「自動」にした場合の意味が未決(解除は独立承認証拠を検証したサーバーが policy.auto_meaning===true を渡した場合のみ)。
      HOLD_MIXED_RESOLVER: NET原本が無いキャラに手動の枠を入れると他枠の自動結果が消える問題が未解決(解除は実解決器との一致証拠つきの検証済み承認で policy.mixed_resolver===true の場合のみ)。 */

@@ -7,7 +7,7 @@
   var API = location.hostname === "www.project-t-god.com" ? "https://api.project-t-god.com" : "";
   var CHAR_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
   var make = function (tag, text, cls) { var x = document.createElement(tag); if (text !== undefined) x.textContent = text; if (cls) x.className = cls; return x; };
-  var ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = { c: {}, g: {}, a: {} }, bulkMode = "add";
+  var busy = false, ctx, host, characters = [], overrides = {}, catalog = [], sel = null, ui = {}, checked = {}, bulkPick = { c: {}, g: {}, a: {} }, bulkMode = "add";
   var ckey = function (c, k) { return c + "/" + k; };
   var nChecked = function () { return Object.keys(checked).length; };
 
@@ -16,8 +16,9 @@
     var headers = Object.assign({}, init.headers || {});
     if (init.method === "POST") { headers["X-CSRF-Token"] = ctx.csrf(); headers["Content-Type"] = "application/json"; }
     var res = await fetch(API + path, Object.assign({ credentials: "include" }, init, { headers: headers }));
-    var body = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : "HTTP " + res.status);
+    var body = await res.json().catch(function () { return null; });
+    if (!res.ok) throw new Error(body && typeof body.detail === "string" ? body.detail : "HTTP " + res.status);
+    if (!body || typeof body !== "object") throw new Error("応答を確認できません。現在の設定を読み直してください。");
     return body;
   }
   function say(text, state) { ui.note.textContent = text; ui.note.dataset.state = state || "neutral"; }
@@ -113,33 +114,48 @@
     var names = keys.slice(0, 8).map(function (k) { var c = checked[k]; return c.cname + " " + c.k + " " + c.name; });
     ui.editor.appendChild(make("p", "保存を押すまで、チェックもアイコンの選択も残ります。対象：" + names.join("、") + (n > 8 ? " ほか" + (n - 8) + "件" : ""), "pt-mi-hint"));
   }
+  function canWrite() {
+    if (busy) return false;
+    if (ctx.catalogReady && !ctx.catalogReady()) { say("公開技表の読込をお待ちください。", "error"); return false; }
+    return true;
+  }
+  async function writeIcon(target, which, picked) {
+    var body = {character_id:target.char, site_k:target.k, catalog_version:target.catalogVersion};
+    if (which === "set") Object.assign(body,{move_name:target.name,icons:picked.c,ground:picked.g,air:picked.a});
+    var r = await request("/api/v1/admin/move-icons/" + which,{method:"POST",body:JSON.stringify(body)});
+    if (r.character_id !== target.char || r.site_k !== target.k)
+      throw Error("応答を確認できません。現在の設定を読み直してください。");
+  }
   async function bulkAct(which) {
-    var keys = Object.keys(checked), picked = pickedOf(), any = picked.c.length + picked.g.length + picked.a.length;
+    if (!canWrite()) return;
+    var targets = Object.assign({}, checked), mode = bulkMode;
+    var keys = Object.keys(targets), picked = pickedOf(), any = picked.c.length + picked.g.length + picked.a.length;
     if (!keys.length) return;
     if (which === "set" && ["c", "g", "a"].some(function (z) { return picked[z].length > 6; })) { say("アイコンは、1つの欄に6つまでです。", "error"); return; }
     if (which === "reset" && !confirm(keys.length + "件の技のアイコン設定を消して、自動の判定に戻しますか？")) return;
     if (which === "set" && !any && bulkMode !== "replace") { say("追加・取り外しするアイコンを選んでください。", "error"); return; }
     if (which === "set" && !any && !confirm("アイコンが1つも選ばれていません。" + keys.length + "件を「アイコンなし」にしますか？")) return;
+    busy = true;
     var btns = ui.editor.querySelectorAll("button"); btns.forEach(function (b) { b.disabled = true; });
     var done = 0, skipped = 0, failed = [], i = 0;
     async function worker() {
       while (i < keys.length) {
-        var key = keys[i++], c = checked[key];
+        var key = keys[i++], c = targets[key];
         try {
           var next = picked;
-          if (which === "set" && bulkMode !== "replace") {          // 追加／取り外し：その技のいまのアイコン（管理者の設定、なければ自動）を欄ごとにもとにして計算する
+          if (which === "set" && mode !== "replace") {          // 追加／取り外し：その技のいまのアイコン（管理者の設定、なければ自動）を欄ごとにもとにして計算する
             var cur = effective(c.char, c.mv, c.k).place; next = {};
-            ["c", "g", "a"].forEach(function (z) { next[z] = order(bulkMode === "add" ? cur[z].concat(picked[z]) : cur[z].filter(function (x) { return picked[z].indexOf(x) < 0; })); });
+            ["c", "g", "a"].forEach(function (z) { next[z] = order(mode === "add" ? cur[z].concat(picked[z]) : cur[z].filter(function (x) { return picked[z].indexOf(x) < 0; })); });
             if (["c", "g", "a"].some(function (z) { return next[z].length > 6; })) throw new Error("アイコンが6つを超えます");
-            if (["c", "g", "a"].every(function (z) { return next[z].join() === cur[z].join(); })) { delete checked[key]; skipped++; continue; }   // 変わらない技は、書き込まない
+            if (["c", "g", "a"].every(function (z) { return next[z].join() === cur[z].join(); })) { if (checked[key] === c) delete checked[key]; skipped++; continue; }   // 変わらない技は、書き込まない
           }
-          await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: c.char, site_k: c.k, move_name: c.name, icons: next.c, ground: next.g, air: next.a } : { character_id: c.char, site_k: c.k }) });
-          delete checked[key]; done++;
+          await writeIcon(c, which, next);
+          if (checked[key] === c) delete checked[key]; done++;
         } catch (e) { failed.push(c.name + "（" + e.message + "）"); }
         say("保存中… " + (done + failed.length) + " / " + keys.length, "neutral");
       }
     }
-    await Promise.all([worker(), worker(), worker(), worker()]);
+    try { await Promise.all([worker(), worker(), worker(), worker()]); } finally { busy = false; }
     try { await loadOverrides(); } catch (e) {}
     if (!failed.length) bulkPick = { c: {}, g: {}, a: {} };
     updateBulkBar(); renderList(); closeEditor();
@@ -176,7 +192,7 @@
       var b = make("button", "選ぶ"); b.type = "button"; b.className = "btn"; b.addEventListener("click", function () { choose(c, mv, k); });
       var bt = make("td"); bt.appendChild(b); tr.appendChild(bt);
       var ck = make("td", undefined, "pt-mi-ck"), cb = make("input"), key = ckey(c.id, k); cb.type = "checkbox"; cb.checked = !!checked[key]; cb.setAttribute("aria-label", mv.name + "を一括設定の対象にする");
-      var entry = { char: c.id, cname: c.name, k: k, name: mv.name, mv: mv };
+      var entry = { char: c.id, cname: c.name, k: k, name: mv.name, mv: mv, catalogVersion: c.catalogVersion };
       cb.addEventListener("change", function () { if (cb.checked) checked[key] = entry; else delete checked[key]; syncAll(); onCheckChange(); });
       visible.push({ cb: cb, key: key, entry: entry });
       ck.appendChild(cb); tr.appendChild(ck);
@@ -193,7 +209,7 @@
     }
   }
   function choose(c, mv, k) {
-    sel = { char: c.id, k: k, name: mv.name, mv: mv };
+    sel = { char: c.id, k: k, name: mv.name, mv: mv, catalogVersion: c.catalogVersion };
     renderList();                                                  // 選んだ行に印を付ける（ページの位置は動かさない）
     var e = effective(c.id, mv, k), have = { c: {}, g: {}, a: {} }; ["c", "g", "a"].forEach(function (z) { e.place[z].forEach(function (id) { have[z][id] = 1; }); });
     ui.editor.replaceChildren(); ui.editor.dataset.open = "1"; if (ui.backdrop) ui.backdrop.hidden = false;
@@ -208,20 +224,29 @@
     ui.editor.appendChild(make("p", "自動の判定　" + placeText(autoPlace(c.id, mv)) + (e.custom ? "　（いまは管理者の設定が優先されています）" : ""), "pt-mi-hint"));
   }
   async function act(btn, which) {
-    if (!sel) return;
-    var picked = pickedOf();
+    if (!sel || !canWrite()) return;
+    var target = sel, picked = pickedOf();
     if (which === "set" && ["c", "g", "a"].some(function (z) { return picked[z].length > 6; })) { say("アイコンは、1つの欄に6つまでです。", "error"); return; }
-    if (which === "reset" && !confirm(sel.name + " のアイコン設定を消して、自動の判定に戻しますか？")) return;
-    btn.disabled = true;
+    if (which === "reset" && !confirm(target.name + " のアイコン設定を消して、自動の判定に戻しますか？")) return;
+    busy = true; btn.disabled = true;
     try {
-      await request("/api/v1/admin/move-icons/" + which, { method: "POST", body: JSON.stringify(which === "set" ? { character_id: sel.char, site_k: sel.k, move_name: sel.name, icons: picked.c, ground: picked.g, air: picked.a } : { character_id: sel.char, site_k: sel.k }) });
-      say(sel.name + (which === "set" ? " のアイコンを保存しました。公開サイトには、1分ほどで反映されます。" : " を自動の判定に戻しました。"), "ok");
-      await loadOverrides(); var c = currentChar(), mv = sel.mv, k = sel.k; if (c) choose(c, mv, k);
-    } catch (e) { say("保存できませんでした：" + e.message, "error"); btn.disabled = false; }
+      await writeIcon(target, which, picked);
+      say(target.name + (which === "set" ? " のアイコンを保存しました。" : " を自動の判定に戻しました。"), "ok");
+      try { await loadOverrides(); }
+      catch (_) { say("保存は完了しましたが、設定一覧を取得できませんでした。", "error"); return; }
+      var c = currentChar();
+      if (sel === target && c && c.id === target.char) choose(c, target.mv, target.k);
+      else renderList();
+    } catch (e) { say("保存結果：" + e.message, "error"); }
+    finally { busy = false; btn.disabled = false; }
   }
   function setCharacters(list) {
     characters = Array.isArray(list) ? list.filter(function (c) { return c && CHAR_RE.test(c.id) && Array.isArray(c.moves); }) : [];
     if (!ui.char) return;
+    Object.keys(checked).forEach(function(key) {
+      var t=checked[key], c=characters.find(function(ch){return ch.id===t.char;});
+      if (!c || c.catalogVersion !== t.catalogVersion || !c.moves.some(function(m){return m.k===t.k && m.name===t.name;})) delete checked[key];
+    });
     var prev = ui.char.value; ui.char.replaceChildren();
     characters.forEach(function (c) { var o = make("option", c.name + "（" + (c.en || c.id) + "）"); o.value = c.id; ui.char.appendChild(o); });
     if (characters.some(function (c) { return c.id === prev; })) ui.char.value = prev;

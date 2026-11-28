@@ -74,6 +74,7 @@
     var method = opt.method || "GET", read = method === "GET", init = { method: method, credentials: "include", headers: {} };
     if (!read) { init.headers["Content-Type"] = "application/json"; init.headers["X-CSRF-Token"] = S.csrf; init.body = JSON.stringify(opt.body || {}); }
     if (typeof AbortController !== "function") throw new Error("この環境では通信の時間制限が使えません");
+    if (read && opt.fresh) init.cache = "no-store";
     var ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, read ? 45000 : 120000);
     init.signal = ac.signal;
     var r, raw, data = null, bad = false;
@@ -88,7 +89,15 @@
       var je = new Error(read ? "サーバーの返答を読めませんでした" : "書き込み結果が不明です。再送せず、最新の状態を確認してください。"); je.unknownWrite = !read; throw je;
     }
     // 明示的なCSRF拒否のみ従来どおり再認証。通信断・本文失敗・結果不明は再送しない。
-    if (r.status === 403 && !read && !opt.retried && data && /CSRF/.test(String(data.detail))) { await loadMe(); return api(path, Object.assign({}, opt, { retried: true })); }
+    if (r.status === 403 && !read && !opt.retried && data && /CSRF/.test(String(data.detail))) {
+      var principal = S.me && S.me.project_t_id;
+      var current = await api("/api/v1/me");
+      if (!principal || current.project_t_id !== principal || current.is_admin !== true || typeof current.csrf_token !== "string") {
+        var auth = new Error("同じ管理者でログインし直してください。編集内容は保持しています。"); auth.status = 403; throw auth;
+      }
+      S.me = current; S.csrf = current.csrf_token;
+      return api(path, Object.assign({}, opt, { retried: true }));
+    }
     if (!r.ok) {
       var d = data && data.detail, e = new Error(typeof d === "string" ? d : (d && d.message) || ("HTTP " + r.status));
       e.status = r.status; e.detail = d;
@@ -155,8 +164,8 @@
     $("#tabs").hidden = false; loadChoiceEdit();
     $("#tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
     app.replaceChildren(sec.sheet, sec.net, sec.users, sec.audit, sec.media, sec.icons, sec.combo, sec.px, sec.players, sec.tournaments, sec.publish, sec.cloud);
-    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); } });
-    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, win: function () { return S.win; } });
+    window.PTAdminMoveMedia.mount(sec.media, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, catalogReady: catalogReady });
+    window.PTAdminMoveIcons.mount(sec.icons, { csrf: function () { return S.csrf; }, characters: function () { return effChars(); }, catalogReady: catalogReady, win: function () { return S.win; } });
     window.PTAdminComboVideos.mount(sec.combo, { csrf: function () { return S.csrf; } });      // コンボ動画登録（コンボ集のコンボに YouTube の動画を登録）
     var comCtx = { characters: function () { return S.chars || []; } };
     window.PTAdminCommunity.mountPlayers(sec.players, comCtx); window.PTAdminCommunity.mountTournaments(sec.tournaments, comCtx);
@@ -175,42 +184,51 @@
         h("a", { class: "btn primary", href: API + "/auth/discord/start?mode=login&return_to=" + back, text: "Discord でログイン" }),
         h("a", { class: "btn", href: API + "/auth/google/start?mode=login&return_to=" + back, text: "Google でログイン" }))));
   }
-  // 技名・コマンドを技チェックシートで変えたら、アイコン設定・技動画登録にも同じ内容を出す
-  // いま開いているキャラ＝編集中の内容／ほかのキャラ＝保存済みの下書き（なければ公開中の内容、なければ元データ）
+  // 公開IDに結び付く登録画面には、公開中の技だけを渡す。
   function effChars() {
+    if (!S.ovMoves) return [];
     return (S.chars || []).map(function (c) {
-      var mv = S.cur && S.cur.id === c.id && Array.isArray(S.cur.moves) ? S.cur.moves : (S.ovMoves && S.ovMoves[c.id]);
-      return Array.isArray(mv) ? { id: c.id, en: c.en, name: c.name, moves: mv } : c;
+      return Object.prototype.hasOwnProperty.call(S.ovMoves, c.id) ?
+        Object.assign({}, c, { moves: S.ovMoves[c.id].moves, catalogVersion: S.ovMoves[c.id].version }) : Object.assign({}, c, { catalogVersion: null });
     });
   }
-  function syncMoveTabs(force) {
-    try {
-      if (!S.chars) return;
-      var sig = (S.cur ? S.cur.id + "|" + JSON.stringify((S.cur.moves || []).map(function (m) { return [m.k, m.name, m.a && m.a.command]; })) : "") + "|" + (S._ovVer || 0);
-      if (!force && S._effSig === sig && S._effBase === S.chars) return;
-      S._effSig = sig; S._effBase = S.chars;
-      var e = effChars(); window.PTAdminMoveIcons.updateCharacters(e); window.PTAdminMoveMedia.updateCharacters(e);
-    } catch (x) { console.error("[admin] アイコン・動画の一覧への反映に失敗しました", x); }
+  function syncMoveTabs() {
+    var moves = effChars();
+    window.PTAdminMoveIcons.updateCharacters(moves);
+    window.PTAdminMoveMedia.updateCharacters(moves);
   }
-  async function loadOverlays() {
-    var gen = (S._ovGen = (S._ovGen || 0) + 1);
-    if (!S.ovr || !S.chars) return;
-    S.ovMoves = S.ovMoves || {};
-    var mv = S.ovMoves, my = baseSeq, ov = S.ovr, chars = S.chars, cc = S.cur, edit = S._editSeq, write = S._writeSeq, opening = S._openSeq;
-    function valid() { return gen === S._ovGen && my === baseSeq && mv === S.ovMoves && ov === S.ovr && chars === S.chars && cc === S.cur && edit === S._editSeq && write === S._writeSeq && opening === S._openSeq; }
-    var ids = Object.keys(ov).filter(function (id) { return !(id in mv) && !(cc && cc.id === id); });
-    if (!ids.length) return;
-    var pending = Object.create(null);
-    for (var i = 0; i < ids.length; i += 6) {
-      await Promise.all(ids.slice(i, i + 6).map(async function (id) {
-        try { var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(id)); if (!valid()) return; pending[id] = r.exists ? r.moves : (r.published ? r.published.moves : null); }
-        catch (e) { /* 取れなかったキャラは元データのまま表示する */ }
-      }));
-      if (!valid()) return;
-    }
-    if (!valid()) return;
-    Object.keys(pending).forEach(function (id) { if (!(id in mv) && !(S.cur && S.cur.id === id)) mv[id] = pending[id]; });
-    S._ovVer = (S._ovVer || 0) + 1; syncMoveTabs(); updateCharCounts();
+  function loadOverlays() {
+    if (!S.chars.length || S._overlayRead) return;
+    var gen = baseSeq, token = S._overlayToken || 0;
+    S._overlayRead = api("/api/v1/checksheet/overrides", {fresh:true}).then(function (r) {
+      if (gen !== baseSeq || token !== (S._overlayToken || 0)) return;
+      if (!r || r.schema !== 1 || !r.characters || Array.isArray(r.characters) || typeof r.characters !== "object")
+        throw new Error("公開技表の応答が不正です");
+      var moves = Object.create(null);
+      Object.keys(r.characters).forEach(function (id) {
+        if (!Array.isArray(r.characters[id].moves)) throw new Error("公開技表の技一覧が不正です");
+        if (!Number.isSafeInteger(r.characters[id].version)) throw new Error("公開技表の版が不正です");
+        moves[id] = r.characters[id];
+      });
+      var same = S.ovMoves && Object.keys(moves).length === Object.keys(S.ovMoves).length &&
+        Object.keys(moves).every(function(id){return S.ovMoves[id] && S.ovMoves[id].version === moves[id].version;});
+      S.ovMoves = moves;
+      if (!same) syncMoveTabs();
+    }).catch(function(e) {
+      if (gen !== baseSeq || token !== (S._overlayToken || 0)) return;
+      S.ovMoves = null;
+      ["icons", "media"].forEach(function(k) {
+        var old = sec[k].querySelector(".pt-public-moves-error"); if (old) old.remove();
+        sec[k].prepend(h("p", {class:"pt-public-moves-error", role:"alert",text:"公開技表を取得できませんでした。タブを開き直してください。" }));
+      });
+    }).finally(function() {
+      if (gen === baseSeq && token === (S._overlayToken || 0)) S._overlayRead = null;
+    });
+  }
+  function catalogReady() { return !!S.ovMoves && !S._overlayRead; }
+  function reloadMoveTabs() {
+    ["icons","media"].forEach(function(k) { var el=sec[k].querySelector(".pt-public-moves-error"); if(el) el.remove(); });
+    loadOverlays();
   }
   function setTab(t) {
     if (t === "net" && (!window.PTCurrentNet || !window.PTCurrentNet.allowed())) return;
@@ -218,10 +236,10 @@
     Object.keys(sec).forEach(function (k) { sec[k].hidden = k !== t; });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.tab === t)); });
     if (t === "net") window.PTCurrentNet.open();
-    if (t === "icons" || t === "media") { syncMoveTabs(); loadOverlays(); }
+    if (t === "icons" || t === "media") reloadMoveTabs();
     if (t === "users") loadUsers(); else if (t === "audit") loadAudit(); else if (t === "cloud") window.PTAdminCloudAnalysis.refresh(); else if (t === "publish") window.PTAdminCommunityPublish.refresh();
   }
-  window.addEventListener("beforeunload", function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
+  window.addEventListener("beforeunload", function (e) { if (S.dirty || S._sheetPending || S._unknownSheet) { e.preventDefault(); e.returnValue = ""; } });
 
   // ------------------------------------------------------------ 技チェックシート：骨組み
   var D = {};   // よく使う要素
@@ -241,11 +259,8 @@
     D.charPicker = h("select", { id: "ptSheetCharPicker", "aria-label": "編集するキャラクターを選ぶ", onchange: function (ev) {
       var id = ev.target.value;
       if (!id || (S.cur && id === S.cur.id)) return;
-      if (S.dirty && !confirm("保存していない変更があります。破棄して移動しますか？")) {
-        ev.target.value = S.cur ? S.cur.id : "";
-        return;
-      }
-      S.dirty = false; openChar(id);
+      ev.target.value = S.cur ? S.cur.id : "";
+      guardThen(function () { openChar(id); });
     } });
     sec.sheet.replaceChildren(D.banner, h("div", { class: "card pt-sheet-character-panel" },
       h("div", { class: "pt-sheet-mobile-picker" }, h("label", { for: "ptSheetCharPicker", text: "編集するキャラクター" }), D.charPicker),
@@ -340,7 +355,7 @@
   }
   function startBaseLoad(keep) {
     var my=++baseSeq, token=String(Date.now())+"-"+my;
-    S.cur=null; S.win=null; S.pageHash={}; S.ovMoves={}; S._ovVer=(S._ovVer||0)+1;
+    S.cur=null; S.win=null; S.pageHash={}; S.ovMoves=null; S._overlayRead=null; syncMoveTabs();
     D.charPicker.disabled=true; D.charPicker.replaceChildren();
     D.tool.replaceChildren(); D.editor.replaceChildren(); D.hist.replaceChildren(); D.diff.hidden=true;
     D.chars.textContent="元データ（サイトの技表）を読み込んでいます…"; banner("");
@@ -383,8 +398,7 @@
       var ov = {}; r.characters.forEach(function(c){ov[c.char_id]=c;});
       S.cols=snapshot.cols; S.tags=snapshot.tags; S.chars=snapshot.chars; S.pageHash=snapshot.hashes; S.ovr=ov; S.win=W;
       // Optional tabs must not interrupt a successfully loaded sheet.
-      try { window.PTAdminMoveMedia.updateCharacters(S.chars); } catch(e){console.error("[admin] media",e);}
-      try { window.PTAdminMoveIcons.updateCharacters(S.chars); } catch(e){console.error("[admin] icons",e);}
+      if (S.tab === "media" || S.tab === "icons") loadOverlays();
       try { window.PTAdminPxImages.updateCharacters(S.chars); } catch(e){console.error("[admin] px",e);}
       try { window.PTAdminComboVideos.updateData({characters:S.chars.map(function(c){return {id:c.id,name:c.name};}),combos:JSON.parse(W.eval("JSON.stringify(COMBOS)")),rev:JSON.parse(W.eval("JSON.stringify(typeof COMBOS_REV === 'number' ? COMBOS_REV : 0)"))}); comboNote(""); }
       catch(e){ try { window.PTAdminComboVideos.updateData({characters:S.chars,combos:{},rev:0}); lateCombos(W,my); } catch(x){console.error("[admin] combo",x);} }
@@ -395,7 +409,9 @@
   }
   function reloadBase() {
     if (S._sheetPending) { banner("warn", "保存・公開処理が完了するまでお待ちください。"); return; }
-    guardThen(function () { startBaseLoad(S.cur && S.cur.id); });
+    if (S.dirty) { banner("warn", "未保存の編集があります。先に下書きを保存するか、現在のキャラを読み込み直してから元データを更新してください。",
+      [{ label:"現在のキャラを読み込み直す", fn:function() { guardThen(function() { openChar(S.cur.id); }); } }]); return; }
+    startBaseLoad(S.cur && S.cur.id);
   }
   async function refreshOverview(my) {      // my：元データの読み込みの世代（古い世代の返事では、共有の状態もバナーも変えない）
     try { var r = await api("/api/v1/admin/checksheet"); if (my !== undefined && my !== baseSeq) return; var ov = {}; r.characters.forEach(function (c) { ov[c.char_id] = c; }); S.ovr = ov; }
@@ -411,7 +427,8 @@
   // キャラ選択に出す技の数：開いているキャラ＝編集中の数／ほかのキャラ＝保存済みの下書き（なければ公開中）の数／上書きなし＝元データの数
   function moveCount(c) {
     if (S.cur && S.cur.id === c.id && Array.isArray(S.cur.moves)) return S.cur.moves.length;
-    var mv = S.ovMoves && S.ovMoves[c.id]; return Array.isArray(mv) ? mv.length : c.moves.length;
+    var saved = S.ovr[c.id];
+    return saved && Number.isSafeInteger(saved.moves_count) ? saved.moves_count : c.moves.length;
   }
   function updateCharCounts() {
     if (!S.chars || !D.chars) return;
@@ -440,7 +457,11 @@
       D.chars.appendChild(h("button", { type: "button", "data-char": c.id, "aria-pressed": String(!!S.cur && S.cur.id === c.id), onclick: function () { guardThen(function () { openChar(c.id); }); } }, c.name + "（" + c.en + "）", " ", h("span", { class: "pt-cc", "data-char": c.id, text: moveCount(c) + "技" }), badge, stale));
     });
   }
-  function guardThen(fn) { if (S.dirty && !confirm("保存していない変更があります。破棄して移動しますか？")) return; S.dirty = false; fn(); }
+  function guardThen(fn) {
+    if (S._sheetPending) return;
+    if (S.dirty && !confirm("保存していない変更があります。次のデータを取得できた場合、いまの編集を破棄しますか？")) return;
+    fn();
+  }
 
   // ------------------------------------------------------------ キャラを開く
   function baseOf(id) { return S.chars.find(function (c) { return c.id === id; }); }
@@ -448,13 +469,15 @@
   window.addEventListener("resize", syncHeaderHeight); window.addEventListener("load", syncHeaderHeight); setTimeout(syncHeaderHeight, 300); setTimeout(syncHeaderHeight, 1500);
   async function openChar(id) {
     var base = baseOf(id); if (!base) return;
-    if (S.cur && S.cur.id !== id && S.ovMoves) { delete S.ovMoves[S.cur.id]; S._ovVer = (S._ovVer || 0) + 1; }   // 離れるキャラは、次にアイコン・動画の一覧を開くとき最新を取り直す
     banner("", "読み込み中…");
     var r, seq = (S._openSeq = (S._openSeq || 0) + 1), gen = baseSeq, edit = S._editSeq, write = S._writeSeq;      // 続けて別のキャラを開いたとき・元データを読み直したときは、古い応答を捨てる
     try { r = await initialRead("/api/v1/admin/checksheet/" + encodeURIComponent(id), function(){return seq===S._openSeq && gen===baseSeq && edit===S._editSeq && write===S._writeSeq;}); }
     catch (e) { if (seq === S._openSeq && gen === baseSeq && edit === S._editSeq && write === S._writeSeq) banner("err", "読み込めませんでした：" + e.message, [{label:"再試行",fn:function(){guardThen(function(){openChar(id);});}}]); return; }
     if (seq !== S._openSeq || gen !== baseSeq || edit !== S._editSeq || write !== S._writeSeq || !S.pageHash || !(id in S.pageHash) || !baseOf(id)) return;
-    S.dirty = false;
+    if (!r || typeof r.exists !== "boolean" || !Number.isSafeInteger(r.version) || (r.exists && !Array.isArray(r.moves))) {
+      banner("err", "技表の応答が不正です。現在の編集内容は保持しています。"); return false;
+    }
+    S.dirty = false; S._unknownSheet = null;
     var pageHash = S.pageHash[id];
     S.cur = { id: id, name: base.name, version: r.exists ? r.version : 0, exists: r.exists,
       pageHash: pageHash,                                            // この画面が読み込んだ元データの指紋
@@ -468,8 +491,8 @@
     banner("");
     D.diff.hidden = true;
     S.colCache = {}; loadChoiceEdit();                            // 候補の追加・削除は、他の端末での変更も拾うため、キャラを開くたびに取り直す
-    renderChars(); renderAll(); loadHistory(); schedulePreview(0); loadOverlays();
-    notifyBase(); S._effBase = null; syncMoveTabs();
+    renderChars(); renderAll(); loadHistory(); schedulePreview(0);
+    notifyBase(); return true;
   }
   function renderAll() { renderTool(); renderEditor(); }
 
@@ -512,19 +535,12 @@
     if (v === "diff") showDiff(); else if (v === "rebase") rebase();
     return false;
   }
-  function baseChangedByServer(d) {      // サーバーが 409（base_changed）で断った：画面の状態を、サーバーの言うとおりに直す
-    var c = S.cur;
-    c.currentHash = d.current_base_hash || c.currentHash; c.manifestOk = true;
-    c.savedBase = d.saved_base_hash || c.savedBase;
-    renderTool(); notifyBase();
-    return ensureBaseOk();
-  }
   // 最新の元データをベースに、編集をやり直す（自動で混ぜ合わせはしない）。これまでの編集は「参照用」に残し、差分画面から技ごとに取り込める
   async function rebase() {
     var c = S.cur;
     if (baseState() === "stale") { return ensureBaseOk(); }
     var ok = await confirmModal("最新の元データをベースに再編集", ["編集画面を、いまの最新の元データで作り直します。", "これまでの編集内容は消さずに参照用に残します。差分の画面から、必要な技だけを取り込み直してください。", "（保存するまで、サーバーには何も反映されません）"], "再編集を始める", false);
-    if (!ok) return;
+    if (!ok || S.cur !== c || (S._sheetPending && S._sheetPending !== "base-check")) return;
     c.ref = clone(c.moves); c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; c.remap = null; S.colCache = {};
     touch(); renderAll();
     banner("warn", ["最新の元データをベースに、編集画面を作り直しました。以前の編集内容は参照用に残してあります。", "必要な編集を取り込み直してから、「下書きを保存」→「公開する」の順に進んでください。元データと同じ内容にしたいときは「上書きを削除」を使ってください。"],
@@ -609,21 +625,21 @@
   function renderTool() {
     var c = S.cur; D.tool.replaceChildren();
     if (!c) return;
-    var st = baseState(), rebasePending = c.exists && c.contentBase !== c.savedBase;
+    var blocked = !!(S._sheetPending || S._unknownSheet), st = baseState(), rebasePending = c.exists && c.contentBase !== c.savedBase;
     var heading = h("div", { class: "pt-sheet-tool-heading" },
-      h("b", { text: c.name }), h("span", { class: "muted", text: status() + (S.dirty ? "　● 未保存の変更あり" : "") }),
+      h("b", { text: c.name }), h("span", { class: "muted", text: status() + (S._sheetPending ? "　処理中" : "") + (S.dirty ? "　● 未保存の変更あり" : "") }),
       h("span", { class: "badge " + (st === "current" ? "pub" : "stale"), id: "baseBadge", "data-state": st, text: BASE_BADGE[st] }));
     var mainActions = h("div", { class: "pt-sheet-primary-actions" },
-      h("button", { type: "button", class: "btn", id: "btnSave", text: "下書きを保存", disabled: !S.dirty && c.exists && !rebasePending,
+      h("button", { type: "button", class: "btn", id: "btnSave", text: "下書きを保存", disabled: blocked || (!S.dirty && c.exists && !rebasePending),
         title: "一般のサイトには出ません。「公開する」を押したときだけ反映されます", onclick: function () { saveDraft(); } }),
-      h("button", { type: "button", class: "btn primary", id: "btnPublish", text: "公開する", disabled: !c.exists && !S.dirty,
+      h("button", { type: "button", class: "btn primary", id: "btnPublish", text: "公開する", disabled: blocked || (!c.exists && !S.dirty),
         title: "一般公開の技チェックシートに反映します", onclick: publish }));
     var extraActions = h("div", { class: "pt-sheet-extra-actions" },
-      h("button", { type: "button", class: "btn", text: "元データを読み込む",
+      h("button", { type: "button", class: "btn", text: "元データを読み込む", disabled: blocked,
         title: "サイトの最新技データを下書きとして読み込みます", onclick: loadBase }),
-      h("button", { type: "button", class: "btn", text: "公開済みに戻す", disabled: !c.published,
+      h("button", { type: "button", class: "btn", text: "公開済みに戻す", disabled: blocked || !c.published,
         title: "下書きを公開中の内容に戻します", onclick: revert }),
-      h("button", { type: "button", class: "btn danger", text: "上書きを削除", disabled: !c.exists,
+      h("button", { type: "button", class: "btn danger", text: "上書きを削除", disabled: blocked || !c.exists,
         title: "上書きを削除し元データに戻します", onclick: removeOverride }));
     var more = h("details", { class: "pt-sheet-more" },
       h("summary", { text: "その他の操作（元データ・復元・削除）" }), extraActions);
@@ -637,7 +653,7 @@
     var c = S.cur;
     if (baseState() === "stale") return ensureBaseOk();
     var ok = await confirmModal("元データを読み込む", ["元データ（サイトに埋め込まれた最新の技の一覧）を、下書きとして読み込みます。", "いまの編集内容は置き換わります（保存するまで反映されません）。"], "読み込む", false);
-    if (!ok) return;
+    if (!ok || S.cur !== c || S._sheetPending) return;
     c.moves = clone(baseOf(c.id).moves); c.contentBase = c.pageHash; c.sel = 0; c.remap = null; touch(); renderAll(); banner(""); notifyBase();
   }
   function diffSummary(from, to) {
@@ -648,70 +664,121 @@
     return "追加 " + add + "／変更 " + chg + "／削除 " + del;
   }
   function explain(e) {
-    if (e.unknownWrite) { banner("err", e.message); return; }
+    if (e.unknownWrite) {
+      S._unknownSheet = S.cur.id;
+      banner("err", e.message, [{label:"サーバーの保存版を読み直す",fn:function(){
+        guardThen(function(){ openChar(S.cur.id); });
+      }}]);
+      return;
+    }
     var d = e.detail && typeof e.detail === "object" ? e.detail : null, code = d && (d.code || d.error);
-    if (e.status === 409 && code === "version_conflict") { conflict(d.current_version); return; }
-    if (e.status === 409 && code === "base_changed") { baseChangedByServer(d); return; }
-    if (e.status === 503 && code === "base_unverifiable") { S.cur.manifestOk = false; renderTool(); banner("err", ["サイトの元データの最新の状態を確認できないため、公開できません。", "しばらくしてから、もう一度お試しください。（下書きの保存は、そのままできます）"]); return; }
+    if (e.status === 409 && code === "version_conflict") {
+      banner("err", "保存版は他の操作で変更されました（版" + d.current_version + "）。現在の編集は保持しています。", [
+        { label: "最新の保存版を読み直す", fn: function () { guardThen(function(){ openChar(S.cur.id); }); } }]);
+      return;
+    }
+    if (e.status === 409 && code === "base_changed") {
+      S.cur.currentHash = d.current_base_hash || S.cur.currentHash;
+      S.cur.manifestOk = true; S.cur.savedBase = d.saved_base_hash || S.cur.savedBase;
+      notifyBase(); return;
+    }
+    if (e.status === 503 && code === "base_unverifiable") S.cur.manifestOk = false;
     banner("err", e.message);
   }
-  function conflict(cv) {
-    banner("err", "ほかの管理者が先に保存しました（最新は版" + cv + "）。このまま保存すると上書きになります。", [
-      { label: "最新を読み込み直す（自分の編集は破棄）", fn: function () { S.dirty = false; openChar(S.cur.id); } },
-      { label: "自分の編集で上書きする", cls: "danger", fn: function () { if (confirm("ほかの管理者の変更を、いまの編集内容で上書きします。よろしいですか？")) { S.cur.version = cv; saveDraft(); } } }]);
-  }
-  async function saveDraft(skipCheck) {
+  async function sheetWrite(run) {
+    if (!S.cur || S._sheetPending || S._unknownSheet) return;
+    S._sheetPending = "base-check";
     S._writeSeq = (S._writeSeq || 0) + 1;
-    var c = S.cur;
-    if (!skipCheck && !(await ensureBaseOk())) return false;       // 元データが更新されていたら、案内を出して止める（サーバーも同じ判定で 409 を返す）
+    // disabled is also supported by Safari versions without the inert attribute.
+    var locked = [D.editor,D.hist,D.diff].reduce(function(all,area){
+      return all.concat(Array.from(area.querySelectorAll("button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)")));
+    },[]);
+    locked.forEach(function(el){el.disabled=true;}); D.charPicker.disabled=true;
+    renderTool();
+    try { return await run(S.cur); }
+    catch(e) { explain(e); }
+    finally {
+      S._sheetPending = null;
+      locked.forEach(function(el){el.disabled=false;});
+      D.charPicker.disabled=false; renderTool();
+    }
+  }
+  function checkWriteReply(r, version, exact) {
+    if (!r || r.ok !== true || typeof r.changed !== "boolean" || !Number.isSafeInteger(r.version) ||
+        (exact ? r.version !== version : r.version < version || (r.changed && r.version <= version))) {
+      var e = new Error("応答の版を確認できません。再送せず、保存版を読み直してください。");
+      e.unknownWrite = true; throw e;
+    }
+  }
+  async function writeDraft(c) {
+    var moves = clone(c.moves), hash = c.contentBase, remap = remapOut(c), expected = c.version;
     banner("", "保存中…");
-    S._sheetPending=(S._sheetPending||0)+1;
-    try {
-      c.remap = remapOut(c);
-      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id), { method: "POST", body: { moves: c.moves, expected_version: c.version, base_hash: c.contentBase, remap: c.remap } });
-      c.version = r.version; c.exists = true; c.serverMoves = clone(c.moves); c.savedBase = c.contentBase; c.ref = null; S.dirty = false;
-      if (r.base_status === "current") { c.currentHash = c.contentBase; c.manifestOk = true; }
-      await refreshOverview(); renderChars(); renderTool(); loadHistory();
-      banner("ok", r.rebased ? "最新の元データに合わせて保存しました（版" + r.version + "）。公開するまで、一般のサイトには出ません。" : r.changed ? "下書きを保存しました（版" + r.version + "）。公開するまで、一般のサイトには出ません。" : "変更はありませんでした。");
-      return true;
-    } catch (e) { explain(e); return false; } finally { S._sheetPending--; }
+    var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id), { method: "POST", body: { moves: moves, expected_version: expected, base_hash: hash, remap: remap } });
+    checkWriteReply(r, expected, false);
+    c.version = r.version; c.exists = true; c.serverMoves = moves; c.savedBase = hash;
+    c.remap = remap; c.ref = null; S.dirty = false;
+    if (r.base_status === "current") { c.currentHash = hash; c.manifestOk = true; }
+    return r;
   }
-  async function publish() {
-    S._writeSeq = (S._writeSeq || 0) + 1;
-    var c = S.cur;
-    if (!(await ensureBaseOk())) return;
-    var before = c.published ? c.published.moves : baseOf(c.id).moves;
-    var pend = remapOut(c), npend = pend && pend.map ? Object.keys(pend.map).length : 0;
-    var ok = await confirmModal("公開の確認", [MSG_PUBLISH_CONFIRM, "対象：" + c.name, "公開前との違い：" + diffSummary(before, c.moves)].concat(
-      npend ? ["技番号の振り直し（" + npend + " 件の番号が変わります）も、このとき反映されます。アイコン設定・技動画も、技に付いたまま新しい番号へ移ります。"] : [],
-      ["公開してから一般のサイトに出るまで、最大1分ほどかかります。"]), "公開する", false);
-    if (!ok) return;
-    if (S.dirty || !c.exists || c.contentBase !== c.savedBase) { if (!(await saveDraft(true))) return; }   // 公開する内容を、先に下書きとして保存する（確認は済んでいる）
-    S._sheetPending=(S._sheetPending||0)+1;
-    try {
-      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/publish", { method: "POST", body: { expected_version: c.version } });
-      c.published = { version: c.version, moves: clone(c.moves), live: true, baseStatus: "current" };
-      var mv = r && r.remapped; c.remap = null;
-      if (mv) { try { window.PTAdminMoveIcons.reload(); window.PTAdminMoveMedia.reload(); } catch (_) { /* パネルを開いたときに最新が読み込まれる */ } }
-      await refreshOverview(); renderChars(); renderTool(); loadHistory();
-      banner("ok", r.changed ? "公開しました。" + (mv ? "アイコン設定 " + mv.icons + " 件・技動画 " + mv.videos + " 件を、新しい技番号へ移しました。" : "") : "すでに公開済みの内容です。");
-    } catch (e) { explain(e); } finally { S._sheetPending--; }
+  function saveDraft() {
+    return sheetWrite(async function(c){
+      if (!(await ensureBaseOk())) return;
+      S._sheetPending = "writing";
+      var r = await writeDraft(c);
+      await refreshOverview(); renderChars(); loadHistory();
+      banner("ok", r.changed ? "下書きを保存しました（版" + r.version + "）。公開するまで、一般のサイトには出ません。" : "変更はありませんでした。");
+    });
   }
-  async function revert() {
-    S._writeSeq = (S._writeSeq || 0) + 1;
-    var c = S.cur;
-    if (!(await confirmModal("公開済みに戻す", ["下書きを、公開中の内容に戻します。", "いまの下書きの変更は（履歴の保存分を除き）失われます。"], "公開中の内容に戻す", true))) return;
-    S._sheetPending=(S._sheetPending||0)+1;
-    try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/revert", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("公開中の内容に戻しました。"); }
-    catch (e) { explain(e); } finally { S._sheetPending--; }
+  function publish() {
+    return sheetWrite(async function(c){
+      if (!(await ensureBaseOk())) return;
+      S._sheetPending = "writing";
+      var before = c.published ? c.published.moves : baseOf(c.id).moves;
+      var pend = remapOut(c), npend = pend && pend.map ? Object.keys(pend.map).length : 0;
+      var ok = await confirmModal("公開の確認", [MSG_PUBLISH_CONFIRM, "対象：" + c.name, "公開前との違い：" + diffSummary(before, c.moves)].concat(
+        npend ? ["技番号の振り直し（" + npend + " 件）と、アイコン設定・技動画の対応も反映されます。"] : [],
+        ["一般のサイトに出るまで、最大1分ほどかかります。"]), "公開する", false);
+      if (!ok) return;
+      if (S.dirty || !c.exists || c.contentBase !== c.savedBase) await writeDraft(c);
+      var expected = c.version;
+      var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/publish", { method: "POST", body: { expected_version: expected } });
+      checkWriteReply(r, expected, true);
+      if (!Number.isSafeInteger(r.published_version) || r.published_version > expected ||
+          r.published_version < 1 || (r.changed && r.published_version !== expected)) checkWriteReply(null, expected, true);
+      c.published = { version:r.published_version, moves:clone(c.serverMoves || c.moves), live:true, baseStatus:"current" };
+      c.remap = null;
+      S.ovMoves = null; S._overlayRead = null; S._overlayToken = (S._overlayToken || 0) + 1;
+      if (S.tab === "icons" || S.tab === "media") reloadMoveTabs();
+      if (r.remapped) { window.PTAdminMoveIcons.reload(); window.PTAdminMoveMedia.reload(); }
+      await refreshOverview(); renderChars(); loadHistory();
+      banner("ok", r.changed ? "公開しました（版" + expected + "）。" : "すでに公開済みの内容です。");
+    });
   }
-  async function removeOverride() {
-    S._writeSeq = (S._writeSeq || 0) + 1;
-    var c = S.cur;
-    if (!(await confirmModal("上書きの削除", ["「" + c.name + "」の上書きを削除します。", "サイトは、埋め込まれた元データの表示に戻ります（公開中の内容も消えます。履歴は残ります）。"], "上書きを削除する", true))) return;
-    S._sheetPending=(S._sheetPending||0)+1;
-    try { await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/delete", { method: "POST", body: { expected_version: c.version } }); S.dirty = false; await refreshOverview(); await openChar(c.id); notifyBase("上書きを削除しました（元データに戻りました）。"); }
-    catch (e) { explain(e); } finally { S._sheetPending--; }
+  function revert() {
+    return sheetWrite(async function(c){
+      if (!(await confirmModal("公開済みに戻す", ["下書きを、公開中の内容に戻します。", "いまの下書きの変更は（履歴の保存分を除き）失われます。"], "公開中の内容に戻す", true))) return;
+      await replaceSheet(c, "revert", "公開中の内容に戻しました。");
+    });
+  }
+  function removeOverride() {
+    return sheetWrite(async function(c){
+      if (!(await confirmModal("上書きの削除", ["「" + c.name + "」の上書きを削除します。", "サイトは元データの表示に戻ります。履歴は残ります。"], "上書きを削除する", true))) return;
+      await replaceSheet(c, "delete", "上書きを削除しました（元データに戻りました）。");
+    });
+  }
+  async function replaceSheet(c, action, text) {
+    S._sheetPending = "writing";
+    var r = await api("/api/v1/admin/checksheet/" + encodeURIComponent(c.id) + "/" + action, {method:"POST", body:{expected_version:c.version}});
+    checkWriteReply(r, action === "delete" ? 0 : c.version, action === "delete");
+    if (action === "delete") { S.ovMoves = null; S._overlayRead = null; S._overlayToken = (S._overlayToken || 0) + 1; if (S.tab === "icons" || S.tab === "media") reloadMoveTabs(); }
+    await refreshOverview();
+    if (await openChar(c.id)) notifyBase(text);
+    else {
+      S._unknownSheet = c.id;
+      banner("warn","サーバーで変更されましたが、保存版を再取得できません。現在の編集は保持しています。", [
+        {label:"保存版を読み直す",fn:function(){guardThen(function(){openChar(c.id);});}}
+      ]);
+    }
   }
 
   // ------------------------------------------------------------ 履歴
@@ -731,7 +798,7 @@
     } catch (e) { if (hseq === S._histSeq && S.cur === c && gen === baseSeq) D.hist.appendChild(h("p", { class: "muted", text: "履歴を取得できませんでした：" + e.message })); }
   }
   async function loadSnapshot(hid) {
-    var cc = S.cur; if (!cc) return;
+    var cc = S.cur; if (!cc || S._sheetPending) return;
     var seq = (S._snapshotSeq = (S._snapshotSeq || 0) + 1), gen = baseSeq, opening = S._openSeq, history = S._histSeq, edit = S._editSeq, write = S._writeSeq, version = cc.version, dirty = S.dirty;
     function valid() { return seq === S._snapshotSeq && cc === S.cur && gen === baseSeq && opening === S._openSeq && history === S._histSeq && edit === S._editSeq && write === S._writeSeq && version === cc.version && dirty === S.dirty; }
     if (!(await confirmModal("履歴を読み込む", ["この版の内容を編集画面に読み込みます。", "いまの編集内容は置き換わります（保存するまで反映されません）。"], "読み込む", false)) || !valid()) return;

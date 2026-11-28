@@ -33,7 +33,7 @@
     if (others.length) out.others = others;
     return out;
   }
-  var ST = null, ctx = { characters: function () { return []; } }, loadNote = "", ui = {};
+  var ST = null, savedRaw = null, ctx = { characters: function () { return []; } }, loadNote = "", ui = {};
 
   /* ---------- 小道具 ---------- */
   function h(tag, attrs, kids) {
@@ -180,13 +180,19 @@
   /* ---------- 保存（下書き） ---------- */
   function readRaw() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function persist(S) {
-    var s = JSON.stringify(Object.assign({ savedAt: nowIso() }, S)), old = readRaw();
+    var raw = JSON.stringify(Object.assign({ savedAt: nowIso() }, S));
     try {
-      if (old) localStorage.setItem(BKEY, old);          // 書き換える前の状態を、1世代だけ残す
-      localStorage.setItem(KEY, s);
-      if (localStorage.getItem(KEY) !== s) throw new Error("書き込みを確認できませんでした");
+      var previous = localStorage.getItem(KEY);
+      if (previous !== savedRaw) return "別タブで先に保存されました。この画面の入力は保持しています。内容を控えたうえで最新の下書きを開いてください。";
+      if (previous) localStorage.setItem(BKEY, previous);
+      localStorage.setItem(KEY, raw);
+      if (localStorage.getItem(KEY) !== raw) return "別タブで保存されたため、反映を確認できません。";
+      savedRaw = raw;
       return null;
-    } catch (e) { try { if (old) localStorage.setItem(KEY, old); } catch (e2) {} return e && e.message ? e.message : String(e); }
+    } catch (e) { return e && e.message ? e.message : String(e); }
+  }
+  function sameStorage() {
+    try { return localStorage.getItem(KEY) === savedRaw; } catch (_) { return false; }
   }
   /* 下書きが PRO / HIGH LEVEL / STREAMER の区分を持たない古い形のとき、保存済みの登録内容（seed）の区分をこの画面の中だけで補う（保存は次に変更したとき） */
   function fillCats(S) {
@@ -195,7 +201,7 @@
     S.players.forEach(function (p) { if (p && PCATS.indexOf(p.category) < 0 && m[p.id]) { p.category = m[p.id].category; if (m[p.id].categoryBasis && !p.categoryBasis) p.categoryBasis = m[p.id].categoryBasis; } });
   }
   function boot() {
-    var raw = readRaw(), seed = window.PT_COMMUNITY_SEED;
+    var raw = readRaw(), seed = window.PT_COMMUNITY_SEED; savedRaw = raw;
     if (raw) {
       try { var j = JSON.parse(raw), er = validate(j); if (!er.length) { ST = j; fillCats(ST); loadNote = "端末内の下書きを読み込みました。"; return; } loadNote = "下書きに問題があるため、保存済みの登録内容で開きました（" + er[0] + "）。「直前に戻す」で直前の下書きを復元できます。"; }
       catch (e) { loadNote = "下書きを読めなかったため、保存済みの登録内容で開きました。「直前に戻す」で直前の下書きを復元できます。"; }
@@ -204,12 +210,12 @@
     if (!raw) loadNote = seed ? "登録内容を読み込みました。" : "登録データがありません。JSONを読み込んでください。";
   }
   function commit(fn, ok) {            // 変更→検証→保存。どれかに失敗したら、変更を取り消す
-    var snap = clone(ST), next = clone(ST);
+    var next = clone(ST);
     try { fn(next); } catch (e) { say(String(e.message || e), "error"); return false; }
     var er = validate(next);
     if (er.length) { say("保存できません：" + er.slice(0, 5).join(" / ") + (er.length > 5 ? " ほか" + (er.length - 5) + "件" : ""), "error"); return false; }
-    var before = readRaw() || JSON.stringify(Object.assign({ savedAt: nowIso() }, snap)), pe = persist(next);
-    if (pe) { ST = snap; say("保存に失敗しました。変更は取り消しました：" + pe, "error"); return false; }
+    var before = savedRaw || JSON.stringify(Object.assign({ savedAt: nowIso() }, ST)), pe = persist(next);
+    if (pe) { say("下書きを保存できませんでした：" + pe, "error"); return false; }
     ST = next; bumpChanges(); histAdd(before, ok || "変更"); say(ok || "保存しました（この端末の下書き）。", "ok"); return true;
   }
   function say(t, state) { Object.keys(ui).forEach(function (k) { if (ui[k] && ui[k].note) { ui[k].note.textContent = t; ui[k].note.dataset.state = state || "neutral"; } }); }
@@ -768,7 +774,7 @@
   function redraw() { if (ui.p && ui.p.root && ui.p.root.isConnected) drawPlayers(); if (ui.t && ui.t.root && ui.t.root.isConnected) drawT(); }
   window.PTAdminCommunity = Object.freeze({
     mountPlayers: mountPlayers, mountTournaments: mountTournaments, onCharacters: function () {},
-    getState: getState, replaceState: replaceState, redraw: redraw, markSaved: function () { markSaved("publish"); drawBackupNote(); }, validate: function (S) { return validate(S); }, ui: { h: h, btn: btn, sel: sel },
+    getState: getState, sameStorage: sameStorage, replaceState: replaceState, redraw: redraw, markSaved: function () { markSaved("publish"); drawBackupNote(); }, validate: function (S) { return validate(S); }, ui: { h: h, btn: btn, sel: sel },
     labels: { cat: PCLABEL, verif: VLABEL },
     _test: { validate: validate, socRows: socRows, socPack: socPack, SOC: SOC, get state() { return clone(ST); }, KEY: KEY, BKEY: BKEY, THUMB_RE: THUMB_RE }
   });

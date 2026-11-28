@@ -291,7 +291,7 @@ input[type="checkbox"] { border-radius: 8px; }
         });
         slots[s.slot_id] = { mode: s.mode === "manual" && !rows.length ? "hidden" : s.mode, moves: rows }; n++;
       });
-      if (n) out[id] = { rev: Number.isSafeInteger(ch.rev) ? ch.rev : 0, slots: slots };
+      if (n || (!ch.ovr.length && Number.isSafeInteger(ch.rev) && ch.rev > 0)) out[id] = { rev: Number.isSafeInteger(ch.rev) ? ch.rev : 0, slots: slots };
     });
     var refs = man.builtin_refs || {};
     Object.keys(refs).forEach(function(id) {
@@ -309,7 +309,12 @@ input[type="checkbox"] { border-radius: 8px; }
     if (o.hasBase) {
       (o.base || []).forEach(function (r) { var f = r[0]; if (!by[f]) by[f] = { f: f, items: [], manual: false }; by[f].items.push({ raw: r }); });
     } else {
-      (o.autoFrames || []).forEach(function (f) { put(f, { f: f, auto: true }); });
+      // 公開済み・組み込みなしの場合、管理画面の標準枠だけを補う。
+      var standard = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
+      var published = !!(o.pub && Number.isSafeInteger(o.pub.rev) && o.pub.rev > 0);
+      (o.autoFrames || []).forEach(function (f) {
+        if (!published || standard.indexOf(f) >= 0) put(f, { f: f, auto: true });
+      });
     }
     Object.keys(pub).forEach(function (id) {
       var m = SLOT.exec(id); if (!m || m[1] !== o.stance) return;
@@ -401,7 +406,7 @@ function gimOf(a){const lines=String((a&&a.gimmick)||"").split("\n").map(s=>s.tr
 const hdKey=c=>"ヒート中"+String(c).replace(/\(ヒート中\)$/,"").replace(/^ヒート(?:中|[＆&])/,"");const jkey=c=>String(c).replace(/^(.*6)\(ヒート中\)$/,"ヒート中$1");let jm=null;function jumpFrom(el){const cmd=el&&el.dataset?el.dataset.jump:"";if(!cmd|| !window.CB|| !CB.setMove||typeof window.setPage!=="function")return;if(CB.setMove(cmd,cmd+(el.dataset.jn?"（"+el.dataset.jn+"）":""))){window.setPage("combo");window.scrollTo(0,0);}}
 const cache={};function punishers(c){if(cache[c.id])return cache[c.id];const out=[],seen=new Set();for(const m of c.moves){const a=m.a||{};const cmd=String(a.command||"").trim();const st=num1(a.startup);if(st==null|| !cmd|| !PURE.test(cmd)|| !(cmd.match(BTN_RE)||[]).length)continue;if(/投げ|返し|捌き|ガード不能/.test(String(a.attack||"")))continue;const key=cmd+"|"+m.name;if(seen.has(key))continue;seen.add(key);const h=String(a.hit||""),t=tierOf(h);out.push({k:m.k,name:m.name,cmd,at:String(a.attack||""),f:st,p:0,fl:"",nt:"",d1:firstNum(a.damage),dmg:String(a.damage||"-"),hit:h.split("\n")[0],tier:t.tier,badge:t.badge,ck:chOnly(a)?1:0,cond:0,uk:0,ex:0,he: /ヒート発動技/.test(cmd)?1:0,hs:0,wl:wallOf(a),gm:gimOf(a),i:out.length,n:(cmd.match(BTN_RE)||[]).length});}
 out.sort((x,y)=>y.tier-x.tier||y.d1-x.d1||x.f-y.f||x.n-y.n);return(cache[c.id]=out);}
-const kcache={};const kmap=c=>kcache[c.id]||(kcache[c.id]=Object.fromEntries(c.moves.map(m=>[m.k,m])));const kixc={};const kix=c=>kixc[c.id]||(kixc[c.id]=Object.fromEntries(c.moves.map((m,i)=>[m.k,i])));function pubRows(c,stance,d,P){P=PTNetPub.verify(P,c.moves);const km=kmap(c),ix=kix(c);const au=punishers(c).filter(p=>p.f>=10&&p.f<=25&&(stance==="stand"||!/^\s*上/.test(String(p.at||"").split(/[,，、]/)[0])));const byF={};for(const p of au)(byF[p.f]=byF[p.f]||[]).push(p);
+const kcache={};const kmap=c=>kcache[c.id]||(kcache[c.id]=Object.fromEntries(c.moves.map(m=>[m.k,m])));const kixc={};const kix=c=>kixc[c.id]||(kixc[c.id]=Object.fromEntries(c.moves.map((m,i)=>[m.k,i])));function pubRows(c,stance,d,P){P=PTNetPub.verify(P,c.moves);const km=kmap(c),ix=kix(c);const au=punishers(c).filter(p=>p.f>=10&&(p.f<=25||(p.f<=39&&P.slots[stance+":"+p.f]&&P.slots[stance+":"+p.f].mode==="auto"))&&(stance==="stand"||!/^\s*上/.test(String(p.at||"").split(/[,，、]/)[0])));const byF={};for(const p of au)(byF[p.f]=byF[p.f]||[]).push(p);
 const out=[];for(const e of PTNetPub.plan({stance,hasBase:!!d,base:d?PTNetPub.verifyBuiltin(d[stance]||[],P.refs,c.moves):[],pub:P,autoFrames:Object.keys(byF).map(Number)})){if(e.auto){for(const p of byF[e.f]||[])out.push(Object.assign({},p,{sp:km[p.k]?ix[p.k]:1e4,i:out.length}));continue;}
 e.items.forEach((it,j)=>{try{let r=null;if(it.raw)r=mapNet(c,it.raw,out.length);else if(km[it.k])r=mapNet(c,[e.f,0,"",km[it.k].name,"",it.k,0,"",{}],out.length);if(r){if(e.manual)r.sp=j;out.push(r);}}catch(_){}});}
 return out;}

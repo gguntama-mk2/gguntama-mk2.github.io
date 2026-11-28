@@ -5,14 +5,15 @@
   const API=location.hostname==="www.project-t-god.com"?"https://api.project-t-god.com":"";
   const make=(tag,text)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;return x;};
   const CHAR_RE=/^[a-z0-9][a-z0-9-]{0,47}$/;
-  let host, csrf, characters=[], character, move, file, hit, notice, listing, uploadButton;
+  let host, csrf, catalogReady, characters=[], character, move, file, hit, notice, listing, uploadButton, busy=false, listSeq=0;
   function message(s,state){notice.textContent=s;notice.dataset.state=state||"neutral";}
   async function request(path,init={}){
     const headers={...(init.headers||{})};
     if(init.method==="POST")headers["X-CSRF-Token"]=csrf();
     const result=await fetch(API+path,{credentials:"include",...init,headers});
-    const body=await result.json().catch(()=>({}));
-    if(!result.ok)throw Error(typeof body.detail==="string"?body.detail:"HTTP "+result.status);
+    const body=await result.json().catch(()=>null);
+    if(!result.ok)throw Error(body&&typeof body.detail==="string"?body.detail:"HTTP "+result.status);
+    if(!body || typeof body!=="object")throw Error("応答を確認できません。一覧で結果を確認してください。");
     return body;
   }
   function setCharacters(list){
@@ -25,7 +26,7 @@
     setMoves();
   }
   function setMoves(){
-    const prevMove=move.value;
+    const prevMove=move.value, prevName=move.selectedOptions[0] && move.selectedOptions[0].dataset.moveName;
     move.replaceChildren();
     const c=characters.find(x=>x.id===character.value);if(!c)return;
     c.moves.forEach((entry,index)=>{
@@ -33,11 +34,15 @@
       const option=make("option",String(k)+" · "+entry.name);
       option.value=String(k);option.dataset.moveName=entry.name;move.appendChild(option);
     });
-    if(Array.from(move.options).some(x=>x.value===prevMove))move.value=prevMove;
+    if(Array.from(move.options).some(x=>x.value===prevMove && x.dataset.moveName===prevName))move.value=prevMove;
+    else if (prevMove && file && file.files.length) { move.selectedIndex=-1; message("技表が更新されました。動画を付ける技を選び直してください。","error"); }
     else if(c.id==="bryan"&&Array.from(move.options).some(x=>x.value==="2"))move.value="2";
   }
   async function refresh(){
+    const seq=++listSeq;
     const data=await request("/api/v1/admin/move-media");
+    if(seq!==listSeq)return;
+    if(!Array.isArray(data.entries))throw Error("一覧の応答が不正です。");
     listing.replaceChildren();
     if(!data.entries||!data.entries.length){listing.appendChild(make("p","登録済みの動画はありません。"));return;}
     const table=make("table"),thead=make("thead"),tbody=make("tbody"),h=make("tr");table.className="pt-mobile-table";
@@ -58,13 +63,18 @@
       const action=make("td"),btn=make("button",item.status==="published"?"非公開にする":"公開する");
       btn.type="button";btn.className="btn";
       btn.addEventListener("click",async()=>{
+        if(busy)return;
         const method=item.status==="published"?"unpublish":"publish";
         if(!confirm(item.move_name+"の動画を"+(method==="publish"?"公開":"非公開")+"にしますか？"))return;
-        btn.disabled=true;
+        busy=true;btn.disabled=true;
+        uploadButton.disabled=true;
         try{
-          await request("/api/v1/admin/move-media/"+encodeURIComponent(item.character_id)+"/"+item.site_k+"/"+method,{method:"POST"});
-          message("公開状態を更新しました。","ok");await refresh();
-        }catch(e){message(e.message,"error");btn.disabled=false;}
+          const result=await request("/api/v1/admin/move-media/"+encodeURIComponent(item.character_id)+"/"+item.site_k+"/"+method+"?expected_revision="+encodeURIComponent(item.revision),{method:"POST"});
+          if(result.revision!==item.revision || result.status!==(method==="publish"?"published":"draft"))throw Error("応答を確認できません。一覧で結果を確認してください。");
+          message("公開状態を更新しました。","ok");
+          try { await refresh(); } catch(e) { message("公開状態は更新されました。一覧の更新に失敗しました。","error"); }
+        }catch(e){message(e.message,"error");}
+        finally{busy=false;btn.disabled=false;uploadButton.disabled=false;}
       });
       action.appendChild(btn);row.appendChild(action);
       ["キャラクター","技名 / k","状態","確認","操作"].forEach((label,i)=>{row.children[i].dataset.label=label;});
@@ -74,6 +84,8 @@
   }
   async function submit(ev){
     ev.preventDefault();
+    if(busy)return;
+    if(!catalogReady())return message("公開技表の読込をお待ちください。","error");
     const selected=move.selectedOptions[0], video=file.files&&file.files[0],char=character.value;
     if(!selected||!CHAR_RE.test(char)||!video){message("キャラクター・技・動画を選択してください。","error");return;}
     if(video.size>32*1024*1024||!/\.(mp4|mov|webm)$/i.test(video.name)){message("32MB以下のMP4/MOV/WebMを選択してください。","error");return;}
@@ -81,21 +93,25 @@
     if(!Number.isFinite(seconds)||seconds<0||seconds>30){message("サムネイル位置は0〜30秒です。","error");return;}
     const form=new FormData();
     form.set("character_id",char);form.set("site_k",move.value);
+    const version=characters.find(c=>c.id===char).catalogVersion;
+    if (version!==undefined) form.set("catalog_version",version===null?"static":String(version));
     form.set("move_name",selected.dataset.moveName);form.set("hit_second",String(seconds));
     form.set("video",video,video.name);
-    uploadButton.disabled=true;message("動画を720pへ変換して下書き保存しています…");
+    busy=true;uploadButton.disabled=true;file.disabled=true;message("動画を720pへ変換して下書き保存しています…");
     try{
       const result=await request("/api/v1/admin/move-media/upload",{method:"POST",body:form});
+      if(result.character_id!==char || result.site_k!==Number(form.get("site_k")) || result.status!=="draft" || !Number.isSafeInteger(result.revision))throw Error("応答を確認できません。一覧で結果を確認してください。");
       message(result.move_name+"を下書きに登録しました。一覧の「公開する」を押すと公開されます。","ok");
-      file.value="";await refresh();
+      file.value="";
+      try { await refresh(); } catch(e) { message("下書きは保存されました。一覧の更新に失敗しました。","error"); }
     }catch(e){message("登録できませんでした："+e.message,"error");}
-    finally{uploadButton.disabled=false;}
+    finally{busy=false;uploadButton.disabled=false;file.disabled=false;}
   }
   function field(label,ctrl){
     const item=make("label");item.className="pt-mm-field";item.appendChild(make("strong",label));item.appendChild(ctrl);return item;
   }
   function mount(target,context){
-    host=target;csrf=context.csrf;host.replaceChildren();
+    host=target;csrf=context.csrf;catalogReady=context.catalogReady||(()=>true);host.replaceChildren();
     const panel=make("section");panel.className="card";
     panel.appendChild(make("h2","技動画の登録"));
     panel.appendChild(make("p","技を選んで動画を登録します。720pに変換してサムネイルを作成し、下書きとして保存します。公開は別操作です。"));

@@ -287,7 +287,7 @@
       if (issues.errors.length) { row.setAttribute("data-invalid", "true"); sel.setAttribute("aria-invalid", "true"); }
       ui.main.appendChild(row);
     });
-    var v = pageValidation; ui.errs.replaceChildren(); C.publishHolds(S.edit, c.builtin, c.policy).forEach(function (x) { ui.errs.appendChild(h("li", { class: "pn-hold", "data-hold": x.code, text: "【保留】" + C.HOLD_TEXT[x.code] })); }); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】公開済みの設定は、保留解除の承認が失効したため停止し、検証済みの旧版の表示に戻しています。旧版が確認できない場合は表示を停止します（設定自体は消えていません）" })); if (!c.has_net) ui.errs.appendChild(h("li", { class: "pn-hint", "data-netless": "1", text: "このキャラはNET原本がありません。手動・表示なしにした枠以外は、最新の技表による自動判定をそのまま表示します" })); v.errors.forEach(function (e) { ui.errs.appendChild(h("li", { text: e })); }); if (v.unverified.length) ui.errs.appendChild(h("li", { class: "pn-warn", text: "未確認の技が " + v.unverified.length + " 件あります（下書きには保存できますが、確認するまで公開できません）" }));
+    var v = pageValidation; ui.errs.replaceChildren(); C.publishHolds(S.edit, c.builtin, c.policy).forEach(function (x) { ui.errs.appendChild(h("li", { class: "pn-hold", "data-hold": x.code, text: "【保留】" + C.HOLD_TEXT[x.code] })); }); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】公開済みの設定は、保留解除の承認が失効したため停止し、検証済みの旧版の表示に戻しています。旧版が確認できない場合は表示を停止します（設定自体は消えていません）" })); if (!c.has_net) ui.errs.appendChild(h("li", { class: "pn-hint", "data-netless": "1", text: "このキャラには組み込みの確反表がありません。公開後は標準枠と追加した枠だけが対象になります。" })); v.errors.forEach(function (e) { ui.errs.appendChild(h("li", { text: e })); }); if (v.unverified.length) ui.errs.appendChild(h("li", { class: "pn-warn", text: "未確認の技が " + v.unverified.length + " 件あります（下書きには保存できますが、確認するまで公開できません）" }));
     syncBar();
   }
   function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開", "登録技を一括確認"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (ui.unpubBtn) ui.unpubBtn.disabled = ui.unpubBtn.disabled || !(S.cur && S.cur.published);
@@ -318,8 +318,8 @@
       var t=normalized(q.value), all=movesOf(c).filter(function(m){return m.k>=0 && (!hideChosen.checked || !chosen[m.k]) && (!fastOnly.checked || startupFrame(m)<=f) && (!t || normalized(m.name+" "+m.command+" "+m.startup+" "+m.k).includes(t));});
       if(orderSelect.value==="startup") all.sort(function(a,b){return startupFrame(a)-startupFrame(b)||a.k-b.k;});
       if(orderSelect.value==="name") all.sort(function(a,b){return String(a.name).localeCompare(String(b.name),"ja")||a.k-b.k;});
-      resultCount.textContent=all.length+"件の候補（最大80件表示）";
-      all.slice(0,80).forEach(function(m,i){var over=startupFrame(m)>f,dup=chosen[m.k];
+      resultCount.textContent=all.length+"件の候補";
+      all.forEach(function(m,i){var over=startupFrame(m)>f,dup=chosen[m.k];
         var li=h("li",{id:"pn-picker-option-"+i,"data-active":"false"}),btn=h("button",{type:"button","data-k":String(m.k),disabled:!!dup,text:m.name+"（"+m.command+"・発生"+m.startup+"）"+(dup?" 登録済み":"")+(over?" ⚠発生がこの枠より遅い":""),onclick:function(){
           if(!valid() || dup) return; var current=slotOf(slot);
           if(!current || current.mode!=="manual" || current.moves.some(function(x,index){return index!==replacement&&x.k===m.k;})) return;
@@ -329,7 +329,6 @@
             else current.moves.splice(replacement, 1, {k:m.k});
           }))closePicker();
         }});li.appendChild(btn);list.appendChild(li);buttons.push(btn);});
-      if(all.length>80) list.appendChild(h("li",{class:"pn-hint",text:"他 "+(all.length-80)+" 件：検索で絞り込んでください"}));
       if(!all.length) list.appendChild(h("li",{class:"pn-hint",text:"候補がありません。検索条件を変更してください"}));mark(false); }
     q.addEventListener("input",draw);
     dlg.addEventListener("keydown",function(e){
