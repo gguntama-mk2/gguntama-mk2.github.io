@@ -75,9 +75,10 @@
   function builtinOf(id) { return S.cur.builtin.find(function (s) { return s.slot_id === id; }); }
   function movesOf(c) { return c.char.moves; }
   function mvInfo(m) {
-    if (m.raw) return (m.k < 0 ? "【技表外の行】" : "") + m.raw[3] + "（" + m.raw[2] + "）";
+    if (m.raw && m.k < 0) return "【技表外の行】" + m.raw[3] + "（" + m.raw[2] + "）";
     var move = S.cur.char.moves.find(function (item) { return item.k === m.k; });
-    return move ? move.name + "（" + move.command + "・発生" + move.startup + "）" : "不明な技 " + m.k;
+    return move ? move.name + "（" + move.command + "・発生" + move.startup + "・ガード" + (move.guard || "—") + "・ヒット" + (move.hit || "—") + "・CH" + (move.counter || "—") + "）" :
+      m.raw ? m.raw[3] + "（" + m.raw[2] + "）" : "技ID " + m.k;
   }
   function isBuiltinMove(sid, m) { var b = builtinOf(sid); return !!(b && m.raw !== undefined && b.moves.some(function (x) { return x.k === m.k && C.canon(x.raw) === C.canon(m.raw); })); }
   function framesFor(st) { var set = {}; STD.forEach(function (f) { set[f] = 1; }); S.edit.forEach(function (s) { if (C.stateOf(s.slot_id) === st) set[C.frameOf(s.slot_id)] = 1; }); return Object.keys(set).map(Number).sort(function (a, b) { return a - b; }); }
@@ -205,7 +206,7 @@
     store.get(id).then(function (r) {
       if (ve !== S.viewEpoch || rs !== S.readSeq) return;                                   // 古い応答は捨てる（別キャラ・同キャラ再取得・書込み開始）
       if (ee !== S.editEpoch) { note("読み込み中に編集されたため、読み込みを中止しました。もう一度選び直してください", "err"); return; }
-      var src = r.draft || r.published; S.cur = { blocked: !!r.edit_blocked, effective: r.effective, effective_base: r.effective_base, has_net: r.has_net, policy: r.policy, id: id, char: r.char, builtin: r.builtin, base_hash: r.base_hash, revision: r.revision, draft: r.draft, published: r.published, history: r.history };
+      var src = r.draft || r.published; S.cur = fromResponse(r,id);
       S.edit = r.edit_blocked ? [] : C.applyOverrides(r.builtin, src ? src.ovr : []);
       S.stance = previousId === id ? previousStance : "stand"; S.conflict = null; S.syncPending = null; clearUndo(S.edit);setDirty(false); ui.confirm.hidden = true; drawCharList();
       var v = validation(); note(msg || (v.errors.length ? "保存されている設定に不正な項目があります（捨てずに表示しています。直すまで保存できません）" : ""), v.errors.length && !msg ? "err" : ""); render();
@@ -237,6 +238,8 @@
     nf.addEventListener("input", function () { var msg = addFrameMessage(nf.value); frameIssue.textContent = msg; nf.setAttribute("aria-invalid", msg ? "true" : "false"); });
     ui.main.appendChild(h("div", { class: "pn-addframe" }, "確反枠を追加：-", nf, "F ", h("button", { type: "button", "data-act": "addframe", disabled: frozen(), text: "＋枠を追加", onclick: function () { var issue = addFrameMessage(nf.value); if (issue) { frameIssue.textContent = issue; nf.setAttribute("aria-invalid", "true"); return note(issue, "err"); } var n = Number(nf.value), id = S.stance + ":" + n; edit(function () { S.edit = C.order(S.edit.concat([{ slot_id: id, mode: "manual", custom: STD.indexOf(n) < 0, moves: [] }])); }); } }), frameIssue));
     var pageValidation = validation();
+    if (c.catalogStatus === "unavailable") ui.main.appendChild(h("p", { class: "pn-warn", role: "status", text: "公開技表を一時的に取得できません。保存済みの内容は保持されています。" }));
+    else ui.main.appendChild(h("p", {class:"pn-hint",text:"技表 " + movesOf(c).length + " 件"}));
     ui.main.appendChild(h("p", { class: "pn-validation-summary", "data-act": "validation-summary", role: "status", text: "入力エラー：" + pageValidation.errors.length + "件 ／ 未確認の技：" + pageValidation.unverified.length + "件" }));
     var jump = h("div", { class: "pn-jump", role: "group", "aria-label": "枠へ移動" });
     jump.appendChild(h("label", { class: "pn-filter" }, h("input", { type: "checkbox", "data-act": "filled-only", checked: !!S.filledOnly, onchange: function (e) { S.filledOnly = e.target.checked; render(); } }), " 技を登録した枠だけ表示"));
@@ -253,8 +256,8 @@
       if (s.mode === "manual") {
         var ol = h("ol", { class: "pn-mv" }); s.moves.forEach(function (m, i) {
           var li = h("li", { "data-k": String(m.k) }, mvInfo(m) + " ");
-          var bm = isBuiltinMove(id, m); li.appendChild(h("small", { class: bm ? "pn-ok" : m.att ? "pn-att" : "pn-un", text: bm ? "［既存］" : m.att ? "［管理者確認済み］" : "［未確認：下書きのみ］" }));
-          if (!bm) li.appendChild(h("label", null, h("input", { type: "checkbox", "data-act": "attest", checked: !!m.att, disabled: frozen(), onchange: function (e) { var on = e.target.checked; var cc = S.cur, ve = S.viewEpoch, sid = id, kk = m.k; var go = function () { if (S.cur !== cc || S.viewEpoch !== ve) return; var sl = slotOf(sid); var t = sl && sl.moves.find(function (x) { return x.k === kk && x.raw === undefined; }); if (!t) { note("確認の完了前に技が外された（または枠が変わった）ため、確認は反映しません", "err"); render(); return; } if (!edit(function () { if (on) t.att = true; else delete t.att; })) render(); }; if (on && store.attest) { e.target.disabled = true; store.attest(cc.id, { slot_id: sid, k: kk, base_hash: cc.base_hash }).then(go, function (er) { if (S.cur === cc && S.viewEpoch === ve) { note(er.message, "err"); render(); } }); } else go(); } }), "この枠で確定反撃になることを確認した"));
+          var bm = isBuiltinMove(id, m); li.appendChild(h("small", { class: m.review ? "pn-un" : bm ? "pn-ok" : m.att ? "pn-att" : "pn-un", text: m.review ? "［要再確認：" + m.review + "］" : bm ? "［既存］" : m.att ? "［管理者確認済み］" : "［未確認：下書きのみ］" }));
+          if (!bm && !m.review) li.appendChild(h("label", null, h("input", { type: "checkbox", "data-act": "attest", checked: !!m.att, disabled: frozen() || startupFrame(movesOf(c).find(function(x){return x.k===m.k;})) > f, onchange: function (e) { var on = e.target.checked; var cc = S.cur, ve = S.viewEpoch, sid = id, kk = m.k; var go = function () { if (S.cur !== cc || S.viewEpoch !== ve) return; var sl = slotOf(sid); var t = sl && sl.moves.find(function (x) { return x.k === kk && x.raw === undefined; }); if (!t) { note("確認の完了前に技が外された（または枠が変わった）ため、確認は反映しません", "err"); render(); return; } if (!edit(function () { if (on) t.att = true; else delete t.att; })) render(); }; if (on && store.attest) { e.target.disabled = true; store.attest(cc.id, { slot_id: sid, k: kk, base_hash: cc.base_hash }).then(go, function (er) { if (S.cur === cc && S.viewEpoch === ve) { note(er.message, "err"); render(); } }); } else go(); } }), "この枠で確定反撃になることを確認した"));
           li.appendChild(h("button", { type: "button", "aria-label": "上へ", "data-act": "up", disabled: frozen() || i === 0, text: "↑", onclick: function () { edit(function () { var a = slotOf(id).moves; var t = a[i]; a[i] = a[i - 1]; a[i - 1] = t; }); } }));
           li.appendChild(h("button", { type: "button", "aria-label": "下へ", "data-act": "down", disabled: frozen() || i === s.moves.length - 1, text: "↓", onclick: function () { edit(function () { var a = slotOf(id).moves; var t = a[i]; a[i] = a[i + 1]; a[i + 1] = t; }); } }));
           var ordinal = h("select", { "aria-label":"表示順 " + m.k, "data-act":"order", disabled:frozen() || s.moves.length < 2,
@@ -290,6 +293,10 @@
   function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開", "登録技を一括確認"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (ui.unpubBtn) ui.unpubBtn.disabled = ui.unpubBtn.disabled || !(S.cur && S.cur.published);
     if (S.locked) ui.confirm.disabled = S.busy; ui.confirm.hidden = !S.locked;if(ui.undo)ui.undo.disabled=!undoStack.length||frozen()||!S.cur||!!S.cur.blocked;if(ui.redo)ui.redo.disabled=!redoStack.length||frozen()||!S.cur||!!S.cur.blocked; paintStatus(); }
   // PNINT06: keyboard operation only changes the selection highlight; Enter is the explicit add action.
+  function startupFrame(move) {
+    var m = /^\s*(?:i\s*)?(\d+)\s*F?(?:\s*[〜～~−–-]\s*(\d+)\s*F?)?(?=\s|[（(+：:/／、]|$)/i.exec(move && move.startup || "");
+    return m ? Math.max(Number(m[1]), Number(m[2] || m[1])) : Infinity;
+  }
   function picker(slot, f, replacement) {
     var c = S.cur; if (frozen() || !c || !slotOf(slot)) return;
     var opener = document.activeElement, tok = { id: c.id, ve: S.viewEpoch, slot: slot }; S.pick = tok;
@@ -301,21 +308,21 @@
     function valid() { return S.pick === tok && S.cur === c && tok.ve === S.viewEpoch && dlg.isConnected && !frozen(); }
     function returnFocus() { var row = ui.main.querySelector('[data-slot="'+slot+'"]'); var next = row && (replacement === undefined ? row.querySelector('[data-act="add"]') : row.querySelectorAll('[data-act="replace"]')[replacement]); if (next && !next.disabled) next.focus(); else if (opener && opener.isConnected) opener.focus(); else ui.charSearch.focus(); }
     function closePicker() { if (S.pick === tok) S.pick=null; dlg.remove(); returnFocus(); }
-    function startF(m) { var a=/^\s*(\d+)\s*F/i.exec(m.startup||""); return a?Number(a[1]):Number.MAX_SAFE_INTEGER; }
+
     function mark(shouldScroll) { if (!buttons.length) { q.removeAttribute("aria-activedescendant"); return; }
       active=Math.max(0,Math.min(active,buttons.length-1)); buttons.forEach(function(btn,i){btn.parentNode.setAttribute("data-active",i===active?"true":"false");});
       q.setAttribute("aria-activedescendant",buttons[active].parentNode.id);
       if(shouldScroll) buttons[active].scrollIntoView({block:"nearest"}); }
     function draw() { list.replaceChildren();buttons=[];active=0;
-      var chosen = {}, sl=slotOf(slot); (sl ? sl.moves : []).forEach(function(m){chosen[m.k]=1;});
-      var t=normalized(q.value), all=movesOf(c).filter(function(m){return m.k>=0 && (!hideChosen.checked || !chosen[m.k]) && (!fastOnly.checked || startF(m)<=f) && (!t || normalized(m.name+" "+m.command+" "+m.startup+" "+m.k).includes(t));});
-      if(orderSelect.value==="startup") all.sort(function(a,b){return startF(a)-startF(b)||a.k-b.k;});
+      var chosen = {}, sl=slotOf(slot); (sl ? sl.moves : []).forEach(function(m,index){if(index!==replacement)chosen[m.k]=1;});
+      var t=normalized(q.value), all=movesOf(c).filter(function(m){return m.k>=0 && (!hideChosen.checked || !chosen[m.k]) && (!fastOnly.checked || startupFrame(m)<=f) && (!t || normalized(m.name+" "+m.command+" "+m.startup+" "+m.k).includes(t));});
+      if(orderSelect.value==="startup") all.sort(function(a,b){return startupFrame(a)-startupFrame(b)||a.k-b.k;});
       if(orderSelect.value==="name") all.sort(function(a,b){return String(a.name).localeCompare(String(b.name),"ja")||a.k-b.k;});
       resultCount.textContent=all.length+"件の候補（最大80件表示）";
-      all.slice(0,80).forEach(function(m,i){var n=/^\s*(\d+)\s*F/.exec(m.startup||""),over=n && +n[1]>f,dup=chosen[m.k];
+      all.slice(0,80).forEach(function(m,i){var over=startupFrame(m)>f,dup=chosen[m.k];
         var li=h("li",{id:"pn-picker-option-"+i,"data-active":"false"}),btn=h("button",{type:"button","data-k":String(m.k),disabled:!!dup,text:m.name+"（"+m.command+"・発生"+m.startup+"）"+(dup?" 登録済み":"")+(over?" ⚠発生がこの枠より遅い":""),onclick:function(){
           if(!valid() || dup) return; var current=slotOf(slot);
-          if(!current || current.mode!=="manual" || current.moves.some(function(x){return x.k===m.k;})) return;
+          if(!current || current.mode!=="manual" || current.moves.some(function(x,index){return index!==replacement&&x.k===m.k;})) return;
           if(replacement === undefined && current.moves.length>=C.MAX_MOVES) return note("技が多すぎます（"+C.MAX_MOVES+"件まで）","err");
           if(edit(function(){
             if (replacement === undefined) current.moves.push({k:m.k});
@@ -343,8 +350,7 @@
   }
   // ---- PNINT04: authoritative post-write re-fetch. No blind adoption of response revisions.
   function fromResponse(r,id) {
-    var src=r.draft || r.published;
-    return {blocked:!!r.edit_blocked,effective:r.effective,effective_base:r.effective_base,
+    return {blocked:!!r.edit_blocked,catalogStatus:r.catalog_status,effective:r.effective,effective_base:r.effective_base,
       has_net:r.has_net,policy:r.policy,id:id,char:r.char,builtin:r.builtin,base_hash:r.base_hash,
       revision:r.revision,draft:r.draft,published:r.published,history:r.history};
   }
@@ -481,7 +487,7 @@
       else if(S.cur===c&&S.viewEpoch===ve&&!S.syncPending){S.busy=false;render();}});
   }
   function doSave(){if(S.cur&&S.cur.blocked)return note("元データが未検証のため保存できません","err");run("下書き保存","saveDraft",{slots:clone(S.edit)});}
-  function doPublish() { var c = S.cur; if (!c) return; if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err"); if (c.blocked) return note("元データが未検証のため公開できません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!c.draft) return note("公開する下書きがありません", "err"); var v = validation(); if (v.errors.length) return note("エラーがあるため公開できません", "err"); if (v.unverified.length) return note("未確認の技が " + v.unverified.length + " 件あるため公開できません（「登録技を一括確認」を押して、下書きを保存し直してください）", "err"); var hd = C.publishHolds(S.edit, c.builtin, c.policy); if (hd.length) return note(C.HOLD_TEXT[hd[0].code], "err");
+  function doPublish() { var c = S.cur; if (!c) return; if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err"); if (c.blocked) return note("元データが未検証のため公開できません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!c.draft) return note("公開する下書きがありません", "err"); var v = validation(); if (v.errors.length) return note("エラーがあるため公開できません", "err"); var changedSlots = new Set(c.draft.ovr.map(function(slot){return slot.slot_id;})); var pending = v.unverified.filter(function(u){return changedSlots.has(u.slot);}); if (pending.length) return note("変更した枠に未確認の技が " + pending.length + " 件あります。該当行を確認し、下書きを保存し直してください", "err"); var hd = C.publishHolds(S.edit, c.builtin, c.policy); if (hd.length) return note(C.HOLD_TEXT[hd[0].code], "err");
     var d = C.diff(C.applyOverrides(c.builtin, c.published ? c.published.ovr : []), S.edit); if (!window.confirm("PC版・スマホ版に公開します。現在の公開内容との違いは " + d.length + " 枠です。よろしいですか？")) return;
     runPub("公開", "publish", { draft_revision: c.draft.rev, payload_hash: C.fp(c.draft.ovr) }); }
   function doReset() { var c = S.cur; if (!c || frozen() || S.conflict || !c.published) return note("解除する公開版がありません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!window.confirm("公開を解除して、PC版・スマホ版を元の表示に戻します（保存した下書きと履歴は残ります）。よろしいですか？")) return; runPub("公開の解除", "reset", {}); }
@@ -529,8 +535,10 @@
     var c = S.cur; if (!c || c.blocked) return;
     if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err");
     var v = validation(); if (v.errors.length) return note("エラーがあるため一括確認できません。先に直してください", "err");
-    if (!v.unverified.length) return note("確認が必要な技はありません", "");
-    var items = v.unverified.map(function (u) { return { slot_id: u.slot, k: u.k }; });
+    var items = v.unverified.filter(function (u) {
+      return !u.review && startupFrame(movesOf(c).find(function(x){return x.k===u.k;})) <= C.frameOf(u.slot);
+    }).map(function (u) { return { slot_id: u.slot, k: u.k }; });
+    if (!items.length) return note(v.unverified.length ? "該当する技を差し替えるか、枠を修正してください" : "確認が必要な技はありません", "");
     if (!window.confirm("未確認の技 " + items.length + " 件を、それぞれの枠で確定反撃になる技として確認済みにします。よろしいですか？")) return;
     var ve = S.viewEpoch; S.busy = true; render(); note("一括確認中…");
     store.attest(c.id, { base_hash: c.base_hash, items: items }).then(function () {

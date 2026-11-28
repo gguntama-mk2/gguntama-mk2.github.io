@@ -56,15 +56,15 @@
       if (s.moves.length > MAX_MOVES) errors.push("技が多すぎます（" + MAX_MOVES + "件まで）：" + id);
       var dup = {}, bk = {}; if (b) b.moves.forEach(function (m) { (bk[m.k] = bk[m.k] || []).push(m); });
       s.moves.forEach(function (m, j) {
-        if (!m || typeof m !== "object" || Array.isArray(m) || !keysOk(m, ["k", "raw", "att"])) { errors.push("技の指定が不正です：" + id + " " + (j + 1) + "番目"); return; }
+        if (!m || typeof m !== "object" || Array.isArray(m) || !keysOk(m, ["k", "raw", "att", "review"])) { errors.push("技の指定が不正です：" + id + " " + (j + 1) + "番目"); return; }
         if (!isInt(m.k)) { errors.push("技IDが不正です（整数のみ）：" + id + " " + (j + 1) + "番目"); return; }
         if (m.att !== undefined && m.att !== true) { errors.push("確認の指定が不正です：" + id); return; }
         var orig = (bk[m.k] || []).find(function (x) { return canon(x.raw) === canon(m.raw) && m.raw !== undefined; });
         if (m.raw !== undefined) { if (!orig) { errors.push("原本に無い行は登録できません（技ID " + m.k + "）：" + id); return; } }
         if (m.k < 0) { if (!orig) errors.push("技表外の行は新しく追加できません：" + id); return; }
-        if (!orig && !ks[m.k]) { errors.push("存在しない技ID " + m.k + "：" + id); return; }
+        if (!orig && !ks[m.k] && !m.review) { errors.push("存在しない技ID " + m.k + "：" + id); return; }
         var dk = m.k + "|" + (m.raw === undefined ? "" : canon(m.raw)); if (dup[dk]) errors.push("同じ技が重複しています（技ID " + m.k + "）：" + id); dup[dk] = 1;
-        if (!orig && m.att !== true) unverified.push({ slot: id, k: m.k });
+        if (m.review || (!orig && m.att !== true)) unverified.push({ slot: id, k: m.k, review: m.review });
         if (orig && m.att) errors.push("原本の行に確認の指定は不要です：" + id);
       });
     });
@@ -73,7 +73,7 @@
     return { errors: errors, unverified: unverified };
   }
   /* 組み込み(原本)との差だけを上書きとして持つ */
-  function slotEq(a, b) { return canon({ mode: a.mode, moves: a.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att }; }) }) === canon({ mode: b.mode, moves: b.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att }; }) }); }
+  function slotEq(a, b) { return canon({ mode: a.mode, moves: a.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att, review: m.review }; }) }) === canon({ mode: b.mode, moves: b.moves.map(function (m) { return { k: m.k, raw: m.raw, att: m.att, review: m.review }; }) }); }
   function overrides(slots, builtin) { var bm = {}; builtin.forEach(function (s) { bm[s.slot_id] = s; }); var out = []; slots.forEach(function (s) { var b = bm[s.slot_id]; if (b) { if (!slotEq(s, b)) out.push(clone(s)); } else if (!(s.mode === "auto" && !s.moves.length)) out.push(clone(s)); }); return order(out); }
   function applyOverrides(builtin, ovr) { var m = {}; clone(builtin).forEach(function (s) { m[s.slot_id] = s; }); (ovr || []).forEach(function (o) { m[o.slot_id] = clone(o); }); return order(Object.keys(m).map(function (k) { return m[k]; })); }
   function summary(slots) { var m = {}; slots.forEach(function (s) { m[s.slot_id] = s.mode + ":" + s.moves.map(function (x) { return x.k + (x.att ? "*" : ""); }).join(","); }); return m; }
