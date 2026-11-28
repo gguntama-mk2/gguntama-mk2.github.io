@@ -28,7 +28,7 @@
     if(active){try{const s=await session();if(!identity||s.principal!==identity.principal||s.permission_epoch!==identity.epoch)lock();}catch(e){lock();}finally{pending=false;}return;}
     message('管理者権限を確認しています…');
     try{const s=await session();const id={principal:s.principal,epoch:s.permission_epoch};
-      root.replaceChildren();const banner=document.createElement('p');banner.textContent='変更は管理者用の下書きに保存されます。公開は保留中です。';root.append(banner);
+      root.replaceChildren();const banner=document.createElement('p');banner.textContent='変更は管理者用の下書きに保存されます。「公開」を押すと、PC版・スマホ版に反映されます。';root.append(banner);
       const reload=document.createElement('button');reload.type='button';reload.textContent='保存版を再読み込み';root.append(reload);
       const editor=document.createElement('div');root.append(editor);
       reload.addEventListener('click',()=>{if(!PTAdminPunish.refreshCurrent())banner.textContent='未保存編集または確認中の操作があります。自動破棄しません。';});

@@ -220,7 +220,8 @@
     else if (S.conflict) { st = "conflict"; tx = "競合あり（編集内容は保全中）"; }
     else if (S.busy || S.syncPending) { st = "busy"; tx = "保存・照合中…"; }
     else if (S.dirty) { st = "dirty"; tx = "未保存の変更あり"; }
-    else if (c.revision > 0) { st = "saved"; tx = "下書き保存済み（版 " + c.revision + "）"; }
+    else if (c.published && c.draft && C.canon(c.published.ovr) === C.canon(c.draft.ovr)) { st = "saved"; tx = "公開済み（版 " + c.published.rev + "）"; }
+    else if (c.revision > 0) { st = "saved"; tx = "下書き保存済み（版 " + (c.draft ? c.draft.rev : c.revision) + "）" + (c.published ? "・公開中の版 " + c.published.rev + " とは違います" : "・未公開"); }
     else { st = "base"; tx = "原本のまま（保存した下書きなし）"; }
     ui.dirty.textContent = tx; ui.dirty.dataset.state = st;
   }
@@ -283,10 +284,11 @@
       if (issues.errors.length) { row.setAttribute("data-invalid", "true"); sel.setAttribute("aria-invalid", "true"); }
       ui.main.appendChild(row);
     });
-    var v = pageValidation; ui.errs.replaceChildren(); C.publishHolds(S.edit, c.builtin, c.policy).forEach(function (x) { ui.errs.appendChild(h("li", { class: "pn-hold", "data-hold": x.code, text: "【保留】" + C.HOLD_TEXT[x.code] })); }); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】公開済みの設定は、保留解除の承認が失効したため停止し、検証済みの旧版の表示に戻しています。旧版が確認できない場合は表示を停止します（設定自体は消えていません）" })); if (!c.has_net) ui.errs.appendChild(h("li", { class: "pn-hint", "data-netless": "1", text: "このキャラはNET原本がありません。現行の表示は、手動の枠を入れるまで維持されます" })); v.errors.forEach(function (e) { ui.errs.appendChild(h("li", { text: e })); }); if (v.unverified.length) ui.errs.appendChild(h("li", { class: "pn-warn", text: "未確認の技が " + v.unverified.length + " 件あります（下書きには保存できますが、確認するまで公開できません）" }));
+    var v = pageValidation; ui.errs.replaceChildren(); C.publishHolds(S.edit, c.builtin, c.policy).forEach(function (x) { ui.errs.appendChild(h("li", { class: "pn-hold", "data-hold": x.code, text: "【保留】" + C.HOLD_TEXT[x.code] })); }); if (c.effective && (c.effective.suspended || c.effective.stopped)) ui.errs.appendChild(h("li", { class: "pn-hold", "data-suspended": "1", text: "【停止中】公開済みの設定は、保留解除の承認が失効したため停止し、検証済みの旧版の表示に戻しています。旧版が確認できない場合は表示を停止します（設定自体は消えていません）" })); if (!c.has_net) ui.errs.appendChild(h("li", { class: "pn-hint", "data-netless": "1", text: "このキャラはNET原本がありません。手動・表示なしにした枠以外は、最新の技表による自動判定をそのまま表示します" })); v.errors.forEach(function (e) { ui.errs.appendChild(h("li", { text: e })); }); if (v.unverified.length) ui.errs.appendChild(h("li", { class: "pn-warn", text: "未確認の技が " + v.unverified.length + " 件あります（下書きには保存できますが、確認するまで公開できません）" }));
     syncBar();
   }
-  function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (S.locked) ui.confirm.disabled = S.busy; ui.confirm.hidden = !S.locked;if(ui.undo)ui.undo.disabled=!undoStack.length||frozen()||!S.cur||!!S.cur.blocked;if(ui.redo)ui.redo.disabled=!redoStack.length||frozen()||!S.cur||!!S.cur.blocked; paintStatus(); }
+  function syncBar() { var v = validation();ui.bar.querySelectorAll("button").forEach(function (b) { b.disabled = frozen() && b !== ui.confirm; }); ui.save.disabled = !!v.errors.length || frozen() || !!S.conflict || !S.cur; if (S.cur && S.cur.blocked) ui.bar.querySelectorAll("button").forEach(function (b) { if (["下書き保存", "プレビュー", "公開", "登録技を一括確認"].indexOf(b.textContent) >= 0) b.disabled = true; }); if (ui.unpubBtn) ui.unpubBtn.disabled = ui.unpubBtn.disabled || !(S.cur && S.cur.published);
+    if (S.locked) ui.confirm.disabled = S.busy; ui.confirm.hidden = !S.locked;if(ui.undo)ui.undo.disabled=!undoStack.length||frozen()||!S.cur||!!S.cur.blocked;if(ui.redo)ui.redo.disabled=!redoStack.length||frozen()||!S.cur||!!S.cur.blocked; paintStatus(); }
   // PNINT06: keyboard operation only changes the selection highlight; Enter is the explicit add action.
   function picker(slot, f, replacement) {
     var c = S.cur; if (frozen() || !c || !slotOf(slot)) return;
@@ -446,7 +448,7 @@
       if(S.cur===c&&S.viewEpoch===ve){note("保存は応答しましたが再読込に失敗："+e.message+"。編集は保持し、再照合が必要です。","err");}
     }).finally(function(){if(S.viewEpoch===ve){S.busy=false;render();}});
   }
-  function retrySync(){var c=S.cur,p=S.syncPending;if(!c||!p||S.busy||S.locked)return;hydrateSaved(c,p.rev,p.label,S.viewEpoch,p.expected);}
+  function retrySync(){var c=S.cur,p=S.syncPending;if(!c||!p||S.busy||S.locked)return;if(p.pub)return syncPub(c,p.pub,p.rev,p.label,S.viewEpoch);hydrateSaved(c,p.rev,p.label,S.viewEpoch,p.expected);}
   function run(label,kind,extra,restoreExpected){
     var c=S.cur;if(!c)return;
     if(S.locked||S.syncPending)return note("結果未確認の操作があります。先に確認してください。","err");
@@ -471,7 +473,7 @@
     S.busy=true;render();
     store.op(lk.char,lk.op,lk.kind).then(function(r){
       if(S.cur!==c||S.viewEpoch!==ve||S.locked!==lk)return;
-      if(r.status==="applied"){S.locked=null;hydrateSaved(c,r.revision,lk.label,ve,lk.expected);}
+      if(r.status==="applied"){S.locked=null;if(lk.kind==="publish"||lk.kind==="reset")syncPub(c,lk.kind,r.revision,lk.label,ve);else hydrateSaved(c,r.revision,lk.label,ve,lk.expected);}
       else if(r.status==="rejected"){S.locked=null;note(lk.label+"は拒否されていました。編集を保持しました。","err");}
       else note("結果不明です。再送は行いません。時間をおいて再確認してください。","err");
     },function(e){if(S.cur===c&&S.viewEpoch===ve)note("結果照合に失敗："+e.message,"err");})
@@ -479,10 +481,65 @@
       else if(S.cur===c&&S.viewEpoch===ve&&!S.syncPending){S.busy=false;render();}});
   }
   function doSave(){if(S.cur&&S.cur.blocked)return note("元データが未検証のため保存できません","err");run("下書き保存","saveDraft",{slots:clone(S.edit)});}
-  function doPublish() { var c = S.cur; if (!c) return; if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err"); if (c.blocked) return note("元データが未検証のため公開できません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!c.draft) return note("公開する下書きがありません", "err"); var v = validation(); if (v.errors.length) return note("エラーがあるため公開できません", "err"); if (v.unverified.length) return note("未確認の技が " + v.unverified.length + " 件あるため公開できません（各技の確認を付けて保存し直してください）", "err"); var hd = C.publishHolds(S.edit, c.builtin, c.policy); if (hd.length) return note(C.HOLD_TEXT[hd[0].code], "err");
-    var d = C.diff(C.applyOverrides(c.builtin, c.published ? c.published.ovr : []), S.edit); if (!window.confirm("公開します。変更 " + d.length + " 枠。よろしいですか？")) return;
-    var dr = c.draft.rev, ph = C.fp(c.draft.ovr); run("公開", "publish", { draft_revision: dr, payload_hash: ph }, function (r, cc) { cc.published = { rev: r.revision, ovr: clone(cc.draft.ovr) }; note("公開しました（版" + r.revision + "）"); }); }
-  function doReset() { var c = S.cur; if (!c || frozen() || S.conflict || !c.published) return note("解除する公開版がありません", "err"); if (!window.confirm("公開中の上書きを解除して組み込みの表示に戻します（組み込みデータの削除ではありません。履歴は残ります）。")) return; run("解除", "reset", {}, function (r, cc) { cc.published = null; note("公開を解除しました（版" + r.revision + "）"); }); }
+  function doPublish() { var c = S.cur; if (!c) return; if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err"); if (c.blocked) return note("元データが未検証のため公開できません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!c.draft) return note("公開する下書きがありません", "err"); var v = validation(); if (v.errors.length) return note("エラーがあるため公開できません", "err"); if (v.unverified.length) return note("未確認の技が " + v.unverified.length + " 件あるため公開できません（「登録技を一括確認」を押して、下書きを保存し直してください）", "err"); var hd = C.publishHolds(S.edit, c.builtin, c.policy); if (hd.length) return note(C.HOLD_TEXT[hd[0].code], "err");
+    var d = C.diff(C.applyOverrides(c.builtin, c.published ? c.published.ovr : []), S.edit); if (!window.confirm("PC版・スマホ版に公開します。現在の公開内容との違いは " + d.length + " 枠です。よろしいですか？")) return;
+    runPub("公開", "publish", { draft_revision: c.draft.rev, payload_hash: C.fp(c.draft.ovr) }); }
+  function doReset() { var c = S.cur; if (!c || frozen() || S.conflict || !c.published) return note("解除する公開版がありません", "err"); if (S.dirty) return note("先に下書きを保存してください", "err"); if (!window.confirm("公開を解除して、PC版・スマホ版を元の表示に戻します（保存した下書きと履歴は残ります）。よろしいですか？")) return; runPub("公開の解除", "reset", {}); }
+  // 公開・解除は下書きの版を変えない。書込み後は必ず読み戻し、公開版の中身まで照合する。
+  function runPub(label, kind, extra) {
+    var c = S.cur; if (!c) return;
+    if (S.locked || S.syncPending) return note("結果未確認の操作があります。先に確認してください。", "err");
+    if (S.conflict) return note("保存競合を確認してから操作してください。", "err");
+    if (S.busy) return;
+    if (S.dirty) return note("先に下書きを保存してください", "err");
+    var ve = S.viewEpoch, op = C.opId(), body = Object.assign({ operation_id: op, expected_revision: c.revision, base_hash: c.base_hash }, extra);
+    ++S.readSeq; S.busy = true; render(); note(label + "中…");
+    store[kind](c.id, body).then(function (r) {
+      if (S.cur !== c || S.viewEpoch !== ve) return;
+      syncPub(c, kind, r.revision, label, ve);
+    }, function (e) {
+      if (S.cur !== c || S.viewEpoch !== ve) return;
+      S.busy = false;
+      if (e && e.unknown) { S.locked = { op: op, kind: kind, label: label, char: c.id, expected: null }; note(label + "の結果が不明です。再送せず操作IDで照会してください。", "err"); }
+      else if (e && e.status === 409) { S.conflict = { server: null }; note("409競合：最新版を照合してください。" + ((e && e.message) ? "（" + e.message + "）" : ""), "err"); inspectConflict(); }
+      else note((e && e.message) || label + "を確認できませんでした", "err");
+      render();
+    });
+  }
+  function syncPub(c, kind, rev, label, ve) {
+    if (S.cur !== c || S.viewEpoch !== ve) return;
+    S.busy = true; S.syncPending = { rev: rev, label: label, expected: null, pub: kind }; render();
+    store.get(c.id).then(function (g) {
+      if (S.cur !== c || S.viewEpoch !== ve) return;
+      var same = !!(g.published && g.draft && g.published.rev === rev && C.canon(g.published.ovr) === C.canon(g.draft.ovr));
+      if (g.revision !== rev || g.base_hash !== c.base_hash || g.edit_blocked || (kind === "publish" ? !same : !!g.published)) {
+        S.syncPending = null; S.conflict = { server: g }; setDirty(true);
+        note("操作後にサーバー版との不一致を検知しました。手元の編集は保全しました。", "err"); return;
+      }
+      var st = S.stance, keepSearch = S.charQuery;
+      S.cur = fromResponse(g, c.id); S.edit = C.applyOverrides(g.builtin, g.draft ? g.draft.ovr : []); clearUndo(S.edit);
+      S.stance = st; S.charQuery = keepSearch; S.conflict = null; S.syncPending = null; S.pick = null; ui.pv.replaceChildren(); setDirty(false); drawCharList();
+      note(kind === "publish" ? "公開しました（版" + rev + "）。PC版・スマホ版には、1分ほどで反映されます。" : "公開を解除しました（版" + rev + "）。保存した下書きは残っています。");
+    }, function (e) {
+      if (S.cur === c && S.viewEpoch === ve) note(label + "は応答しましたが再読込に失敗：" + e.message + "。再照合が必要です。", "err");
+    }).finally(function () { if (S.viewEpoch === ve) { S.busy = false; render(); } });
+  }
+  // 管理者による一括確認：未確認の技をまとめて確認済みにする（最新の技表にある技かどうかは、サーバーが確かめる）。確認は下書き保存で保存される。
+  function doAttestAll() {
+    var c = S.cur; if (!c || c.blocked) return;
+    if (frozen() || S.conflict) return note("未確認の書込みまたは競合があるため操作できません", "err");
+    var v = validation(); if (v.errors.length) return note("エラーがあるため一括確認できません。先に直してください", "err");
+    if (!v.unverified.length) return note("確認が必要な技はありません", "");
+    var items = v.unverified.map(function (u) { return { slot_id: u.slot, k: u.k }; });
+    if (!window.confirm("未確認の技 " + items.length + " 件を、それぞれの枠で確定反撃になる技として確認済みにします。よろしいですか？")) return;
+    var ve = S.viewEpoch; S.busy = true; render(); note("一括確認中…");
+    store.attest(c.id, { base_hash: c.base_hash, items: items }).then(function () {
+      if (S.cur !== c || S.viewEpoch !== ve) return;
+      S.busy = false; var n = 0;
+      if (!edit(function () { items.forEach(function (it) { var sl = slotOf(it.slot_id), t = sl && sl.moves.find(function (x) { return x.k === it.k && x.raw === undefined; }); if (t && !t.att) { t.att = true; n++; } }); })) render();
+      note(n + "件を確認済みにしました。「下書き保存」を押すと、確認が保存されます。");
+    }, function (er) { if (S.cur === c && S.viewEpoch === ve) { S.busy = false; note(er.message || "一括確認できませんでした", "err"); render(); } });
+  }
   function owner(t) { var c = S.cur; ui.pv.replaceChildren(h("h4", { text: t })); ui.pv.dataset.owner = c.id + ":" + S.viewEpoch; }
   // R04-I05: 差分の基準を画面表示と一致させる。停止中は「現在の表示(原本)」と「停止中の保存済み公開版」を別々に示す。
   function doDiff() { var c = S.cur; if (!c) return; var sus = !!(c.effective && (c.effective.suspended || c.effective.stopped || c.effective.source === "fallback_verified_legacy")), stp = !!(c.effective && c.effective.stopped); owner(sus ? (stp ? "差分（停止中：表示停止・データ未確認）" : "差分（停止中：現在の表示は検証済み旧版です）") : "現在の表示（公開中／無ければ組み込み）との差分");
@@ -569,8 +626,9 @@
     ui.title = h("h2"); ui.dirty = h("span", { class: "pn-dirty", role: "status", "aria-live": "polite" }); ui.note = h("p", { role: "status", class: "pn-note" }); ui.main = h("div"); ui.errs = h("ul", { class: "pn-errs" }); ui.pv = h("div", { class: "pn-pv" });
     ui.undo=h("button",{type:"button","data-act":"undo",disabled:true,text:"元に戻す",onclick:function(){applyHistory(true);}});
     ui.redo=h("button",{type:"button","data-act":"redo",disabled:true,text:"やり直す",onclick:function(){applyHistory(false);}});
+    ui.pubBtn = h("button", { type: "button", "data-act": "publish", text: "公開", onclick: doPublish }); ui.unpubBtn = h("button", { type: "button", "data-act": "reset", text: "公開を解除", onclick: doReset });
     ui.save = h("button", { type: "button", text: "下書き保存", onclick: doSave }); ui.confirm = h("button", { type: "button", text: "結果を確認", hidden: true, onclick: doConfirm });
-    ui.bar = h("div", { class: "pn-bar" }, ui.undo,ui.redo,ui.save, h("button", { type: "button", text: "プレビュー", onclick: doPreview }), h("button", { type: "button", text: "差分確認", onclick: doDiff }), h("button", { type: "button", text: "履歴", onclick: doHistory }), ui.confirm, ui.dirty);
+    ui.bar = h("div", { class: "pn-bar" }, ui.undo,ui.redo,ui.save, h("button", { type: "button", text: "プレビュー", onclick: doPreview }), h("button", { type: "button", text: "差分確認", onclick: doDiff }), h("button", { type: "button", text: "履歴", onclick: doHistory }), h("button", { type: "button", "data-act": "attest-all", text: "登録技を一括確認", onclick: doAttestAll }), ui.pubBtn, ui.unpubBtn, ui.confirm, ui.dirty);
     el.replaceChildren(h("div", { class: "pn-wrap" },h("div",{class:"pn-char-toolbar"},ui.charSearch,ui.charCount),ui.list,
       h("div", { class: "pn-body" }, ui.title, ui.note, ui.transfer, ui.recovery, ui.bar, ui.errs, ui.main, ui.pv)));
     if(keyListener)root.removeEventListener("keydown",keyListener);if(saveKeyListener)root.removeEventListener("keydown",saveKeyListener);
