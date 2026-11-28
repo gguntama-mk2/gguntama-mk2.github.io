@@ -49,7 +49,7 @@
       if (!keysOk(s, ["slot_id", "mode", "custom", "moves"])) errors.push("未知の項目があります：" + id);
       if (seen[id]) { errors.push("枠が重複しています：" + id); return; } seen[id] = 1;
       if (!b && !(f >= MIN_F && f <= MAX_F)) errors.push("枠の指定が不正です（" + MIN_F + "〜" + MAX_F + "F）：" + id);
-      if (["auto", "manual", "hidden"].indexOf(s.mode) < 0) { errors.push("設定方法が不正です：" + id); return; }
+      if (["auto", "manual", "hidden", "deleted"].indexOf(s.mode) < 0) { errors.push("設定方法が不正です：" + id); return; }
       if (!Array.isArray(s.moves)) { errors.push("技の一覧が不正です：" + id); return; }
       if (s.mode !== "manual") { if (s.moves.length) errors.push("自動・表示なしの枠に技は登録できません：" + id); return; }
       if (!s.moves.length) errors.push("手動の枠に技がありません（表示しない場合は『表示なし』を選びます）：" + id);
@@ -85,7 +85,7 @@
     policy = policy || {}; var holds = [], bm = {}; (builtin || []).forEach(function (b) { bm[b.slot_id] = 1; });
     var au = (slots || []).filter(function (s) { return s.mode === "auto" && bm[s.slot_id]; }).map(function (s) { return s.slot_id; });
     if (au.length && policy.auto_meaning !== true) holds.push({ code: "HOLD_AUTO_MEANING", slots: au });
-    var man = (slots || []).filter(function (s) { return s.mode === "manual" || s.mode === "hidden"; }).map(function (s) { return s.slot_id; });
+    var man = (slots || []).filter(function (s) { return s.mode === "manual" || s.mode === "hidden" || s.mode === "deleted"; }).map(function (s) { return s.slot_id; });
     if (!(builtin || []).length && man.length && policy.mixed_resolver !== true) holds.push({ code: "HOLD_MIXED_RESOLVER", slots: man });
     return holds;
   }

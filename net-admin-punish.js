@@ -81,7 +81,7 @@
       m.raw ? m.raw[3] + "（" + m.raw[2] + "）" : "技ID " + m.k;
   }
   function isBuiltinMove(sid, m) { var b = builtinOf(sid); return !!(b && m.raw !== undefined && b.moves.some(function (x) { return x.k === m.k && C.canon(x.raw) === C.canon(m.raw); })); }
-  function framesFor(st) { var set = {}; STD.forEach(function (f) { set[f] = 1; }); S.edit.forEach(function (s) { if (C.stateOf(s.slot_id) === st) set[C.frameOf(s.slot_id)] = 1; }); return Object.keys(set).map(Number).sort(function (a, b) { return a - b; }); }
+  function framesFor(st) { var set = {}; STD.forEach(function (f) { set[f] = 1; }); S.edit.forEach(function (s) { if (C.stateOf(s.slot_id) !== st) return; var f = C.frameOf(s.slot_id); if (s.mode === "deleted") delete set[f]; else set[f] = 1; }); return Object.keys(set).map(Number).sort(function (a, b) { return a - b; }); }
   function validation() { var c = S.cur; return c ? C.validateSlots(S.edit, movesOf(c), c.builtin) : { errors: [], unverified: [] }; }
   // PNINT05: contextual, read-only validation. Authoritative validation remains in pnint/net_store.py.
   function slotMessages(id, report) {
@@ -92,7 +92,7 @@
     if (value === "") return "枠番号を入力してください（" + MIN_F + "〜" + MAX_F + "F）";
     var n = Number(value);
     if (!Number.isSafeInteger(n) || n < MIN_F || n > MAX_F) return MIN_F + "〜" + MAX_F + " の整数を入力してください";
-    if (slotOf(S.stance + ":" + n)) return "-" + n + "F の枠はすでにあります";
+    if (slotOf(S.stance + ":" + n) && slotOf(S.stance + ":" + n).mode !== "deleted") return "-" + n + "F の枠はすでにあります";
     return "";
   }
   // PNINT08: explicit file transfer only. No localStorage, cookies, OAuth data, or silent writes.
@@ -191,7 +191,10 @@
   function normalized(x) { return String(x == null ? "" : x).normalize("NFKC").toLowerCase().trim(); }
   function drawCharList() {
     if (!ui.list) return;
-    var q = normalized(S.charQuery), found = S.chars.filter(function(c){return !q || normalized(c.name + " " + c.id).includes(q);});
+    var q = normalized(S.charQuery), found = S.chars.filter(function(c){return !q || normalized(c.name + " " + c.id).includes(q);}).sort(function(a,b){
+      var x=normalized(a.id), y=normalized(b.id);
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
     ui.list.replaceChildren();
     found.forEach(function(c){ ui.list.appendChild(h("button", { type:"button", "data-char":c.id, class:"pn-ch", "aria-current": S.cur && S.cur.id === c.id ? "true" : "false", text:c.name, onclick:function(){openChar(c.id);} })); });
     ui.charCount.textContent = found.length + " / " + S.chars.length + "キャラ";
@@ -236,7 +239,7 @@
     var frameIssue = h("span", { class: "pn-inline-input", "data-act": "frame-issue", role: "status" });
     nf.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); var b = nf.parentNode && nf.parentNode.querySelector('[data-act="addframe"]'); if (b && !b.disabled) b.click(); } });
     nf.addEventListener("input", function () { var msg = addFrameMessage(nf.value); frameIssue.textContent = msg; nf.setAttribute("aria-invalid", msg ? "true" : "false"); });
-    ui.main.appendChild(h("div", { class: "pn-addframe" }, "確反枠を追加：-", nf, "F ", h("button", { type: "button", "data-act": "addframe", disabled: frozen(), text: "＋枠を追加", onclick: function () { var issue = addFrameMessage(nf.value); if (issue) { frameIssue.textContent = issue; nf.setAttribute("aria-invalid", "true"); return note(issue, "err"); } var n = Number(nf.value), id = S.stance + ":" + n; edit(function () { S.edit = C.order(S.edit.concat([{ slot_id: id, mode: "manual", custom: STD.indexOf(n) < 0, moves: [] }])); }); } }), frameIssue));
+    ui.main.appendChild(h("div", { class: "pn-addframe" }, "確反枠を追加：-", nf, "F ", h("button", { type: "button", "data-act": "addframe", disabled: frozen(), text: "＋枠を追加", onclick: function () { var issue = addFrameMessage(nf.value); if (issue) { frameIssue.textContent = issue; nf.setAttribute("aria-invalid", "true"); return note(issue, "err"); } var n = Number(nf.value), id = S.stance + ":" + n; edit(function () { S.edit = C.order(S.edit.filter(function (x) { return x.slot_id !== id; }).concat([{ slot_id: id, mode: "manual", custom: STD.indexOf(n) < 0, moves: [] }])); }); } }), frameIssue));
     var pageValidation = validation();
     if (c.catalogStatus === "unavailable") ui.main.appendChild(h("p", { class: "pn-warn", role: "status", text: "公開技表を一時的に取得できません。保存済みの内容は保持されています。" }));
     else ui.main.appendChild(h("p", {class:"pn-hint",text:"技表 " + movesOf(c).length + " 件"}));
@@ -250,7 +253,7 @@
       var id = S.stance + ":" + f, s = slotOf(id) || { mode: "auto", moves: [] }, b = builtinOf(id), row = h("section", { class: "pn-row", "data-slot": id, "data-empty": s.mode === "manual" && s.moves.length ? "0" : "1" });
       var sel = h("select", { "aria-label": "-" + f + "F の設定方法", disabled: frozen(), onchange: function (e) { var v = e.target.value; var cur = slotOf(id); if (cur && cur.mode === "manual" && cur.moves.length && v !== "manual" && !window.confirm("この枠の登録済みの技 " + cur.moves.length + " 件を外します（「組み込みに戻す」で元に戻せます）。よろしいですか？")) { render(); return; } edit(function () { var t = slotOf(id); if (!t) { t = { slot_id: id, mode: "auto", moves: [] }; S.edit = C.order(S.edit.concat([t])); } t.mode = v; if (v !== "manual") t.moves = []; }); } }, h("option", { value: "auto", text: "自動", selected: s.mode === "auto" }), h("option", { value: "manual", text: "手動", selected: s.mode === "manual" }), h("option", { value: "hidden", text: "表示なし", selected: s.mode === "hidden" }));
       var head = h("h3", null, "-" + f + "F ", sel, b ? h("small", { text: STD.indexOf(f) < 0 ? " 既存の標準外枠" : " 既存" }) : h("small", { text: " 新規" }));
-      if (!b) head.appendChild(h("button", { type: "button", "data-act": "delslot", disabled: frozen(), text: "枠を削除", onclick: function () { if (window.confirm("-" + f + "F の枠を削除します。")) edit(function () { S.edit = S.edit.filter(function (x) { return x.slot_id !== id; }); }); } }));
+      if (!b) head.appendChild(h("button", { type: "button", "data-act": "delslot", disabled: frozen(), text: "枠を削除", onclick: function () { if (window.confirm("-" + f + "F の枠を削除します。保存・公開後は一般公開からも消えます。")) edit(function () { S.edit = C.order(S.edit.filter(function (x) { return x.slot_id !== id; }).concat([{ slot_id: id, mode: "deleted", custom: STD.indexOf(f) < 0, moves: [] }])); }); } }));
       if (b && C.canon(slotOf(id) || { slot_id: id, mode: "auto", moves: [] }) !== C.canon(b)) head.appendChild(h("button", { type: "button", "data-act": "revert", disabled: frozen(), text: "組み込みに戻す", onclick: function () { edit(function () { S.edit = C.order(S.edit.filter(function (x) { return x.slot_id !== id; }).concat([clone(b)])); }); } }));
       row.appendChild(head);
       if (s.mode === "manual") {
@@ -564,7 +567,7 @@
   // Neither the local draft, revision, selected stance nor conflict state is changed.
   function describeHistorySlot(s,c){
     if(!s)return "枠なし";
-    var caption={auto:"自動",hidden:"表示なし",manual:"手動"}[s.mode]||String(s.mode);
+    var caption={auto:"自動",hidden:"表示なし",manual:"手動",deleted:"枠を削除"}[s.mode]||String(s.mode);
     var m=(s.moves||[]).map(function(x,i){
       var mv=c.char.moves.find(function(y){return y.k===x.k;});
       return (i+1)+"番 k="+x.k+(mv?" "+mv.name+" / "+mv.command:"")+" / "+(x.att?"確認済み":"未確認")+(x.raw!==undefined?" / raw="+C.canon(x.raw):"");});
