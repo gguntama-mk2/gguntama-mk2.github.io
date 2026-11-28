@@ -51,7 +51,8 @@
 #secNet .pn-body{min-width:0;max-width:100%} #secNet .pn-dlg{box-sizing:border-box} #secNet .pn-row{overflow-wrap:anywhere}
 /* ---- Kuro01: 使いやすさの改善（表示のみ。操作・保存・認証・競合保護の動作は変えない） ---- */
 /* 保存状態の表示（操作バーに固定） */
-#secNet .pn-bar{position:sticky;top:0;z-index:6;align-items:center;background:var(--adm-panel);border:1px solid var(--adm-line);border-radius:8px;padding:7px 9px;margin:8px 0}
+#secNet .pn-bar{position:sticky;top:calc(var(--hh,60px) + 8px);z-index:6;align-items:center;background:var(--adm-panel);border:1px solid var(--adm-line);border-radius:8px;padding:7px 9px;margin:8px 0}
+@media(max-width:800px){#secNet .pn-bar{top:0}}   /* 狭い画面では見出しが固定されないため、画面の上端に付ける */
 #secNet .pn-dirty{margin-left:auto;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid transparent;white-space:nowrap}
 #secNet .pn-dirty:empty{display:none}
 #secNet .pn-dirty[data-state="saved"]{color:#9be8c8;border-color:#3f8f72;background:#1d3a31}
@@ -89,7 +90,7 @@
   #secNet .pn-wrap{display:grid;grid-template-columns:232px minmax(0,1fr);grid-template-rows:auto 1fr;gap:8px 18px;align-items:start}
   #secNet .pn-char-toolbar{grid-column:1;grid-row:1;flex-direction:column;align-items:stretch;gap:4px;margin:0}
   #secNet .pn-char-toolbar input{max-width:none;min-width:0;width:100%;box-sizing:border-box}
-  #secNet .pn-list{grid-column:1;grid-row:2;grid-template-columns:1fr 1fr;max-height:calc(100vh - 190px);position:sticky;top:8px}
+  #secNet .pn-list{grid-column:1;grid-row:2;grid-template-columns:1fr 1fr;max-height:calc(100vh - 190px);position:sticky;top:calc(var(--hh,60px) + 8px)}
   #secNet .pn-body{grid-column:2;grid-row:1 / span 2}
 }
 /* 技を選ぶ画面：候補を詰めて見やすく */

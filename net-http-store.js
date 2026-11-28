@@ -53,15 +53,15 @@
    return {list:function(){return request(p+'chars');},get:function(id){return request(p+encodeURIComponent(id));},
      saveDraft:function(id,b){return confirmedDraft(id,'saveDraft',b);},
      restore:function(id,b){return confirmedDraft(id,'restore',b);},
-     publish:function(id,b){return request(p+encodeURIComponent(id)+'/publish','POST',b);},
-     reset:function(id,b){return request(p+encodeURIComponent(id)+'/reset','POST',b);},
+     publish:function(id,b){return confirmedDraft(id,'publish',b);},
+     reset:function(id,b){return confirmedDraft(id,'reset',b);},
      attest:function(id,b){return request(p+encodeURIComponent(id)+'/attest','POST',b);},
      // PNINT14: read-only confirmation of an uncertain write. A transport success
      // is NOT an applied receipt. Refuse to notify the host without exact binding.
      op:async function(id,opid,expectedKind){
        const r=await request(p+encodeURIComponent(id)+'/ops/'+encodeURIComponent(opid));
        if(r && r.status==='applied' && expectedKind){
-         const matching=(expectedKind==='saveDraft'||expectedKind==='restore') &&
+         const matching=(expectedKind==='saveDraft'||expectedKind==='restore'||expectedKind==='publish'||expectedKind==='reset') &&
            r.operation_id===opid && r.kind===expectedKind && r.char_id===id &&
            r.principal===(identity&&identity.principal) &&
            r.permission_epoch===(identity&&identity.epoch) &&
