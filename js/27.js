@@ -70,7 +70,7 @@ const root=host.attachShadow({mode:'open'});root.innerHTML='<style>'+(window.PT_
     <h2>PROJECT T Recorder</h2>
     <p>PROJECT T Recorderは、TEKKEN 8の対戦を検出し、OBSと連携して録画・アップロード・VS履歴への登録を行うWindowsアプリです（無料）。</p>
     <div class="pt-actions">
-      <a class="pt-btn primary" href="https://github.com/gguntama-mk2/gguntama-mk2.github.io/releases/latest/download/PROJECT_T_Recorder_Setup.exe" rel="noopener">ダウンロード（Windows用・無料）</a>
+      <a class="pt-btn primary" href="https://github.com/gguntama-mk2/gguntama-mk2.github.io/releases/download/recorder-v0.5.2/PROJECT_T_Recorder_Setup.exe" rel="noopener">ダウンロード（Windows用・無料）</a>
       <button class="pt-btn" type="button" data-pt-go="guide">初回セットアップを見る</button>
     </div>
   </section>
